@@ -6,4 +6,4 @@ buildCommand = "vp build"
 runtime = "V2"
 numReplicas = 1
 preDeployCommand = "vp run db:migrate"
-startCommand = "node .output/server/index.mjs"
+startCommand = "vp run db:populate"
