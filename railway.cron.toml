@@ -1,8 +1,9 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "vp install"
+buildCommand = "vp build"
 
 [deploy]
 runtime = "V2"
-cronSchedule = "0 0 * * *"
+numReplicas = 1
+preDeployCommand = "vp run db:migrate"
 startCommand = "vp run db:populate"
