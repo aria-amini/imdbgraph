@@ -7,3 +7,4 @@ runtime = "V2"
 numReplicas = 1
 preDeployCommand = "vp run db:migrate"
 startCommand = "vp run db:populate"
+cronSchedule = "0 0 * * *"
