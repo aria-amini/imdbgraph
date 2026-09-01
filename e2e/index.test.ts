@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test'
 
+test.beforeEach(async ({ page }) => {
+	await page.goto('/')
+})
+
 test('Search bar click navigation works', async ({ page }) => {
 	await expect(page.getByRole('heading', { name: /IMDB Graph/i })).toBeVisible()
 	const searchBar = page.getByRole('combobox')

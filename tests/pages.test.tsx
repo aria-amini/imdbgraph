@@ -11,7 +11,7 @@ import { shows } from '@/lib/imdb/__fixtures__/shows'
 import { Route as HomeRoute } from '@/routes/index'
 import { Route as RatingsRoute } from '@/routes/ratings/$id'
 
-import { expectPageScreenshot, renderVisualPage } from './__mocks__/visual-page'
+import { expectPageScreenshot, renderVisualPage } from './support/render/visual-page'
 
 vi.mock('@/lib/imdb/ratings', () => ({
 	getRatings: async () => gameOfThronesRatings,

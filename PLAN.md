@@ -12,6 +12,7 @@ Modernize this older TanStack Start app using the current template at
 - Do not add versioned dataset publication yet.
 - Keep Drizzle inside the existing focused query modules.
 - Use Varlock for environment contracts.
+- Keep Playwright URL-only without a managed web server.
 
 ## Completed
 
@@ -28,7 +29,11 @@ Modernize this older TanStack Start app using the current template at
 - Removed `@aamini/config`, `@aamini/lib`, and direct `dotenv` usage.
 - Inlined Vite+, Tailwind, React compiler, Nitro, lint, format, and test setup.
 - Added the Vite+ browser Playwright provider.
+- Moved visual page coverage into headless Vitest browser tests.
+- Kept Playwright E2E tests headless and URL-only for smoke coverage.
 - Added focused unit tests for chart data and scraper filters.
+- Isolated database seed fixtures per test file.
+- Added scraper filter coverage for headers, missing values, and malformed rows.
 
 ## Review Status
 
@@ -60,16 +65,14 @@ Blocked:
 
 ## Next Steps
 
-1. Run the final adversarial review against the current working tree.
-2. Run `vp build` after the final scraper SQL changes.
-3. Install Chromium, then run `vp test run --project browser`.
-4. Free Docker storage or provide `postgres:17`, then run the server tests.
-5. Review the large `pnpm-lock.yaml` update before committing.
-6. Decide whether `config/test/*` changes preserve the desired test setup.
-7. Add tests for TSV headers, `\\N` values, malformed rows, and publication rollback.
-8. Consider the scraper pipeline split further only after the focused tests grow.
-9. Revisit repository adapters only when a second database implementation exists.
-10. Revisit versioned dataset publication only after a real locking or rollback need.
+1. Run `vp build` after the final scraper SQL changes.
+2. Install Chromium, then run `vp test run --project browser`.
+3. Free Docker storage or provide `postgres:17`, then run the server tests.
+4. Review the large `pnpm-lock.yaml` update before committing.
+5. Add a direct publication rollback test if the database suite becomes available.
+6. Consider the scraper pipeline split further only after the focused tests grow.
+7. Revisit repository adapters only when a second database implementation exists.
+8. Revisit versioned dataset publication only after a real locking or rollback need.
 
 ## Useful Commands
 

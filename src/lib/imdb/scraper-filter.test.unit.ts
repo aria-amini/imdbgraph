@@ -42,4 +42,25 @@ describe('scraper filtering', () => {
 			),
 		).toBe(false)
 	})
+
+	test('skips headers, missing values, and malformed rows', () => {
+		expect(parseRatingsLine('tconst\taverageRating\tnumVotes')).toEqual({
+			imdbId: 'tconst',
+			numVotes: Number.NaN,
+		})
+		expect(parseEpisodeLine('tconst\tparentTconst\tseasonNumber')).toEqual({
+			episodeId: 'tconst',
+			showId: 'parentTconst',
+		})
+		expect(
+			shouldCopyTitle(
+				'tt1234567\ttvSeries\tShow\tShow\t0\t\\N',
+				new Set(),
+				new Set(['tt1234567']),
+			),
+		).toBe(false)
+		expect(
+			shouldCopyTitle('malformed', new Set(), new Set()),
+		).toBe(false)
+	})
 })

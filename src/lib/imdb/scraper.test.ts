@@ -4,7 +4,7 @@ import { getRatingsDb } from '@/lib/imdb/ratings'
 import type { Ratings } from '@/lib/imdb/types'
 import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
 import { update } from '@/lib/imdb/scraper'
-import { test } from '@config/test/db'
+import { initDb } from '@config/test/db'
 import { createReadStream } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, vi } from 'vitest'
@@ -70,6 +70,8 @@ const expectedGameOfThronesRatings: Ratings = {
 // Tests
 // =============================================================================
 describe('scraper tests', () => {
+	const test = initDb(() => {})
+
 	test('loading sample files into database', async ({ db }) => {
 		await db.delete(scrapeRun)
 

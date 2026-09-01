@@ -6,8 +6,10 @@ import { asc, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { z } from 'zod'
 
+const imdbIdSchema = z.string().regex(/^tt\d+$/)
+
 export const getRatings = createServerFn()
-	.inputValidator(z.object({ showId: z.string().regex(/^tt\d{7,8}$/) }))
+	.inputValidator(z.object({ showId: imdbIdSchema }))
 	.handler(async ({ data }) => {
 		const db = createDb()
 		return getRatingsDb(db, data.showId)
