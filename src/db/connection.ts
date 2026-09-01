@@ -1,5 +1,5 @@
 import { createServerOnlyFn } from '@tanstack/react-start'
-import { env } from '@/env'
+import { serverEnv as env } from '@/env.server'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 

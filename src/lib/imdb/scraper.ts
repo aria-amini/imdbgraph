@@ -1,4 +1,9 @@
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
+import {
+	parseEpisodeLine,
+	parseRatingsLine,
+	shouldCopyTitle,
+} from '@/lib/imdb/scraper-filter'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { once } from 'node:events'
 import { createInterface } from 'node:readline'
@@ -158,14 +163,18 @@ async function transfer(client: PoolClient) {
 	await client.query('DROP TABLE IF EXISTS show;')
 
 	await client.query(`
-    ALTER TABLE show_new RENAME TO show;
+	    ALTER TABLE show_new RENAME TO show;
 	  ALTER TABLE show ALTER COLUMN imdb_id SET NOT NULL;
 	  ALTER TABLE show ALTER COLUMN title SET NOT NULL;
 	  ALTER TABLE show ALTER COLUMN start_year SET NOT NULL;
-	  ALTER TABLE show ALTER COLUMN rating SET NOT NULL;
-	  ALTER TABLE show ALTER COLUMN num_votes SET NOT NULL;
+	    ALTER TABLE show ALTER COLUMN rating SET NOT NULL;
+	    ALTER TABLE show ALTER COLUMN num_votes SET NOT NULL;
+	    ALTER TABLE show ALTER COLUMN rating SET DEFAULT 0;
+	    ALTER TABLE show ALTER COLUMN num_votes SET DEFAULT 0;
 
-    ALTER TABLE show ADD PRIMARY KEY (imdb_id);
+	    ALTER TABLE show ADD PRIMARY KEY (imdb_id);
+	    CREATE INDEX show_title_trigram_index ON show USING gin (title gin_trgm_ops);
+	    CREATE INDEX show_rating_index ON show USING btree (rating float8_ops);
 	`)
 	console.log('Updated show table')
 
@@ -209,8 +218,8 @@ async function copyRatingsAndCollectRatedIds(
 				return line
 			}
 
-			const [imdbId, _imdbRating, numVotesRaw] = line.split('\t')
-			if (imdbId && Number(numVotesRaw) > 0) {
+			const { imdbId, numVotes } = parseRatingsLine(line)
+			if (imdbId && numVotes > 0) {
 				ratedIds.add(imdbId)
 				return line
 			}
@@ -237,7 +246,7 @@ async function copyEpisodesAndCollectShowIds(
 				return line
 			}
 
-			const [episodeId, showId] = line.split('\t')
+			const { episodeId, showId } = parseEpisodeLine(line)
 			if (episodeId && showId && ratedIds.has(episodeId)) {
 				validShowIds.add(showId)
 				return line
@@ -264,36 +273,7 @@ async function copyTitles(
 				return line
 			}
 
-			const [imdbId, titleType, _primary, _original, _isAdult, startYear] =
-				line.split('\t')
-			if (!imdbId || !titleType) {
-				return undefined
-			}
-
-			if (titleType === 'tvEpisode') {
-				if (ratedIds.has(imdbId)) {
-					return line
-				}
-
-				return undefined
-			}
-
-			const isShowType =
-				titleType === 'tvSeries' ||
-				titleType === 'tvShort' ||
-				titleType === 'tvSpecial' ||
-				titleType === 'tvMiniSeries'
-
-			if (
-				isShowType &&
-				startYear &&
-				startYear !== '\\N' &&
-				validShowIds.has(imdbId)
-			) {
-				return line
-			}
-
-			return undefined
+			return shouldCopyTitle(line, ratedIds, validShowIds) ? line : undefined
 		},
 	)
 }
@@ -335,5 +315,8 @@ async function copyFromImdbStream(
 	} catch (error) {
 		ingestStream.destroy(error as Error)
 		throw error
+	} finally {
+		reader.close()
+		sourceStream.destroy()
 	}
 }

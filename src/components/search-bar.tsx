@@ -1,4 +1,8 @@
-import { formatYears, type Show } from '@/lib/imdb/types'
+import {
+	fetchSuggestionsFromApi,
+	type Suggestion,
+} from '@/lib/imdb/suggestions'
+import { formatYears } from '@/lib/imdb/types'
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -41,13 +45,7 @@ export function SearchBar({ className }: { className?: string }) {
 		error,
 	} = useQuery({
 		queryKey: ['suggestions', search],
-		queryFn: async () => {
-			if (!search) return []
-			const response = await fetch(
-				`/api/suggestions?q=${encodeURIComponent(search)}`,
-			)
-			return response.json() as Promise<Show[]>
-		},
+		queryFn: () => fetchSuggestionsFromApi(search),
 		enabled: isHydrated && Boolean(search),
 		placeholderData: keepPreviousData,
 	})
@@ -104,7 +102,7 @@ export function SearchBar({ className }: { className?: string }) {
 									No TV Shows Found.
 								</Command.Empty>
 							)}
-							{searchResults.map((show: Show) => (
+							{searchResults.map((show: Suggestion) => (
 								<Command.Item
 									key={show.imdbId}
 									value={show.imdbId}
