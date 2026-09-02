@@ -10,8 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RatingsIdRouteImport } from './routes/ratings/$id'
 import { Route as ApiSuggestionsRouteImport } from './routes/api/suggestions'
+import { Route as RatingsIdRouteImport } from './routes/ratings/$id'
 import { Route as ApiIngestSplatRouteImport } from './routes/api/ingest/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -19,14 +19,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RatingsIdRoute = RatingsIdRouteImport.update({
-  id: '/ratings/$id',
-  path: '/ratings/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiSuggestionsRoute = ApiSuggestionsRouteImport.update({
   id: '/api/suggestions',
   path: '/api/suggestions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RatingsIdRoute = RatingsIdRouteImport.update({
+  id: '/ratings/$id',
+  path: '/ratings/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiIngestSplatRoute = ApiIngestSplatRouteImport.update({
@@ -78,18 +78,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ratings/$id': {
-      id: '/ratings/$id'
-      path: '/ratings/$id'
-      fullPath: '/ratings/$id'
-      preLoaderRoute: typeof RatingsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/suggestions': {
       id: '/api/suggestions'
       path: '/api/suggestions'
       fullPath: '/api/suggestions'
       preLoaderRoute: typeof ApiSuggestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ratings/$id': {
+      id: '/ratings/$id'
+      path: '/ratings/$id'
+      fullPath: '/ratings/$id'
+      preLoaderRoute: typeof RatingsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ingest/$': {

@@ -34,6 +34,8 @@ Modernize this older TanStack Start app using the current template at
 - Added focused unit tests for chart data and scraper filters.
 - Isolated database seed fixtures per test file.
 - Added scraper filter coverage for headers, missing values, and malformed rows.
+- Added desktop and mobile Vitest browser instances.
+- Restored shared MSW handlers for browser tests.
 
 ## Review Status
 
@@ -51,28 +53,29 @@ task to create this plan. Run it before treating the work as fully reviewed.
 
 Passing:
 
-- `vp test run --project unit` — 3 tests passed.
-- `vp build` — passed before the final SQL-only fix.
-- `vp check --no-fmt` — zero errors and four existing accessibility warnings
-  when the local environment supplies `DATABASE_URL`.
-- `jj diff` and `jj status` inspected.
+- `vp test run` — 29 tests passed and 1 skipped.
+- `vp test run --project unit` — 4 tests passed.
+- `vp test run --project server` — 7 tests passed and 1 skipped.
+- `vp test run --project browser` — 18 tests passed across desktop and mobile.
+- `vp build` — passed.
+- `vp check --no-fmt` — zero errors and four accessibility warnings.
+- `varlock load --agent` — passed.
 
 Blocked:
 
-- Browser tests need the Playwright Chromium executable.
-- Database tests need Docker space and the `postgres:17` image.
-- Plain checks fail when the local required database environment is absent.
+- Playwright E2E tests need a reachable deployed URL.
 
 ## Next Steps
 
-1. Run `vp build` after the final scraper SQL changes.
-2. Install Chromium, then run `vp test run --project browser`.
-3. Free Docker storage or provide `postgres:17`, then run the server tests.
-4. Review the large `pnpm-lock.yaml` update before committing.
-5. Add a direct publication rollback test if the database suite becomes available.
-6. Consider the scraper pipeline split further only after the focused tests grow.
-7. Revisit repository adapters only when a second database implementation exists.
-8. Revisit versioned dataset publication only after a real locking or rollback need.
+1. Run the final adversarial review against the current working tree.
+2. Review the large `pnpm-lock.yaml` update before committing.
+3. Add a direct publication rollback test if the database suite grows.
+4. Consider the scraper pipeline split further only after the focused tests
+   grow.
+5. Revisit repository adapters only when a second database implementation
+   exists.
+6. Revisit versioned dataset publication only after a real locking or rollback
+   need.
 
 ## Useful Commands
 

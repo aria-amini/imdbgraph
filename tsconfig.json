@@ -16,6 +16,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
 		"noImplicitOverride": true,
 		"noImplicitReturns": true,
 		"noUncheckedIndexedAccess": true,
@@ -23,10 +24,9 @@
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"paths": {
-			"@config": ["./config/index.ts"],
 			"@config/*": ["./config/*"],
-			"@/mocks/*": ["./__mocks__/*"],
 			"@tests/*": ["./tests/*"],
+			"@/mocks/*": ["./__mocks__/*"],
 			"@/*": ["./src/*"]
 		}
 	}

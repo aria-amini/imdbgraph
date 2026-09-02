@@ -3,7 +3,11 @@ builder = "RAILPACK"
 buildCommand = "vp build"
 
 [deploy]
+preDeployCommand = "pnpm run db:migrate"
 runtime = "V2"
 numReplicas = 1
-preDeployCommand = "vp run db:migrate"
-startCommand = "node .output/server/index.mjs"
+startCommand = "pnpm start"
+healthcheckPath = "/"
+useLegacyStacker = false
+restartPolicyType = "ALWAYS"
+healthcheckTimeout = 300

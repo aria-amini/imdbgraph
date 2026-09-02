@@ -1,0 +1,6 @@
+[post-create]
+bootstrap = "mise run bootstrap"
+start-pitchfork = "pitchfork start -l"
+
+[pre-remove]
+stop-pitchfork = "pitchfork stop -l || true"

@@ -10,8 +10,6 @@ import { nitro } from 'nitro/vite'
 import { defineConfig, type UserConfig } from 'vite-plus'
 import { playwright } from 'vite-plus/test/browser-playwright'
 
-const root = import.meta.dirname
-
 const fmt = {
 	singleQuote: true,
 	semi: false,
@@ -30,7 +28,12 @@ const fmt = {
 		'**/routeTree.gen.ts',
 		'src/db/migrations/**',
 	],
-	overrides: [{ files: ['*.{yaml,yml}'], options: { useTabs: false } }],
+	overrides: [
+		{
+			files: ['*.{yaml,yml}'],
+			options: { useTabs: false },
+		},
+	],
 } satisfies UserConfig['fmt']
 
 const lint = {
@@ -47,8 +50,12 @@ const lint = {
 		'node',
 		'promise',
 	],
+	jsPlugins: [{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' }],
 	categories: {},
-	options: { typeAware: true, typeCheck: true },
+	options: {
+		typeAware: true,
+		typeCheck: true,
+	},
 	rules: {
 		'no-empty-pattern': 'off',
 		'no-console': ['error', { allow: ['warn', 'error'] }],
@@ -57,19 +64,40 @@ const lint = {
 		{
 			files: [
 				'scripts/**',
+				'mise-tasks/**',
+				'**/*.server.ts',
 				'src/lib/imdb/file-downloader.ts',
 				'src/lib/imdb/scraper.ts',
-				'**/*.server.ts',
 			],
-			rules: { 'no-console': 'off' },
+			rules: {
+				'no-console': 'off',
+			},
 		},
 	],
+	settings: {
+		'jsx-a11y': { components: {}, attributes: {} },
+		react: { formComponents: [], linkComponents: [] },
+		jsdoc: {
+			ignorePrivate: false,
+			ignoreInternal: false,
+			ignoreReplacesDocs: true,
+			overrideReplacesDocs: true,
+			augmentsExtendsReplacesDocs: false,
+			implementsReplacesDocs: false,
+			exemptDestructuredRootsFromChecks: false,
+			tagNamePreference: {},
+		},
+	},
 	env: { builtin: true },
 	globals: {},
 	ignorePatterns: ['**/dist/**'],
 } satisfies UserConfig['lint']
+const root = import.meta.dirname
 
 export default defineConfig({
+	staged: {
+		'*': 'vp check --fix',
+	},
 	root,
 	server: { host: '0.0.0.0', port: Number(process.env.APP_PORT ?? 3000) },
 	resolve: {
@@ -99,10 +127,18 @@ export default defineConfig({
 	],
 	fmt,
 	lint,
-	staged: { '*.{js,ts,tsx}': 'vp check --fix' },
 	test: {
+		reporters: process.env.CI
+			? ['default', 'html', './tests/support/visual-diff-reporter.ts']
+			: ['default'],
 		projects: [
-			{ extends: true, test: { name: 'unit', include: ['src/**/*.test.unit.ts'] } },
+			{
+				extends: true,
+				test: {
+					name: 'unit',
+					include: ['src/**/*.unit.test.ts', 'src/**/*.test.unit.ts'],
+				},
+			},
 			{
 				extends: true,
 				test: {
@@ -119,7 +155,18 @@ export default defineConfig({
 					include: ['src/**/*.test.tsx', 'tests/**/*.test.tsx'],
 					setupFiles: ['./src/styles.css'],
 					browser: {
-						instances: [{ browser: 'chromium' }],
+						instances: [
+							{
+								browser: 'chromium',
+								name: 'desktop',
+								viewport: { width: 1280, height: 720 },
+							},
+							{
+								browser: 'chromium',
+								name: 'mobile',
+								viewport: { width: 375, height: 812 },
+							},
+						],
 						provider: playwright({
 							launchOptions: { args: ['--disable-lcd-text'] },
 						}),
@@ -130,5 +177,4 @@ export default defineConfig({
 			},
 		],
 	},
-	ssr: { noExternal: ['recharts'] },
 })

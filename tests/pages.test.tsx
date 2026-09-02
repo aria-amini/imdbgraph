@@ -1,17 +1,20 @@
 import { test } from '@config/test/browser'
 import { http, HttpResponse } from 'msw'
+import type { ComponentType } from 'react'
 import { expect, vi } from 'vite-plus/test'
 import { userEvent } from 'vite-plus/test/browser'
-import type { ComponentType } from 'react'
 import type { Locator } from 'vite-plus/test/browser'
 import type { RenderResult } from 'vitest-browser-react'
 
-import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { shows } from '@/lib/imdb/__fixtures__/shows'
+import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { Route as HomeRoute } from '@/routes/index'
 import { Route as RatingsRoute } from '@/routes/ratings/$id'
 
-import { expectPageScreenshot, renderVisualPage } from './support/render/visual-page'
+import {
+	expectPageScreenshot,
+	renderVisualPage,
+} from './support/render/visual-page'
 
 vi.mock('@/lib/imdb/ratings', () => ({
 	getRatings: async () => gameOfThronesRatings,
@@ -23,6 +26,7 @@ interface PageScreenshotCase {
 	component: ComponentType
 	waitFor: (screen: RenderResult) => Locator
 	setup?: () => void | Promise<void>
+	viewport?: { width: number; height: number }
 }
 
 const pages = [
@@ -32,6 +36,19 @@ const pages = [
 		component: RatingsRoute.options.component as ComponentType,
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
+		setup: () => {
+			;(
+				RatingsRoute as unknown as { useLoaderData: () => unknown }
+			).useLoaderData = () => gameOfThronesRatings
+		},
+	},
+	{
+		name: 'ratings-game-of-thrones-mobile',
+		path: '/ratings/$id',
+		component: RatingsRoute.options.component as ComponentType,
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /game of thrones/i }),
+		viewport: { width: 375, height: 812 },
 		setup: () => {
 			;(
 				RatingsRoute as unknown as { useLoaderData: () => unknown }

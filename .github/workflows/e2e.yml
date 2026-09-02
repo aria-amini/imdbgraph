@@ -1,0 +1,97 @@
+name: E2E
+
+# Railway's GitHub integration posts deployment statuses; this runs the
+# Playwright suite against each successful PR environment deployment.
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: >-
+          Public URL of the Railway PR environment to test, e.g.
+          https://service-environment.up.railway.app
+        required: true
+        type: string
+
+concurrency:
+  group: e2e-${{ github.event.deployment.environment || inputs.base_url }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    # Railway PR environments are named like "<branch>-pr-<n>"
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+      contains(github.event.deployment.environment, 'pr-'))
+    runs-on: ubuntu-24.04
+    steps:
+      # Railway reports dashboard URLs in deployment_status URL fields. The
+      # public service URL follows <service>-<environment>.up.railway.app.
+      # The service was renamed to "app"; deployment payloads from before the
+      # rename still carry the old service name, so try both candidates.
+      - name: Resolve deployment URL
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.deployment.environment }}
+          MANUAL_BASE_URL: ${{ inputs.base_url }}
+        run: |
+          if [ -n "$MANUAL_BASE_URL" ]; then
+            candidates="${MANUAL_BASE_URL%/}"
+          else
+            service="${DEPLOYMENT_ENVIRONMENT%%/*}"
+            environment="${DEPLOYMENT_ENVIRONMENT##*/}"
+            service="${service//[[:space:]]/}"
+            environment="${environment//[[:space:]]/}"
+            if [ -z "$environment" ]; then
+              echo "No deployment environment was reported." >&2
+              exit 1
+            fi
+            candidates="https://${service}-${environment}.up.railway.app"
+            if [ "$service" != "app" ]; then
+              candidates="$candidates https://app-${environment}.up.railway.app"
+            fi
+          fi
+          echo "CANDIDATES=$candidates" >> "$GITHUB_ENV"
+          echo "Will try: $candidates"
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          # Manual dispatch: empty ref checks out the branch picked in the UI;
+          # select the PR branch there.
+          ref: ${{ github.event.deployment.sha }}
+      - name: setup vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          version: '0.2.1'
+          node-version: '24'
+      - name: Install Playwright Browsers
+        run: vpx playwright install --with-deps --only-shell
+      # sleepApplication is enabled on Railway, so the first request has to
+      # wake the app; retry until it responds.
+      - name: Wait for deployment to be reachable
+        run: |
+          for attempt in $(seq 1 30); do
+            for url in $CANDIDATES; do
+              status=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$url" || true)
+              if [ "$status" = "200" ]; then
+                echo "BASE_URL=$url" >> "$GITHUB_ENV"
+                echo "Deployment is up at $url (attempt $attempt)"
+                exit 0
+              fi
+              echo "attempt $attempt: $url returned HTTP $status"
+            done
+            sleep 10
+          done
+          echo "Deployment never became reachable at any of: $CANDIDATES" >&2
+          exit 1
+      - name: Run Playwright tests
+        run: vpx playwright test
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            .playwright/report/
+            .playwright/test-results/
+          retention-days: 14
