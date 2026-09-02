@@ -222,6 +222,15 @@ function pitchfork(args: string[]): string {
 	}).trim()
 }
 
+function pitchforkAvailable(): boolean {
+	try {
+		pitchfork(['list'])
+		return true
+	} catch {
+		return false
+	}
+}
+
 // The proxy TLD (settings proxy.tld) decides where slugs live. A custom TLD
 // with a public suffix (e.g. lvh.example.com) makes slug URLs registrable as
 // OAuth redirect URIs; the default 'localhost' TLD is not registrable.
@@ -233,15 +242,17 @@ function proxyTld(): string {
 	}
 }
 
+function slugify(value: string): string {
+	return value.toLowerCase().replaceAll(/[^a-z0-9-]/g, '-')
+}
+
 // Registers a stable https://<slug>.<tld> URL for the project. Only the
 // default workspace registers; other jj workspaces are reached via
 // https://<workspace>.<slug>.<tld> through `proxy.worktree` auto-discovery.
 // Best effort: pitchfork is a local convenience, never a bootstrap blocker.
 // `proxy trust` needs sudo, so it stays a one-time manual step.
 function registerProxySlug(mainRoot: string): string {
-	const slug = basename(mainRoot)
-		.toLowerCase()
-		.replaceAll(/[^a-z0-9-]/g, '-')
+	const slug = slugify(basename(mainRoot))
 	if (realpathSync('.') === mainRoot) {
 		try {
 			pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
@@ -288,17 +299,21 @@ function main(): void {
 	const mainRoot = defaultWorkspaceRoot()
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
+	const worktreeLabel = slugify(worktree)
 	const proxyHost =
-		worktree === proxySlug
+		worktreeLabel === proxySlug
 			? `${proxySlug}.${tld}`
-			: `${worktree}.${proxySlug}.${tld}`
+			: `${worktreeLabel}.${proxySlug}.${tld}`
+	const proxyUp = pitchforkAvailable()
 
 	updateEnvFile(
 		'.env.development.local',
 		[
 			{
 				APP_PORT: String(appPort),
-				BASE_URL: `https://${proxyHost}`,
+				BASE_URL: proxyUp
+					? `https://${proxyHost}`
+					: `http://localhost:${appPort}`,
 			},
 			{
 				POSTGRES_PORT: String(postgresPort),
@@ -332,7 +347,9 @@ function main(): void {
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
-	console.log(`  proxy:    https://${proxyHost}`)
+	if (proxyUp) {
+		console.log(`  proxy:    https://${proxyHost}`)
+	}
 }
 
 main()
