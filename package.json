@@ -27,7 +27,7 @@
 		"compose:reset": "docker compose --env-file .env.development.local down --volumes --remove-orphans && vp run compose:up",
 		"db:push": "varlock run -- drizzle-kit push",
 		"db:generate": "varlock run -- drizzle-kit generate",
-		"db:migrate": "varlock run -- drizzle-kit migrate",
+		"db:migrate": "varlock run -- tsx scripts/migrate.ts",
 		"db:populate": "varlock run -- tsx scripts/populate-db.ts",
 		"prepare": "vp config --hooks-only",
 		"update-pnpm": "corepack use pnpm@11",
