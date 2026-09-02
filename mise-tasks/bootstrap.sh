@@ -11,9 +11,16 @@ cd "$(dirname "$0")/.."
 
 mise install
 vp i
-vp exec varlock load
+
+if [[ ! -e .env.local ]]; then
+	printf '%s\n' \
+		'# Infisical machine-identity client secret.' \
+		'# @sensitive' \
+		'INFISICAL_CLIENT_SECRET=varlock(prompt)' > .env.local
+fi
 
 mise run setup
+vp exec varlock load
 vp run compose:up
 vp run db:migrate
 
