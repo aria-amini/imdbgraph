@@ -1,6 +1,7 @@
-import { queryClient } from '@/lib/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
+
+import { queryClient } from '@/lib/react-query'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'

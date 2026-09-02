@@ -1,5 +1,12 @@
 import { setupServer } from 'msw/node'
-import { afterEach, beforeEach, describe, expect, test as baseTest, vi } from 'vite-plus/test'
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	test as baseTest,
+	vi,
+} from 'vite-plus/test'
 
 type Server = ReturnType<typeof setupServer>
 const server: Server = setupServer()
@@ -14,7 +21,10 @@ const test = baseTest.extend<{ server: Server; _cleanup: void }>({
 		{ auto: true, scope: 'worker' },
 	],
 	_cleanup: [
-		async ({ server }: { server: Server }, use: (value: void) => Promise<void>) => {
+		async (
+			{ server }: { server: Server },
+			use: (value: void) => Promise<void>,
+		) => {
 			await use()
 			server.resetHandlers()
 		},

@@ -1,6 +1,8 @@
-import { update } from '@/lib/imdb/scraper.ts'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
+
+import { update } from '@/lib/imdb/scraper.ts'
+
 import { serverEnv as env } from '../src/env.server.ts'
 
 const db = drizzle({

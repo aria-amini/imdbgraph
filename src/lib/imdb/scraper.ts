@@ -1,15 +1,17 @@
+import { once } from 'node:events'
+import { createInterface } from 'node:readline'
+import { finished } from 'node:stream/promises'
+
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import type { Pool, PoolClient } from 'pg'
+import { from as copyFrom } from 'pg-copy-streams'
+
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import {
 	parseEpisodeLine,
 	parseRatingsLine,
 	shouldCopyTitle,
 } from '@/lib/imdb/scraper-filter'
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { once } from 'node:events'
-import { createInterface } from 'node:readline'
-import { finished } from 'node:stream/promises'
-import type { Pool, PoolClient } from 'pg'
-import { from as copyFrom } from 'pg-copy-streams'
 
 /**
  * Main method that downloads the latest files from IMDB and updates our

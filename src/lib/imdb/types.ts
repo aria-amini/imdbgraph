@@ -1,4 +1,5 @@
 import type { InferSelectModel } from 'drizzle-orm'
+
 import type { episode, show } from '@/db/tables'
 
 export type Show = InferSelectModel<typeof show>

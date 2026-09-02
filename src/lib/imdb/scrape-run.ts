@@ -1,8 +1,9 @@
-import { createDb } from '@/db/connection'
-import { scrapeRun } from '@/db/tables'
 import { createServerFn } from '@tanstack/react-start'
 import { desc } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+
+import { createDb } from '@/db/connection'
+import { scrapeRun } from '@/db/tables'
 
 export const getLatestScrapeRun = createServerFn().handler(async () => {
 	const db = createDb()

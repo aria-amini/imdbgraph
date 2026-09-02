@@ -1,6 +1,7 @@
+import { describe, expect, test } from 'vitest'
+
 import { transformRatingsData } from '@/lib/imdb/chart-data'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
-import { describe, expect, test } from 'vitest'
 
 describe('chart data', () => {
 	test('preserves seasons and skips unrated episodes', () => {

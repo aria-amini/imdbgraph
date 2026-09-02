@@ -1,7 +1,9 @@
-import { show } from '@/db/tables'
-import { fetchSuggestions } from '@/lib/imdb/search'
 import { initDb } from '@config/test/db'
 import { describe, expect } from 'vitest'
+
+import { show } from '@/db/tables'
+import { fetchSuggestions } from '@/lib/imdb/search'
+
 import { shows } from './__fixtures__/shows'
 
 const test = initDb(async (db) => {

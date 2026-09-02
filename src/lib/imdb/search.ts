@@ -1,6 +1,7 @@
-import { show } from '@/db/tables'
 import { desc, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+
+import { show } from '@/db/tables'
 
 export async function fetchSuggestions(db: NodePgDatabase, q: string) {
 	if (!q) {

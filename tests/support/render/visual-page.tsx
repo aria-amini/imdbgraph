@@ -5,12 +5,12 @@ import {
 	createRoute,
 	createRouter,
 } from '@tanstack/react-router'
+import { createElement } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { expect } from 'vite-plus/test'
 import { page } from 'vite-plus/test/browser'
-import { createElement } from 'react'
-import { render } from 'vitest-browser-react'
-import type { ComponentType, ReactNode } from 'react'
 import type { Locator } from 'vite-plus/test/browser'
+import { render } from 'vitest-browser-react'
 import type { RenderResult } from 'vitest-browser-react'
 
 interface Viewport {

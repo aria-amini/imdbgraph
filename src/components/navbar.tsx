@@ -1,6 +1,7 @@
-import { Button } from './ui/button'
 import { Home } from 'lucide-react'
 import type { ReactNode } from 'react'
+
+import { Button } from './ui/button'
 
 interface NavbarProps {
 	center?: ReactNode

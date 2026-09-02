@@ -1,4 +1,3 @@
-import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import type { QueryClient } from '@tanstack/react-query'
 import {
 	ClientOnly,
@@ -7,8 +6,11 @@ import {
 	Scripts,
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { useEffect } from 'react'
 import posthog from 'posthog-js'
+import { useEffect } from 'react'
+
+import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+
 import appCss from '../styles.css?url'
 
 function Analytics() {

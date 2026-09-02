@@ -1,10 +1,11 @@
-import { createDb } from '@/db/connection'
-import { episode, show } from '@/db/tables'
-import type { Episode, Ratings } from '@/lib/imdb/types'
 import { createServerFn } from '@tanstack/react-start'
 import { asc, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { z } from 'zod'
+
+import { createDb } from '@/db/connection'
+import { episode, show } from '@/db/tables'
+import type { Episode, Ratings } from '@/lib/imdb/types'
 
 const imdbIdSchema = z.string().regex(/^tt\d+$/)
 

@@ -1,9 +1,10 @@
+import { createFileRoute, notFound } from '@tanstack/react-router'
+
 import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
 import { getRatings } from '@/lib/imdb/ratings'
 import { type Ratings } from '@/lib/imdb/types'
-import { createFileRoute, notFound } from '@tanstack/react-router'
 
 function hasRatings(ratings: Ratings): boolean {
 	for (const seasonRatings of Object.values(ratings.allEpisodeRatings)) {

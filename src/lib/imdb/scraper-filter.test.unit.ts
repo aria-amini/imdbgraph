@@ -1,9 +1,10 @@
+import { describe, expect, test } from 'vitest'
+
 import {
 	parseEpisodeLine,
 	parseRatingsLine,
 	shouldCopyTitle,
 } from '@/lib/imdb/scraper-filter'
-import { describe, expect, test } from 'vitest'
 
 describe('scraper filtering', () => {
 	test('collects rated identifiers and episode show identifiers', () => {
@@ -59,8 +60,6 @@ describe('scraper filtering', () => {
 				new Set(['tt1234567']),
 			),
 		).toBe(false)
-		expect(
-			shouldCopyTitle('malformed', new Set(), new Set()),
-		).toBe(false)
+		expect(shouldCopyTitle('malformed', new Set(), new Set())).toBe(false)
 	})
 })

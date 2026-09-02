@@ -1,7 +1,14 @@
 'use client'
 
-import { transformRatingsData } from '@/lib/imdb/chart-data'
-import type { Episode, Ratings } from '@/lib/imdb/types'
+import {
+	CartesianGrid,
+	Line,
+	LineChart,
+	type TooltipContentProps,
+	XAxis,
+	YAxis,
+} from 'recharts'
+
 import {
 	Card,
 	CardContent,
@@ -14,14 +21,8 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from '@/components/ui/chart'
-import {
-	CartesianGrid,
-	Line,
-	LineChart,
-	type TooltipContentProps,
-	XAxis,
-	YAxis,
-} from 'recharts'
+import { transformRatingsData } from '@/lib/imdb/chart-data'
+import type { Episode, Ratings } from '@/lib/imdb/types'
 
 export function Graph({ ratings }: { ratings: Ratings }) {
 	const { show } = ratings

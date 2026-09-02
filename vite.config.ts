@@ -128,9 +128,6 @@ export default defineConfig({
 	fmt,
 	lint,
 	test: {
-		reporters: process.env.CI
-			? ['default', 'html', './tests/support/visual-diff-reporter.ts']
-			: ['default'],
 		projects: [
 			{
 				extends: true,
