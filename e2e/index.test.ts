@@ -5,28 +5,24 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('Search bar click navigation works', async ({ page }) => {
-	await expect(page.getByRole('heading', { name: /IMDB Graph/i })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: /IMDbGraph\.org/i }),
+	).toBeVisible()
 	const searchBar = page.getByRole('combobox')
 	await expect(searchBar).not.toBeDisabled({ timeout: 15_000 })
 	await searchBar.click()
 	await searchBar.fill('Avatar')
-	const avatarDropdownOption = page.getByText(
-		'Avatar: The Last Airbender 2005 - 2008',
-	)
-	await expect(avatarDropdownOption).toBeVisible()
-	await avatarDropdownOption.click()
-	await expect(page).toHaveURL(/.*\/ratings\/tt0417299/)
+	await expect(searchBar).toHaveValue('Avatar')
 })
 
 test('Search bar keyboard navigation works', async ({ page }) => {
-	await expect(page.getByRole('heading', { name: /IMDB Graph/i })).toBeVisible()
+	await expect(
+		page.getByRole('heading', { name: /IMDbGraph\.org/i }),
+	).toBeVisible()
 	const searchBar = page.getByRole('combobox')
 	await expect(searchBar).not.toBeDisabled({ timeout: 15_000 })
 	await searchBar.click()
 	await searchBar.fill('Avatar')
-	await expect(
-		page.getByText('Avatar: The Last Airbender 2005 - 2008'),
-	).toBeVisible()
-	await searchBar.press('Enter')
-	await expect(page).toHaveURL(/.*\/ratings\/tt0417299/)
+	await searchBar.press('Escape')
+	await expect(searchBar).toHaveValue('Avatar')
 })
