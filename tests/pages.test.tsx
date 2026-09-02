@@ -16,7 +16,8 @@ import {
 	renderVisualPage,
 } from './support/render/visual-page'
 
-vi.mock('@/lib/imdb/ratings', () => ({
+vi.mock('@/lib/imdb/ratings', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@/lib/imdb/ratings')>()),
 	getRatings: async () => gameOfThronesRatings,
 }))
 

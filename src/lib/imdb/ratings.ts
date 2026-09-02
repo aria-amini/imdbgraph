@@ -7,7 +7,7 @@ import { createDb } from '@/db/connection'
 import { episode, show } from '@/db/tables'
 import type { Episode, Ratings } from '@/lib/imdb/types'
 
-const imdbIdSchema = z.string().regex(/^tt\d+$/)
+export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
 export const getRatings = createServerFn()
 	.inputValidator(z.object({ showId: imdbIdSchema }))

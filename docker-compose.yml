@@ -7,3 +7,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_dev}
     ports:
       - '${POSTGRES_PORT:-5433}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      start_period: 5s
+      interval: 2s
+      timeout: 3s
+      retries: 15
