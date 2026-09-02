@@ -1,0 +1,8 @@
+# Changes here will be overwritten by Copier; do not edit manually
+_commit: v0.0.20-53-g862fcea
+_src_path: /home/aria-amini/dotfiles
+app_name: imdbgraph
+google_auth: false
+posthog: true
+posthog_project_token: phc_4TAfNk2E0Xb2v8QwmkWwu8lYtLdDpyG2028qGb2JAXX
+sentry: false

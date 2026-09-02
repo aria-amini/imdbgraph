@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const baseURL =
+	process.env.BASE_URL ?? `http://localhost:${process.env.APP_PORT ?? '3000'}`
+
 export default defineConfig({
 	testDir: './e2e',
 	outputDir: '.playwright/test-results',
@@ -9,7 +12,8 @@ export default defineConfig({
 	retries: process.env.CI ? 3 : 0,
 	reporter: [['html', { open: 'never', outputFolder: '.playwright/report' }]],
 	use: {
-		baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
+		baseURL,
+		ignoreHTTPSErrors: !process.env.CI && baseURL.startsWith('https://'),
 		trace: 'retain-on-first-failure',
 		screenshot: 'on',
 		video: 'retain-on-failure',

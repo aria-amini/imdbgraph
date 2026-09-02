@@ -288,12 +288,17 @@ function main(): void {
 	const mainRoot = defaultWorkspaceRoot()
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
+	const proxyHost =
+		worktree === proxySlug
+			? `${proxySlug}.${tld}`
+			: `${worktree}.${proxySlug}.${tld}`
 
 	updateEnvFile(
 		'.env.development.local',
 		[
 			{
 				APP_PORT: String(appPort),
+				BASE_URL: `https://${proxyHost}`,
 			},
 			{
 				POSTGRES_PORT: String(postgresPort),
@@ -327,10 +332,6 @@ function main(): void {
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
-	const proxyHost =
-		worktree === proxySlug
-			? `${proxySlug}.${tld}`
-			: `${worktree}.${proxySlug}.${tld}`
 	console.log(`  proxy:    https://${proxyHost}`)
 }
 

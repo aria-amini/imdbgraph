@@ -16,7 +16,7 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
   daemon
 - `vp check` — format, lint, and type-check
 - `vp test run` — run Vitest projects
-- `vp run e2e` — run Playwright smoke tests
+- `vp run e2e` — run Playwright smoke tests against the workspace proxy
 - `vp run compose:up` — start local services
 - `vp run db:push` — apply the current schema
 - `vp run db:migrate` — run migrations

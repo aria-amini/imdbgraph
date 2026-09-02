@@ -46,6 +46,8 @@ vp dev
 Managed by [varlock](https://varlock.dev); `.env.schema` defines what is
 required per environment. Local development points at the Docker service via
 `.env.development.local`, regenerated per jj workspace by `mise-tasks/setup`.
+The same file sets `BASE_URL` to the workspace's Pitchfork proxy for local E2E
+tests.
 
 ## Services
 
