@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
+// Adapted from shadcn/ui. role="group" and the addon click-to-focus handler are
+// intentional; the rule's HTML replacements (fieldset, address, ...) change
+// meaning. The addon is not focusable, so a keyboard handler here would only
+// ever fire by bubbling from real controls and would break their activation.
+// Keyboard users reach the input directly with Tab.
+
+/* oxlint-disable jsx-a11y/prefer-tag-over-role */
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
@@ -19,6 +26,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
 		/>
 	)
 }
+/* oxlint-enable jsx-a11y/prefer-tag-over-role */
 
 const inputGroupAddonVariants = cva(
 	"flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
@@ -41,6 +49,7 @@ const inputGroupAddonVariants = cva(
 	},
 )
 
+/* oxlint-disable jsx-a11y/prefer-tag-over-role, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */
 function InputGroupAddon({
 	className,
 	align = 'inline-start',
@@ -58,16 +67,11 @@ function InputGroupAddon({
 				}
 				e.currentTarget.parentElement?.querySelector('input')?.focus()
 			}}
-			onKeyDown={(e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					e.preventDefault()
-					e.currentTarget.parentElement?.querySelector('input')?.focus()
-				}
-			}}
 			{...props}
 		/>
 	)
 }
+/* oxlint-enable jsx-a11y/prefer-tag-over-role, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */
 
 const inputGroupButtonVariants = cva(
 	'flex items-center gap-2 text-sm shadow-none',
