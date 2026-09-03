@@ -12,8 +12,8 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 ## Local URLs
 
 Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
-worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from root
-directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from
+root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
 
 ## Commands
 
