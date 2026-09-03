@@ -74,7 +74,7 @@ export function SearchBar({ className }: { className?: string }) {
 							placeholder={
 								isHydrated ? 'Search for any TV show...' : 'Loading search...'
 							}
-							className="h-full flex-1 py-0 text-sm placeholder:text-xs"
+							className="h-full flex-1 py-0 text-base placeholder:text-xs md:text-sm"
 							disabled={!isHydrated}
 							aria-busy={!isHydrated}
 							asChild={true}

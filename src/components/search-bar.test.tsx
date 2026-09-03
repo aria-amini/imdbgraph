@@ -57,6 +57,15 @@ function MockRouter({
 }
 
 describe('searchbar tests', () => {
+	test('uses a 16px input size on small screens to prevent Safari focus zoom', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		expect(searchBar).toHaveClass('text-base', 'md:text-sm')
+	})
+
 	test('basic search', async () => {
 		const screen = await render(<SearchBar />, {
 			wrapper: MockRouter,
