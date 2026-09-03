@@ -8,4 +8,5 @@ run = "exec vp dev"
 mise = true
 auto = ["start", "stop"]
 retry = 3
+boot_start = true
 ready_output = "Local:"
