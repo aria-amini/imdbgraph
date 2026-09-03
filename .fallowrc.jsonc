@@ -1,0 +1,32 @@
+{
+	"ignoreExports": [
+		{
+			"file": "src/components/ui/**",
+			"exports": ["*"],
+		},
+	],
+	// shadcn component library + its support files: reachable only from each
+	// other until an app route imports them
+	"ignorePatterns": [
+		"src/components/ui/**",
+		"src/hooks/use-mobile.ts",
+		"src/lib/utils/ui/**",
+	],
+	"ignoreDependencies": [
+		// only imported by the fallow-ignored shadcn ui components
+		"@radix-ui/react-dialog",
+		"@radix-ui/react-label",
+		"@radix-ui/react-popover",
+		"@radix-ui/react-radio-group",
+		"@radix-ui/react-separator",
+		"@radix-ui/react-slider",
+		"@radix-ui/react-slot",
+		"@radix-ui/react-tooltip",
+		"@remixicon/react",
+		"class-variance-authority",
+		"cmdk",
+		"radix-ui",
+		"clsx",
+		"tailwind-merge",
+	],
+}

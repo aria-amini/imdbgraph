@@ -6,18 +6,9 @@ allowBuilds:
   protobufjs: true
   ssh2: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.1
+  vitest: 4.1.9
+  vite-plus: 0.2.1
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
-  '@voidzero-dev/vite-plus-test': latest
-  '@voidzero-dev/vite-plus-core': latest
-peerDependencyRules:
-  allowAny:
-    - vite
-    - vitest
-  allowedVersions:
-    vite: '*'
-    vitest: '*'

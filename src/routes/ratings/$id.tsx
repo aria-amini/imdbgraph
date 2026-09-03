@@ -1,9 +1,10 @@
+import { createFileRoute, notFound } from '@tanstack/react-router'
+
 import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
-import { getRatings } from '@/lib/imdb/ratings'
+import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
 import { type Ratings } from '@/lib/imdb/types'
-import { createFileRoute, notFound } from '@tanstack/react-router'
 
 function hasRatings(ratings: Ratings): boolean {
 	for (const seasonRatings of Object.values(ratings.allEpisodeRatings)) {
@@ -19,12 +20,12 @@ function hasRatings(ratings: Ratings): boolean {
 export const Route = createFileRoute('/ratings/$id')({
 	component: Ratings,
 	loader: async ({ params }) => {
-		const showId = params.id
-		if (!showId) {
+		const showId = imdbIdSchema.safeParse(params.id)
+		if (!showId.success) {
 			throw notFound()
 		}
 
-		const ratings = await getRatings({ data: { showId } })
+		const ratings = await getRatings({ data: { showId: showId.data } })
 
 		if (!ratings) {
 			throw notFound()

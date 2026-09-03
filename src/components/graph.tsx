@@ -1,6 +1,14 @@
 'use client'
 
-import { type Episode, type Ratings } from '@/lib/imdb/types'
+import {
+	CartesianGrid,
+	Line,
+	LineChart,
+	type TooltipContentProps,
+	XAxis,
+	YAxis,
+} from 'recharts'
+
 import {
 	Card,
 	CardContent,
@@ -13,19 +21,8 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from '@/components/ui/chart'
-import {
-	CartesianGrid,
-	Line,
-	LineChart,
-	type TooltipContentProps,
-	XAxis,
-	YAxis,
-} from 'recharts'
-
-interface ChartDataPoint {
-	episodeIndex: number
-	[key: string]: number | Episode | null
-}
+import { transformRatingsData } from '@/lib/imdb/chart-data'
+import type { Episode, Ratings } from '@/lib/imdb/types'
 
 export function Graph({ ratings }: { ratings: Ratings }) {
 	const { show } = ratings
@@ -46,7 +43,6 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 		}
 	})
 
-	// min()
 	return (
 		<Card data-testid="ratings-graph" className="px-2 py-4 sm:px-4 lg:px-8">
 			<CardHeader className="text-center">
@@ -87,9 +83,9 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 						/>
 						<ChartTooltip content={CustomTooltip} />
 						{seasons.map((seasonNum) => (
-							<Line<ChartDataPoint, number>
+							<Line
 								key={seasonNum}
-								dataKey={`season${seasonNum}` as string}
+								dataKey={`season${seasonNum}`}
 								type="linear"
 								isAnimationActive={false}
 								stroke={
@@ -137,33 +133,4 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 			</CardContent>
 		</Card>
 	)
-}
-
-function transformRatingsData(ratings: Ratings): {
-	data: ChartDataPoint[]
-	seasons: number[]
-} {
-	let episodeIndex = 1
-	const data: ChartDataPoint[] = []
-	const seasons: number[] = []
-
-	for (const [seasonNumber, seasonRatings] of Object.entries(
-		ratings.allEpisodeRatings,
-	)) {
-		const seasonNum = Number.parseInt(seasonNumber, 10)
-		seasons.push(seasonNum)
-		for (const episode of Object.values(seasonRatings)) {
-			if (episode.numVotes === 0 || episode.episodeNum <= 0) {
-				continue
-			}
-			const dataPoint: ChartDataPoint = {
-				episodeIndex,
-			}
-			dataPoint[`season${seasonNum}`] = episode.rating
-			dataPoint[`episode${seasonNum}`] = episode
-			data.push(dataPoint)
-			episodeIndex++
-		}
-	}
-	return { data, seasons }
 }

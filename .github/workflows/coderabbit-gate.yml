@@ -1,0 +1,67 @@
+name: CodeRabbit Gate
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  coderabbit-gate:
+    if: >-
+      github.event_name == 'pull_request' || (
+        github.event.issue.pull_request &&
+        github.event.comment.user.login == 'coderabbitai[bot]'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify CodeRabbit review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER:
+            ${{ github.event.pull_request.number || github.event.issue.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -n "$PR_HEAD_SHA" ]; then
+            sha="$PR_HEAD_SHA"
+            gh api "repos/$REPOSITORY/statuses/$sha" \
+              -f state=pending \
+              -f context='CodeRabbit / verified' \
+              -f description='Waiting for CodeRabbit to review this commit.'
+            exit 0
+          fi
+
+          sha=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')
+          body=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate |
+            jq -r --arg sha "$sha" '
+              [
+                .[] |
+                select(.user.login == "coderabbitai[bot]") |
+                select(.body | contains($sha))
+              ] |
+              last |
+              .body // ""
+            ')
+
+          if [[ "$body" == *"review in progress"* ]]; then
+            state=pending
+            description='CodeRabbit is reviewing this commit.'
+          elif [ -n "$body" ]; then
+            state=success
+            description='CodeRabbit reviewed this commit.'
+          else
+            state=failure
+            description='CodeRabbit has not reviewed this commit.'
+          fi
+
+          gh api "repos/$REPOSITORY/statuses/$sha" \
+            -f state="$state" \
+            -f context='CodeRabbit / verified' \
+            -f description="$description"

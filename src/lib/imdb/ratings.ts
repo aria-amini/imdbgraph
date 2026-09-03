@@ -1,12 +1,16 @@
-import { createDb } from '@/db/connection'
-import { episode, show } from '@/db/tables'
-import type { Episode, Ratings } from '@/lib/imdb/types'
 import { createServerFn } from '@tanstack/react-start'
 import { asc, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import { z } from 'zod'
+
+import { createDb } from '@/db/connection'
+import { episode, show } from '@/db/tables'
+import type { Episode, Ratings } from '@/lib/imdb/types'
+
+export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
 export const getRatings = createServerFn()
-	.inputValidator((data: { showId: string }) => data)
+	.inputValidator(z.object({ showId: imdbIdSchema }))
 	.handler(async ({ data }) => {
 		const db = createDb()
 		return getRatingsDb(db, data.showId)
@@ -37,14 +41,11 @@ export async function getRatingsDb(
 		.where(eq(episode.showId, showId))
 		.orderBy(asc(episode.seasonNum), asc(episode.episodeNum))
 
-	// Group episodes by season and episode number (using string keys)
 	const groupedEpisodes: Record<number, Record<number, Episode>> = {}
 	for (const episodeInfo of episodes) {
 		const { seasonNum, episodeNum } = episodeInfo
 
-		// Create season entry if missing
 		groupedEpisodes[seasonNum] ??= {}
-		// Add episode to season
 		groupedEpisodes[seasonNum][episodeNum] = episodeInfo
 	}
 

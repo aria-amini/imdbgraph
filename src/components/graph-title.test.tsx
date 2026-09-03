@@ -1,7 +1,9 @@
 import { test } from '@config/test/browser'
 import { expect } from 'vite-plus/test'
-import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { render } from 'vitest-browser-react'
+
+import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
+
 import { Graph } from './graph'
 
 test('graph displays show title', async () => {

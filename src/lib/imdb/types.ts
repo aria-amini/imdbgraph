@@ -1,19 +1,12 @@
-export interface Show {
-	imdbId: string
-	title: string
-	startYear: string
-	endYear: string | null
-	rating: number
-	numVotes: number
-}
+import type { InferSelectModel } from 'drizzle-orm'
 
-export interface Episode {
-	title: string
-	seasonNum: number
-	episodeNum: number
-	rating: number
-	numVotes: number
-}
+import type { episode, show } from '@/db/tables'
+
+export type Show = InferSelectModel<typeof show>
+export type Episode = Pick<
+	InferSelectModel<typeof episode>,
+	'title' | 'seasonNum' | 'episodeNum' | 'rating' | 'numVotes'
+>
 
 export type RatingsData = Record<number, Record<number, Episode>>
 

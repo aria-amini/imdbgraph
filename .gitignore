@@ -1,27 +1,17 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# env files
 .env*.local
 .mise.local.toml
-
-# Build
-.turbo
-.vercel
+src/vite-env.d.ts
 .output
 .nitro
+.vite
 .tanstack
 node_modules
-
-# System Files
 .DS_Store
-Thumbs.db
-
-# Testing 
-test-results/
-playwright-report/
 .playwright
 .vitest-attachments
-html
-
+visual-diffs.html
+e2e/.auth
 .pnpm-store
-.worktrees
+.projects
+.fallow
+pitchfork.local.toml

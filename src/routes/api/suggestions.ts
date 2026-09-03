@@ -1,6 +1,7 @@
+import { createFileRoute } from '@tanstack/react-router'
+
 import { createDb } from '@/db/connection'
 import { fetchSuggestions } from '@/lib/imdb/search'
-import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/api/suggestions')({
 	server: {

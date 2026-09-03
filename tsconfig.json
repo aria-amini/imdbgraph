@@ -1,13 +1,33 @@
 {
-	"extends": "@aamini/config/tsconfig/tanstack",
 	"include": ["**/*.ts", "**/*.tsx"],
 	"exclude": [".output"],
 	"compilerOptions": {
+		"target": "ES2022",
+		"jsx": "react-jsx",
+		"module": "ESNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["vite-plus/client"],
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": false,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
 		"paths": {
-			"@config": ["./config/index.ts"],
 			"@config/*": ["./config/*"],
-			"@/*": ["./src/*"],
-			"@/mocks/*": ["./__mocks__/*"]
+			"@tests/*": ["./tests/*"],
+			"@/mocks/*": ["./__mocks__/*"],
+			"@/*": ["./src/*"]
 		}
 	}
 }

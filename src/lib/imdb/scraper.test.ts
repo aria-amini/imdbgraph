@@ -1,13 +1,15 @@
+import { createReadStream } from 'node:fs'
+import path from 'node:path'
+
+import { initDb } from '@config/test/db'
+import { describe, expect, vi } from 'vitest'
+
 import { scrapeRun } from '@/db/tables'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import { getRatingsDb } from '@/lib/imdb/ratings'
-import type { Ratings } from '@/lib/imdb/types'
 import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
 import { update } from '@/lib/imdb/scraper'
-import { test } from '@config/test/db'
-import { createReadStream } from 'node:fs'
-import path from 'node:path'
-import { describe, expect, vi } from 'vitest'
+import type { Ratings } from '@/lib/imdb/types'
 
 vi.mock(import('@/lib/imdb/file-downloader'))
 
@@ -69,6 +71,8 @@ const expectedGameOfThronesRatings: Ratings = {
 // =============================================================================
 // Tests
 // =============================================================================
+const test = initDb(() => {})
+
 describe('scraper tests', () => {
 	test('loading sample files into database', async ({ db }) => {
 		await db.delete(scrapeRun)

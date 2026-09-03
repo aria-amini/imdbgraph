@@ -5,53 +5,60 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# No real secrets on CI: varlock loads dummy values from .env.test.
+env:
+  APP_ENV: test
+
 jobs:
   check:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_STEP_SUMMARY: /tmp/vitest-check-summary.md
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
       - name: setup vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: '22'
+          version: '0.2.1'
           cache: true
       - run: vp check
       - run: vp test run --project unit
 
   test-db:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
       - name: setup vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: '22'
+          version: '0.2.1'
           cache: true
       - name: Run Tests
         run: vp test run --project server
 
   test-visual:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout
         uses: actions/checkout@v6
       - name: setup vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: '22'
+          version: '0.2.1'
           cache: true
       - name: Install Playwright Browsers
         run: vpx playwright install --with-deps --only-shell
       - name: Run Tests
         run: vp test run --project browser
+      - name: Upload screenshot diff report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-report
+          path: .vitest-attachments/
+          retention-days: 14

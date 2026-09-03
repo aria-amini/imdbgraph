@@ -1,5 +1,6 @@
-import suggestions from './data/suggestions.json' with { type: 'json' }
 import { http, HttpResponse } from 'msw'
+
+import suggestions from './data/suggestions.json' with { type: 'json' }
 
 export default [
 	http.get('/api/suggestions', () => {
