@@ -62,7 +62,9 @@ describe('searchbar tests', () => {
 			wrapper: MockRouter,
 		})
 
-		const searchBar = screen.getByRole('combobox')
+		const searchBar = screen.getByRole('combobox', {
+			name: 'Search TV shows',
+		})
 		expect(searchBar).toHaveClass('text-base', 'md:text-sm')
 	})
 

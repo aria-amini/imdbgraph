@@ -76,6 +76,7 @@ export function SearchBar({ className }: { className?: string }) {
 							}
 							className="h-full flex-1 py-0 text-base placeholder:text-xs md:text-sm"
 							disabled={!isHydrated}
+							aria-label="Search TV shows"
 							aria-busy={!isHydrated}
 							asChild={true}
 						>
