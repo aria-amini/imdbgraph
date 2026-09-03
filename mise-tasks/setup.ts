@@ -243,7 +243,16 @@ function proxyTld(): string {
 }
 
 function slugify(value: string): string {
-	return value.toLowerCase().replaceAll(/[^a-z0-9-]/g, '-')
+	const slug = value
+		.toLowerCase()
+		.replaceAll(/[^a-z0-9-]+/g, '-')
+		.replaceAll(/-+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	if (!slug) return 'workspace'
+	if (slug.length <= 63) return slug
+
+	const suffix = worktrunkHash(value).toString(36).padStart(8, '0').slice(0, 8)
+	return `${slug.slice(0, 63 - suffix.length - 1).replace(/-+$/, '')}-${suffix}`
 }
 
 // Registers a stable https://<slug>.<tld> URL for the project. Only the
