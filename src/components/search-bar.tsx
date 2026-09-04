@@ -84,9 +84,12 @@ export function SearchBar({ className }: { className?: string }) {
 			<Command className={cn('flex flex-col', className)} shouldFilter={false}>
 				<div className="relative">
 					<InputGroup
-						className={cn('border-input bg-input/10 transition-opacity', {
-							'cursor-progress opacity-70': !isHydrated,
-						})}
+						className={cn(
+							'h-11 border-input bg-input/10 transition-opacity md:h-8',
+							{
+								'cursor-progress opacity-70': !isHydrated,
+							},
+						)}
 					>
 						<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
 							<SearchIcon />

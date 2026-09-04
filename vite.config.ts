@@ -99,7 +99,14 @@ export default defineConfig({
 		'*': 'vp check --fix',
 	},
 	root,
-	server: { host: '0.0.0.0', port: Number(process.env.APP_PORT ?? 3000) },
+	server: {
+		host: '0.0.0.0',
+		port: Number(process.env.APP_PORT ?? 3000),
+		allowedHosts: (process.env.DEV_ALLOWED_HOSTS ?? '')
+			.split(',')
+			.map((host) => host.trim())
+			.filter(Boolean),
+	},
 	resolve: {
 		tsconfigPaths: true,
 		dedupe: ['react', 'react-dom'],

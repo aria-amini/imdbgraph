@@ -1,13 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
 import {
 	ClientOnly,
+	ErrorComponentProps,
 	HeadContent,
 	Outlet,
 	Scripts,
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import posthog from 'posthog-js'
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 
@@ -51,27 +52,67 @@ export const Route = createRootRouteWithContext<{
 		links: [{ rel: 'stylesheet', href: appCss }],
 	}),
 	component: RootComponent,
+	errorComponent: RootErrorComponent,
+	notFoundComponent: RootNotFoundComponent,
 })
 
-function RootComponent() {
-	const { latestScrapeRun } = Route.useLoaderData()
-
+function DocumentShell({ children }: { children: ReactNode }) {
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body className="dark flex min-h-dvh min-w-80 flex-col font-sans">
-				<div className="flex-1">
-					<Outlet />
-				</div>
-				<DataLastUpdated completedAt={latestScrapeRun} />
-				<ClientOnly fallback={null}>
-					<Analytics />
-				</ClientOnly>
+				{children}
 				<Scripts />
 			</body>
 		</html>
+	)
+}
+
+function RootErrorComponent({ error }: ErrorComponentProps) {
+	console.error(error)
+
+	return (
+		<DocumentShell>
+			<main className="text-destructive flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+				<h1 className="text-2xl font-bold">Something went wrong</h1>
+				<p className="text-muted-foreground text-sm">
+					{import.meta.env.DEV && error instanceof Error
+						? error.message
+						: 'Unexpected error'}
+				</p>
+			</main>
+		</DocumentShell>
+	)
+}
+
+function RootNotFoundComponent() {
+	return (
+		<DocumentShell>
+			<main className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+				<h1 className="text-2xl font-bold">Page not found</h1>
+				<p className="text-muted-foreground text-sm">
+					The page you are looking for does not exist.
+				</p>
+			</main>
+		</DocumentShell>
+	)
+}
+
+function RootComponent() {
+	const { latestScrapeRun } = Route.useLoaderData()
+
+	return (
+		<DocumentShell>
+			<div className="flex-1">
+				<Outlet />
+			</div>
+			<DataLastUpdated completedAt={latestScrapeRun} />
+			<ClientOnly fallback={null}>
+				<Analytics />
+			</ClientOnly>
+		</DocumentShell>
 	)
 }
 
