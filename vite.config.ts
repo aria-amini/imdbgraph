@@ -59,6 +59,15 @@ const lint = {
 	rules: {
 		'no-empty-pattern': 'off',
 		'no-console': ['error', { allow: ['warn', 'error'] }],
+		'eslint-js/no-restricted-syntax': [
+			'error',
+			{
+				selector:
+					'JSXAttribute[name.name="className"] > JSXExpressionContainer > TemplateLiteral',
+				message:
+					'Do not build className with template literals. Use cn() from "cn" instead.',
+			},
+		],
 	},
 	overrides: [
 		{

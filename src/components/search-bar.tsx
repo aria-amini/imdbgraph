@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Command } from 'cmdk'
+import { cn } from 'cn'
 import { Search as SearchIcon, Star } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -15,7 +16,6 @@ import {
 	type Suggestion,
 } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
-import { cn } from '@/lib/utils'
 
 /** https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/ */
 export function SearchBar({ className }: { className?: string }) {
@@ -100,7 +100,7 @@ export function SearchBar({ className }: { className?: string }) {
 							placeholder={
 								isHydrated ? 'Search for any TV show...' : 'Loading search...'
 							}
-							className="h-full flex-1 py-0 placeholder:text-xs"
+							className="h-full flex-1 py-0 text-base placeholder:text-xs md:text-base"
 							disabled={!isHydrated}
 							aria-label="Search TV shows"
 							aria-busy={!isHydrated || isFetching}

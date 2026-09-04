@@ -34,6 +34,7 @@
 		"dead-code": "fallow dead-code"
 	},
 	"dependencies": {
+		"@base-ui/react": "^1.8.0",
 		"@rolldown/plugin-babel": "^0.2.3",
 		"@tanstack/react-query": "5.101.0",
 		"@tanstack/react-router": "1.170.18",
@@ -42,19 +43,17 @@
 		"@tanstack/router-plugin": "1.168.18",
 		"@vitejs/plugin-react": "^6.0.2",
 		"class-variance-authority": "^0.7.1",
-		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",
+		"cn": "^0.2.5",
 		"drizzle-orm": "^0.45.1",
 		"lucide-react": "^1.16.0",
 		"nitro": "3.0.260610-beta",
 		"pg": "^8.22.0",
 		"pg-copy-streams": "^7.0.0",
 		"posthog-js": "^1.391.2",
-		"radix-ui": "^1.6.2",
 		"react": "^19.2.7",
 		"react-dom": "^19.2.7",
 		"recharts": "3.8.0",
-		"tailwind-merge": "^3.6.0",
 		"varlock": "^1.14.1",
 		"zod": "^4.4.3"
 	},
