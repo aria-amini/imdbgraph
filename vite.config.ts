@@ -151,6 +151,8 @@ export default defineConfig({
 					name: 'browser',
 					include: ['src/**/*.test.tsx', 'tests/**/*.test.tsx'],
 					setupFiles: ['./src/styles.css'],
+					fileParallelism: false,
+					testTimeout: 5_000,
 					browser: {
 						instances: [
 							{
@@ -166,6 +168,7 @@ export default defineConfig({
 						],
 						provider: playwright({
 							launchOptions: { args: ['--disable-lcd-text'] },
+							actionTimeout: 3_000,
 						}),
 						enabled: true,
 						headless: true,
