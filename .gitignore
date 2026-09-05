@@ -15,3 +15,5 @@ e2e/.auth
 .projects
 .fallow
 pitchfork.local.toml
+
+src/components/__screenshots__/
