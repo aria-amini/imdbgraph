@@ -10,7 +10,7 @@ import type { Episode, Ratings } from '@/lib/imdb/types'
 export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
 export const getRatings = createServerFn()
-	.inputValidator(z.object({ showId: imdbIdSchema }))
+	.validator(z.object({ showId: imdbIdSchema }))
 	.handler(async ({ data }) => {
 		const db = createDb()
 		return getRatingsDb(db, data.showId)
