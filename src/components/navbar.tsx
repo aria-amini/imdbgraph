@@ -15,7 +15,7 @@ export function Navbar({ center }: NavbarProps) {
 				className={buttonVariants({
 					variant: 'outline',
 					size: 'icon',
-					className: 'justify-self-start',
+					className: 'size-11 justify-self-start md:size-8',
 				})}
 			>
 				<Home />
