@@ -85,7 +85,7 @@ export function SearchBar({ className }: { className?: string }) {
 				<div className="relative">
 					<InputGroup
 						className={cn(
-							'h-8 border-input bg-input/10 shadow-none transition-opacity',
+							'h-11 border-input bg-input/10 shadow-none transition-opacity md:h-8',
 							{
 								'cursor-progress opacity-70': !isHydrated,
 							},
