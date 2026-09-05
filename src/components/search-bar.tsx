@@ -85,7 +85,7 @@ export function SearchBar({ className }: { className?: string }) {
 				<div className="relative">
 					<InputGroup
 						className={cn(
-							'h-11 border-input bg-input/10 transition-opacity md:h-8',
+							'h-8 border-input bg-input/10 shadow-none transition-opacity',
 							{
 								'cursor-progress opacity-70': !isHydrated,
 							},
@@ -100,7 +100,7 @@ export function SearchBar({ className }: { className?: string }) {
 							placeholder={
 								isHydrated ? 'Search for any TV show...' : 'Loading search...'
 							}
-							className="h-full flex-1 py-0 text-base placeholder:text-xs md:text-base"
+							className="h-full flex-1 py-0 placeholder:text-xs"
 							disabled={!isHydrated}
 							aria-label="Search TV shows"
 							aria-busy={!isHydrated || isFetching}

@@ -53,7 +53,7 @@ function MockRouter({
 }
 
 describe('searchbar tests', () => {
-	test('keeps a 16px input size to prevent Safari focus zoom', async () => {
+	test('keeps a 16px mobile input size to prevent Safari focus zoom', async () => {
 		await render(
 			<div className="mx-auto max-w-md px-4 py-3">
 				<SearchBar />
@@ -68,19 +68,23 @@ describe('searchbar tests', () => {
 			throw new Error('Search input not found')
 		}
 
-		const expectFontSizeAt = async (width: number, height: number) => {
+		const expectFontSizeAt = async (
+			width: number,
+			height: number,
+			expectedSize: string,
+		) => {
 			await page.viewport(width, height)
 			await expect
 				.poll(() => getComputedStyle(input).fontSize, { timeout: 5_000 })
-				.toBe('16px')
+				.toBe(expectedSize)
 		}
 
 		const originalWidth = window.innerWidth
 		const originalHeight = window.innerHeight
 		try {
-			await expectFontSizeAt(375, 667)
-			await expectFontSizeAt(768, 1024)
-			await expectFontSizeAt(1280, 720)
+			await expectFontSizeAt(375, 667, '16px')
+			await expectFontSizeAt(768, 1024, '14px')
+			await expectFontSizeAt(1280, 720, '14px')
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
 		}
