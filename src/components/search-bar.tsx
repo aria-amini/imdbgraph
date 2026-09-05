@@ -23,6 +23,7 @@ export function SearchBar({ className }: { className?: string }) {
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isFocused, setIsFocused] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
+	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
 
 	useEffect(() => {
@@ -38,6 +39,28 @@ export function SearchBar({ className }: { className?: string }) {
 				setIsFocused(false)
 			}
 		})
+	}
+
+	const selectShow = (showId: string) => {
+		const linkClick = linkClickRef.current
+		linkClickRef.current = null
+
+		if (linkClick === 'modified') return
+
+		setIsFocused(false)
+		setSearch('')
+		// The state reset alone desyncs from the DOM: Safari keeps focus on the
+		// input after a link click and cmdk never blurs after Enter, so the next
+		// keystroke fires no focus event and the results stay closed until a
+		// real blur. Blur here keeps focus state truthful.
+		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
+
+		if (linkClick !== 'plain') {
+			void router.navigate({
+				to: '/ratings/$id',
+				params: { id: showId },
+			})
+		}
 	}
 
 	const {
@@ -61,9 +84,12 @@ export function SearchBar({ className }: { className?: string }) {
 			<Command className={cn('flex flex-col', className)} shouldFilter={false}>
 				<div className="relative">
 					<InputGroup
-						className={cn('border-input bg-input/10 transition-opacity', {
-							'cursor-progress opacity-70': !isHydrated,
-						})}
+						className={cn(
+							'h-11 border-input bg-input/10 transition-opacity md:h-8',
+							{
+								'cursor-progress opacity-70': !isHydrated,
+							},
+						)}
 					>
 						<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
 							<SearchIcon />
@@ -74,16 +100,19 @@ export function SearchBar({ className }: { className?: string }) {
 							placeholder={
 								isHydrated ? 'Search for any TV show...' : 'Loading search...'
 							}
-							className="h-full flex-1 py-0 text-sm placeholder:text-xs"
+							className="h-full flex-1 py-0 text-base placeholder:text-xs md:text-sm"
 							disabled={!isHydrated}
-							aria-busy={!isHydrated}
+							aria-label="Search TV shows"
+							aria-busy={!isHydrated || isFetching}
 							asChild={true}
 						>
 							<InputGroupInput />
 						</Command.Input>
 
 						<InputGroupAddon align="inline-end">
-							{isFetching && <Spinner data-testid="loading-spinner" />}
+							{isFetching && (
+								<Spinner aria-hidden data-testid="loading-spinner" />
+							)}
 						</InputGroupAddon>
 					</InputGroup>
 
@@ -108,12 +137,7 @@ export function SearchBar({ className }: { className?: string }) {
 									key={show.imdbId}
 									value={show.imdbId}
 									asChild
-									onSelect={() => {
-										void router.navigate({
-											to: '/ratings/$id',
-											params: { id: show.imdbId },
-										})
-									}}
+									onSelect={() => selectShow(show.imdbId)}
 									className={cn(
 										'w-full cursor-pointer px-2 py-1.5 text-sm outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
 										{
@@ -124,6 +148,15 @@ export function SearchBar({ className }: { className?: string }) {
 									<Link
 										to="/ratings/$id"
 										params={{ id: show.imdbId }}
+										onClickCapture={(event) => {
+											linkClickRef.current =
+												event.metaKey ||
+												event.ctrlKey ||
+												event.shiftKey ||
+												event.altKey
+													? 'modified'
+													: 'plain'
+										}}
 										className="group aria-selected:bg-accent aria-selected:text-accent-foreground flex items-center gap-4"
 									>
 										<div className="flex flex-1 flex-col">

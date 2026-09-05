@@ -24,10 +24,6 @@ const testQueryClient = new QueryClient({
 	},
 })
 
-vi.mock(import('@/lib/react-query'), () => ({
-	queryClient: testQueryClient,
-}))
-
 beforeEach(() => {
 	testQueryClient.clear()
 })
@@ -57,6 +53,26 @@ function MockRouter({
 }
 
 describe('searchbar tests', () => {
+	test('uses a 16px input size on small screens to prevent Safari focus zoom', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox', {
+			name: 'Search TV shows',
+		})
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			await expect.element(searchBar).toHaveStyle({ fontSize: '16px' })
+			await page.viewport(1280, 720)
+			await expect.element(searchBar).toHaveStyle({ fontSize: '14px' })
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
+	})
+
 	test('basic search', async () => {
 		const screen = await render(<SearchBar />, {
 			wrapper: MockRouter,
@@ -118,6 +134,56 @@ describe('searchbar tests', () => {
 			params: { id: 'tt9018736' },
 			to: '/ratings/$id',
 		})
+		expect(searchBar).toHaveValue('')
+		expect(document.body.textContent).not.toContain(
+			'Avatar: The Last Airbender',
+		)
+	})
+
+	test('click navigates once and closes the results', async () => {
+		const router = createMockRouter()
+		const navigateSpy = vi.spyOn(router, 'navigate')
+		const screen = await render(<SearchBar />, {
+			wrapper: (props) => <MockRouter router={router} {...props} />,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		const result = screen
+			.getByRole('option', {
+				name: /Avatar: The Last Airbender/,
+			})
+			.first()
+		await expect.element(result).toBeVisible()
+		await userEvent.click(result)
+
+		expect(navigateSpy).toHaveBeenCalledOnce()
+		expect(searchBar).toHaveValue('')
+		expect(document.body.textContent).not.toContain(
+			'Avatar: The Last Airbender',
+		)
+	})
+
+	test('modified click opens in a new tab and keeps the results open', async () => {
+		const router = createMockRouter()
+		const navigateSpy = vi.spyOn(router, 'navigate')
+		const screen = await render(<SearchBar />, {
+			wrapper: (props) => <MockRouter router={router} {...props} />,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		const result = screen
+			.getByRole('option', {
+				name: /Avatar: The Last Airbender/,
+			})
+			.first()
+		await expect.element(result).toBeVisible()
+		await userEvent.click(result, { modifiers: ['Control'] })
+
+		expect(navigateSpy).not.toHaveBeenCalled()
+		expect(searchBar).toHaveValue('avatar')
+		await expect.element(result).toBeVisible()
 	})
 
 	test('no results', async ({ worker }) => {
