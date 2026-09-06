@@ -18,10 +18,17 @@ import {
 import { formatYears } from '@/lib/imdb/types'
 
 /** Renders the title search input and its suggestion list. */
-export function SearchBar({ className }: { className?: string }) {
+export function SearchBar({
+	className,
+	fullWidthDropdown = false,
+}: {
+	className?: string
+	fullWidthDropdown?: boolean
+}) {
 	const [search, setSearch] = useState('')
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isFocused, setIsFocused] = useState(false)
+	const hasNavigatedSuggestionsRef = useRef(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
@@ -63,6 +70,19 @@ export function SearchBar({ className }: { className?: string }) {
 		}
 	}
 
+	const openSearchPage = () => {
+		const query = search.trim()
+		if (!query) return
+
+		setIsFocused(false)
+		setSearch('')
+		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
+		void router.navigate({
+			to: '/search/$query',
+			params: { query },
+		})
+	}
+
 	const {
 		isFetching,
 		data: searchResults,
@@ -81,7 +101,10 @@ export function SearchBar({ className }: { className?: string }) {
 			onFocus={() => setIsFocused(true)}
 			onBlur={handleBlur}
 		>
-			<Command className={cn('flex flex-col', className)} shouldFilter={false}>
+			<Command
+				className={cn('flex w-full flex-col', className)}
+				shouldFilter={false}
+			>
 				<div className="relative">
 					<InputGroup
 						className={cn(
@@ -96,7 +119,22 @@ export function SearchBar({ className }: { className?: string }) {
 						</InputGroupAddon>
 						<Command.Input
 							value={search}
-							onValueChange={setSearch}
+							onValueChange={(value) => {
+								hasNavigatedSuggestionsRef.current = false
+								setSearch(value)
+							}}
+							onKeyDown={(event) => {
+								if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+									hasNavigatedSuggestionsRef.current = true
+								}
+								if (
+									event.key === 'Enter' &&
+									!hasNavigatedSuggestionsRef.current
+								) {
+									event.preventDefault()
+									openSearchPage()
+								}
+							}}
 							placeholder={
 								isHydrated ? 'Search for any TV show...' : 'Loading search...'
 							}
@@ -126,11 +164,22 @@ export function SearchBar({ className }: { className?: string }) {
 					)}
 
 					{isFocused && search && !error && searchResults && (
-						<Command.List className="bg-popover absolute top-full right-0 left-0 z-50 mt-2 border p-2 shadow-md">
+						<Command.List
+							className={cn(
+								'bg-popover z-50 w-full border p-2 shadow-md',
+								fullWidthDropdown
+									? 'fixed inset-x-0 top-[4.25rem] md:top-14'
+									: 'absolute top-full right-0 left-0 mt-2',
+							)}
+						>
 							{searchResults.length === 0 && !isFetching && (
-								<Command.Empty className="text-muted-foreground px-2 py-1.5 text-center">
+								<div
+									className={cn(
+										'text-muted-foreground px-2 py-1.5 text-center',
+									)}
+								>
 									No TV Shows Found.
-								</Command.Empty>
+								</div>
 							)}
 							{searchResults.map((show: Suggestion) => (
 								<Command.Item
@@ -174,6 +223,15 @@ export function SearchBar({ className }: { className?: string }) {
 									</Link>
 								</Command.Item>
 							))}
+							<Link
+								to="/search/$query"
+								params={{ query: search.trim() }}
+								className={cn(
+									'block border-t border-border px-2 py-1.5 text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
+								)}
+							>
+								Search all results for “{search.trim()}”
+							</Link>
 						</Command.List>
 					)}
 				</div>

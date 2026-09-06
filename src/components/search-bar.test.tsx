@@ -91,7 +91,7 @@ describe('searchbar tests', () => {
 	})
 
 	test('basic search', async () => {
-		const screen = await render(<SearchBar />, {
+		const screen = await render(<SearchBar fullWidthDropdown />, {
 			wrapper: MockRouter,
 		})
 
@@ -155,6 +155,43 @@ describe('searchbar tests', () => {
 		expect(document.body.textContent).not.toContain(
 			'Avatar: The Last Airbender',
 		)
+	})
+
+	test('Enter opens full search results without selecting a suggestion', async () => {
+		const router = createMockRouter()
+		const navigateSpy = vi.spyOn(router, 'navigate')
+		const screen = await render(<SearchBar />, {
+			wrapper: (props) => <MockRouter router={router} {...props} />,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'sopranos')
+		await expect
+			.element(screen.getByText(/Search all results for “sopranos”/i))
+			.toBeVisible()
+		await userEvent.keyboard('{Enter}')
+
+		expect(navigateSpy).toHaveBeenCalledWith({
+			params: { query: 'sopranos' },
+			to: '/search/$query',
+		})
+	})
+
+	test('search menu is full width', async () => {
+		const screen = await render(<SearchBar fullWidthDropdown />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+		const command = document.querySelector('[cmdk-root]')
+		const list = document.querySelector('[cmdk-list]')
+		expect(command?.className).toContain('w-full')
+		expect(list?.className).toContain('w-full')
+		expect(list?.className).toContain('fixed')
 	})
 
 	test('click navigates once and closes the results', async () => {

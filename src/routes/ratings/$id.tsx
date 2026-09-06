@@ -40,7 +40,7 @@ function Ratings() {
 
 	return (
 		<>
-			<Navbar center={<SearchBar className="w-full" />} />
+			<Navbar center={<SearchBar className="w-full" fullWidthDropdown />} />
 			<main className="px-2 py-3 sm:px-4 lg:px-8">
 				{!hasRatings(ratings) ? (
 					<h1 className="pt-8 text-center text-6xl leading-tight">
