@@ -12,8 +12,8 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 ## Local URLs
 
 Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
-worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from
-root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from root
+directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
 
 ## Commands
 
@@ -35,9 +35,10 @@ values resolve through Varlock; do not commit generated or local secret files.
 
 ### Always build `className` with `cn()`
 
-Compose conditional or combined classes with `cn()` from `cn`. Never interpolate
-classes with template literals or string concatenation — an oxlint
-`no-restricted-syntax` rule rejects template literals in `className`.
+Compose conditional or combined classes with `cn()` from `@/lib/utils` (exported
+from `src/lib/utils.ts`). Never interpolate classes with template literals or
+string concatenation — an oxlint `no-restricted-syntax` rule rejects template
+literals in `className`.
 
 Bad:
 
