@@ -12,6 +12,8 @@ const ratings: Ratings = {
 		title: 'Test Show',
 		startYear: '2020',
 		endYear: null,
+		genres: null,
+		runtimeMinutes: null,
 		rating: 8,
 		numVotes: 100,
 	},

@@ -8,10 +8,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, vi } from 'vitest'
 import { show, thumbnail } from '@/db/tables'
 import { createStorage, type Storage } from '@/lib/images/s3'
 import { getShowImageDb } from '@/lib/images/thumbnail.server'
-import { fetchShowImage } from '@/lib/images/tvmaze'
+import { fetchShowEnrichment } from '@/lib/images/tvmaze'
 
 vi.mock('@/lib/images/tvmaze', () => ({
-	fetchShowImage: vi.fn(),
+	fetchShowEnrichment: vi.fn(),
 }))
 
 const PNG_BYTES = Buffer.from(
@@ -73,7 +73,7 @@ beforeAll(async () => {
 afterEach(() => {
 	imageBytes = undefined
 	counts.download = 0
-	vi.mocked(fetchShowImage).mockReset()
+	vi.mocked(fetchShowEnrichment).mockReset()
 })
 
 afterAll(async () => {
@@ -92,10 +92,12 @@ const test = initDb(async (db) => {
 
 describe('thumbnail pipeline', () => {
 	test('fetches and stores an image on first view', async ({ db }) => {
-		vi.mocked(fetchShowImage).mockResolvedValue({
+		vi.mocked(fetchShowEnrichment).mockResolvedValue({
 			url: imageServerUrl,
-			width: null,
-			height: null,
+			status: 'Ended',
+			network: 'HBO',
+			airsDays: ['Monday'],
+			airsTime: '21:00',
 		})
 		imageBytes = PNG_BYTES
 
@@ -103,10 +105,12 @@ describe('thumbnail pipeline', () => {
 
 		expect(result).toEqual({
 			url: `/api/thumbnails/${FETCHED_ID}`,
-			width: null,
-			height: null,
+			status: 'Ended',
+			network: 'HBO',
+			airsDays: ['Monday'],
+			airsTime: '21:00',
 		})
-		expect(fetchShowImage).toHaveBeenCalledTimes(1)
+		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 
 		const [row] = await db
 			.select()
@@ -114,18 +118,22 @@ describe('thumbnail pipeline', () => {
 			.where(eq(thumbnail.imdbId, FETCHED_ID))
 		expect(row?.objectKey).toBe(`thumbnails/${FETCHED_ID}.png`)
 		expect(row?.contentType).toBe('image/png')
+		expect(row?.status).toBe('Ended')
+		expect(row?.network).toBe('HBO')
+		expect(row?.airsDays).toEqual(['Monday'])
+		expect(row?.airsTime).toBe('21:00')
 
 		const stored = await storage.get(row!.objectKey!)
 		expect(Buffer.from(stored!.data).equals(PNG_BYTES)).toBe(true)
 		expect(stored?.contentType).toBe('image/png')
 
 		await getShowImageDb(db, FETCHED_ID, storage)
-		expect(fetchShowImage).toHaveBeenCalledTimes(1)
+		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 		expect(counts.download).toBe(1)
 	})
 
 	test('caches a known-missing image', async ({ db }) => {
-		vi.mocked(fetchShowImage).mockResolvedValue(null)
+		vi.mocked(fetchShowEnrichment).mockResolvedValue(null)
 
 		const result = await getShowImageDb(db, MISSING_ID, storage)
 		expect(result).toBeNull()
@@ -137,14 +145,16 @@ describe('thumbnail pipeline', () => {
 		expect(row?.objectKey).toBeNull()
 
 		await getShowImageDb(db, MISSING_ID, storage)
-		expect(fetchShowImage).toHaveBeenCalledTimes(1)
+		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 	})
 
 	test('transient failures leave no row and back off', async ({ db }) => {
-		vi.mocked(fetchShowImage).mockResolvedValue({
+		vi.mocked(fetchShowEnrichment).mockResolvedValue({
 			url: imageServerUrl,
-			width: null,
-			height: null,
+			status: 'Ended',
+			network: 'HBO',
+			airsDays: ['Monday'],
+			airsTime: '21:00',
 		})
 
 		await expect(getShowImageDb(db, FAILING_ID, storage)).rejects.toThrow(
@@ -158,14 +168,16 @@ describe('thumbnail pipeline', () => {
 		expect(rows).toHaveLength(0)
 
 		await getShowImageDb(db, FAILING_ID, storage)
-		expect(fetchShowImage).toHaveBeenCalledTimes(1)
+		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 	})
 
 	test('concurrent views of one show fetch once', async ({ db }) => {
-		vi.mocked(fetchShowImage).mockResolvedValue({
+		vi.mocked(fetchShowEnrichment).mockResolvedValue({
 			url: imageServerUrl,
-			width: null,
-			height: null,
+			status: 'Ended',
+			network: 'HBO',
+			airsDays: ['Monday'],
+			airsTime: '21:00',
 		})
 		imageBytes = PNG_BYTES
 
@@ -177,16 +189,20 @@ describe('thumbnail pipeline', () => {
 		expect(results).toEqual([
 			{
 				url: `/api/thumbnails/${CONCURRENT_ID}`,
-				width: null,
-				height: null,
+				status: 'Ended',
+				network: 'HBO',
+				airsDays: ['Monday'],
+				airsTime: '21:00',
 			},
 			{
 				url: `/api/thumbnails/${CONCURRENT_ID}`,
-				width: null,
-				height: null,
+				status: 'Ended',
+				network: 'HBO',
+				airsDays: ['Monday'],
+				airsTime: '21:00',
 			},
 		])
-		expect(fetchShowImage).toHaveBeenCalledTimes(1)
+		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 		expect(counts.download).toBe(1)
 	})
 })

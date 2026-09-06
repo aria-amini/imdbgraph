@@ -16,7 +16,10 @@ export interface Ratings {
 }
 
 /** Formats a show's start and end years for display. */
-export function formatYears(show: Show): string {
+export function formatYears(show: {
+	startYear: string
+	endYear: string | null
+}): string {
 	const endDate = show.endYear ?? 'Present'
 	return `${show.startYear} - ${endDate}`
 }

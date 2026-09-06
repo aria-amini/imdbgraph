@@ -532,9 +532,11 @@ export const gameOfThronesRatings: Ratings = {
 	},
 	show: {
 		endYear: '2019',
+		genres: ['Adventure', 'Drama', 'Fantasy'],
 		imdbId: 'tt0944947',
 		numVotes: 2616222,
 		rating: 9.2,
+		runtimeMinutes: 57,
 		startYear: '2011',
 		title: 'Game of Thrones',
 	},

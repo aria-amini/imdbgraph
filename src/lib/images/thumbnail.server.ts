@@ -5,12 +5,14 @@ import type { Pool, PoolClient } from 'pg'
 import { thumbnail } from '@/db/tables'
 import { getStorage, type Storage } from '@/lib/images/s3'
 import type { ShowImage } from '@/lib/images/thumbnail'
-import { fetchShowImage } from '@/lib/images/tvmaze'
+import { fetchShowEnrichment } from '@/lib/images/tvmaze'
 
 interface ThumbnailRecord {
 	objectKey: string | null
-	width: number | null
-	height: number | null
+	status: string | null
+	network: string | null
+	airsDays: string[] | null
+	airsTime: string | null
 }
 
 const DOWNLOAD_TIMEOUT_MS = 10_000
@@ -22,7 +24,7 @@ const EXTENSIONS: Record<string, string> = {
 	'image/webp': 'webp',
 }
 
-/** Returns the image for a show, fetching and storing it on first view. */
+/** Returns the image and airing metadata for a show, fetching on first view. */
 export async function getShowImageDb(
 	db: NodePgDatabase & { $client: Pool },
 	imdbId: string,
@@ -50,8 +52,10 @@ async function loadThumbnail(
 	const [row] = await db
 		.select({
 			objectKey: thumbnail.objectKey,
-			width: thumbnail.width,
-			height: thumbnail.height,
+			status: thumbnail.status,
+			network: thumbnail.network,
+			airsDays: thumbnail.airsDays,
+			airsTime: thumbnail.airsTime,
 		})
 		.from(thumbnail)
 		.where(eq(thumbnail.imdbId, imdbId))
@@ -71,7 +75,9 @@ async function fetchAndStore(
 		await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [imdbId])
 
 		const { rows } = await client.query<ThumbnailRecord>(
-			'SELECT object_key AS "objectKey", width, height FROM thumbnail WHERE imdb_id = $1',
+			`SELECT object_key AS "objectKey", status, network,
+			        airs_days AS "airsDays", airs_time AS "airsTime"
+			 FROM thumbnail WHERE imdb_id = $1`,
 			[imdbId],
 		)
 		const raced = rows[0]
@@ -80,31 +86,42 @@ async function fetchAndStore(
 			return toShowImage(imdbId, raced)
 		}
 
-		const image = await fetchShowImage(imdbId)
-		if (!image) {
+		const enrichment = await fetchShowEnrichment(imdbId)
+		if (!enrichment) {
 			// Definitively missing upstream; remember it so later views skip the API.
-			await insertThumbnail(client, imdbId, null, null, null, null)
+			await insertThumbnail(client, {
+				imdbId,
+				objectKey: null,
+				contentType: null,
+				status: null,
+				network: null,
+				airsDays: null,
+				airsTime: null,
+			})
 			await client.query('COMMIT')
 			return null
 		}
 
-		const downloaded = await downloadImage(image.url)
+		const downloaded = await downloadImage(enrichment.url)
 		const objectKey = `thumbnails/${imdbId}.${downloaded.extension}`
 		await storage.put(objectKey, downloaded.body, downloaded.contentType)
-		await insertThumbnail(
-			client,
+		await insertThumbnail(client, {
 			imdbId,
 			objectKey,
-			downloaded.contentType,
-			image.width,
-			image.height,
-		)
+			contentType: downloaded.contentType,
+			status: enrichment.status,
+			network: enrichment.network,
+			airsDays: enrichment.airsDays.length > 0 ? enrichment.airsDays : null,
+			airsTime: enrichment.airsTime,
+		})
 		await client.query('COMMIT')
 
 		return toShowImage(imdbId, {
 			objectKey,
-			width: image.width,
-			height: image.height,
+			status: enrichment.status,
+			network: enrichment.network,
+			airsDays: enrichment.airsDays.length > 0 ? enrichment.airsDays : null,
+			airsTime: enrichment.airsTime,
 		})
 	} catch (error) {
 		noteFailure(imdbId)
@@ -121,19 +138,34 @@ async function fetchAndStore(
 	}
 }
 
+interface NewThumbnail {
+	imdbId: string
+	objectKey: string | null
+	contentType: string | null
+	status: string | null
+	network: string | null
+	airsDays: string[] | null
+	airsTime: string | null
+}
+
 async function insertThumbnail(
 	client: PoolClient,
-	imdbId: string,
-	objectKey: string | null,
-	contentType: string | null,
-	width: number | null,
-	height: number | null,
+	thumbnailData: NewThumbnail,
 ): Promise<void> {
 	await client.query(
-		`INSERT INTO thumbnail (imdb_id, object_key, content_type, width, height)
-		 VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO thumbnail
+			(imdb_id, object_key, content_type, status, network, airs_days, airs_time)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 ON CONFLICT (imdb_id) DO NOTHING`,
-		[imdbId, objectKey, contentType, width, height],
+		[
+			thumbnailData.imdbId,
+			thumbnailData.objectKey,
+			thumbnailData.contentType,
+			thumbnailData.status,
+			thumbnailData.network,
+			thumbnailData.airsDays,
+			thumbnailData.airsTime,
+		],
 	)
 }
 
@@ -188,8 +220,10 @@ function toShowImage(
 	}
 	return {
 		url: `/api/thumbnails/${imdbId}`,
-		width: record.width,
-		height: record.height,
+		status: record.status,
+		network: record.network,
+		airsDays: record.airsDays ?? [],
+		airsTime: record.airsTime,
 	}
 }
 

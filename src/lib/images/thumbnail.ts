@@ -6,8 +6,10 @@ import { imdbIdSchema } from '@/lib/imdb/ratings'
 
 export interface ShowImage {
 	url: string
-	width: number | null
-	height: number | null
+	status: string | null
+	network: string | null
+	airsDays: string[]
+	airsTime: string | null
 }
 
 /** Loads a show's image through the server-function boundary. */

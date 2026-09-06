@@ -1,28 +1,7 @@
 import { cn } from 'cn'
 
+import { ratingColor } from '@/lib/imdb/rating-color'
 import type { Episode, Ratings } from '@/lib/imdb/types'
-
-function ratingColor(rating: number): string {
-	const stops = [
-		{ rating: 0, hue: 0 },
-		{ rating: 6, hue: 8 },
-		{ rating: 7, hue: 42 },
-		{ rating: 8, hue: 82 },
-		{ rating: 9, hue: 112 },
-		{ rating: 10, hue: 132 },
-	]
-	const clampedRating = Math.max(0, Math.min(10, rating))
-	const upperStop =
-		stops.find((stop) => stop.rating >= clampedRating) ?? stops.at(-1)!
-	const lowerStop = stops[stops.indexOf(upperStop) - 1] ?? upperStop
-	const progress =
-		(clampedRating - lowerStop.rating) /
-		(upperStop.rating - lowerStop.rating || 1)
-	const hue = Math.round(
-		lowerStop.hue + (upperStop.hue - lowerStop.hue) * progress,
-	)
-	return `hsl(${hue} 72% 46%)`
-}
 
 function episodeLabel(episode: Episode): string {
 	return `Season ${episode.seasonNum}, episode ${episode.episodeNum}: ${episode.title}. Rating ${episode.rating.toFixed(1)} out of 10.`
@@ -44,25 +23,6 @@ export function Block({ ratings }: { ratings: Ratings }) {
 			data-testid="ratings-block"
 			className={cn('mx-auto max-w-7xl border border-border bg-card/35')}
 		>
-			<header
-				className={cn(
-					'flex items-baseline justify-between gap-4 border-b border-border px-4 py-5 sm:px-6 lg:px-8',
-				)}
-			>
-				<h1
-					className={cn(
-						'min-w-0 truncate text-2xl font-black tracking-tight sm:text-4xl',
-					)}
-				>
-					{ratings.show.title}
-				</h1>
-				<span
-					className={cn('shrink-0 font-mono text-xs text-muted-foreground')}
-				>
-					{ratings.show.rating.toFixed(1)} / 10
-				</span>
-			</header>
-
 			<div className={cn('overflow-x-auto')}>
 				<div
 					className={cn(

@@ -21,6 +21,35 @@ import { formatYears } from '@/lib/imdb/types'
 
 const NO_SUGGESTION_SELECTED = '__no_suggestion_selected__'
 
+function SuggestionPoster({
+	imdbId,
+	title,
+}: {
+	imdbId: string
+	title: string
+}) {
+	const [failed, setFailed] = useState(false)
+	return (
+		<span
+			aria-hidden
+			className="border-border bg-muted relative block h-12 w-8 shrink-0 overflow-hidden border"
+		>
+			<span className="text-muted-foreground absolute inset-0 flex items-center justify-center font-mono text-sm font-black">
+				{title.charAt(0).toUpperCase()}
+			</span>
+			{!failed && (
+				<img
+					src={`/api/thumbnails/${imdbId}`}
+					alt=""
+					loading="lazy"
+					onError={() => setFailed(true)}
+					className="absolute inset-0 size-full object-cover"
+				/>
+			)}
+		</span>
+	)
+}
+
 // Placeholder until a real top-rated query backs it.
 const DEFAULT_SUGGESTIONS: Suggestion[] = [
 	{
@@ -406,6 +435,7 @@ export function SearchBar({
 										}}
 										className="group aria-selected:bg-accent aria-selected:text-accent-foreground flex items-center gap-4"
 									>
+										<SuggestionPoster imdbId={show.imdbId} title={show.title} />
 										<div className="flex flex-1 flex-col">
 											<span className="wrap-break-word">
 												{show.title}&nbsp;

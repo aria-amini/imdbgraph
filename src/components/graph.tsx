@@ -35,7 +35,6 @@ const episodeSchema: z.ZodType<Episode> = z.object({
 
 /** Renders episode ratings as a season-by-season line chart. */
 export function Graph({ ratings }: { ratings: Ratings }) {
-	const { show } = ratings
 	const { data: chartData, seasons } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
 	const chartColors = [
@@ -55,15 +54,6 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 
 	return (
 		<Card data-testid="ratings-graph" className="px-2 py-4 sm:px-4 lg:px-8">
-			<CardHeader className="text-center">
-				<h1 className="text-xl leading-none font-extrabold tracking-tight text-balance">
-					{show.title}
-				</h1>
-				<span className="text-muted-foreground text-sm">
-					Rating: {show.rating.toFixed(1)} / 10.0 (
-					{show.numVotes.toLocaleString()} votes)
-				</span>
-			</CardHeader>
 			<CardContent className="px-0">
 				<ChartContainer
 					config={chartConfig}

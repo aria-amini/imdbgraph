@@ -10,23 +10,38 @@ const imageSchema = z.object({
 
 const showLookupSchema = z.object({
 	image: imageSchema.nullish(),
+	status: z.string().nullish(),
+	network: z.object({ name: z.string() }).nullish(),
+	webChannel: z.object({ name: z.string() }).nullish(),
+	schedule: z
+		.object({
+			time: z.string().nullish(),
+			days: z.array(z.string()).nullish(),
+		})
+		.nullish(),
 })
 
-export interface RemoteImage {
+/**
+ * Poster and airing metadata for one show. TVMaze's API response carries no
+ * image dimensions, so width and height stay unknown until render.
+ */
+export interface ShowEnrichment {
 	url: string
-	width: number | null
-	height: number | null
+	status: string | null
+	network: string | null
+	airsDays: string[]
+	airsTime: string | null
 }
 
 /**
- * Resolves an IMDb title to its primary poster via TVMaze's IMDb lookup.
- * Returns null when TVMaze definitively has no show or image for the ID;
- * throws on transient failures so callers can retry without caching a wrong
- * result. TVMaze data is CC BY-SA; the UI must credit TVmaze.
+ * Resolves an IMDb title to its primary poster and airing metadata via
+ * TVMaze's IMDb lookup. Returns null when TVMaze definitively has no show or
+ * image for the ID; throws on transient failures so callers can retry without
+ * caching a wrong result. TVMaze data is CC BY-SA; the UI must credit TVmaze.
  */
-export async function fetchShowImage(
+export async function fetchShowEnrichment(
 	imdbId: string,
-): Promise<RemoteImage | null> {
+): Promise<ShowEnrichment | null> {
 	const response = await fetch(`${API_BASE_URL}/lookup/shows?imdb=${imdbId}`, {
 		headers: { accept: 'application/json' },
 		signal: AbortSignal.timeout(METADATA_TIMEOUT_MS),
@@ -46,5 +61,12 @@ export async function fetchShowImage(
 	if (!url) {
 		return null
 	}
-	return { url, width: null, height: null }
+	const time = parsed.data.schedule?.time?.trim()
+	return {
+		url,
+		status: parsed.data.status ?? null,
+		network: parsed.data.network?.name ?? parsed.data.webChannel?.name ?? null,
+		airsDays: parsed.data.schedule?.days ?? [],
+		airsTime: time ? time : null,
+	}
 }
