@@ -1,13 +1,19 @@
+import { cn } from 'cn'
 import { Home } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
+/** Renders the application home-navigation button. */
 export function HomeButton({ className }: { className?: string }) {
 	return (
-		<Button className={className} variant="default" size="icon" asChild={true}>
-			<a href="/">
-				<Home />
-			</a>
-		</Button>
+		<a
+			href="/"
+			className={cn(
+				buttonVariants({ variant: 'default', size: 'icon' }),
+				className,
+			)}
+		>
+			<Home />
+		</a>
 	)
 }

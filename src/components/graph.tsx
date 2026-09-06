@@ -24,6 +24,7 @@ import {
 import { transformRatingsData } from '@/lib/imdb/chart-data'
 import type { Episode, Ratings } from '@/lib/imdb/types'
 
+/** Renders episode ratings as a season-by-season line chart. */
 export function Graph({ ratings }: { ratings: Ratings }) {
 	const { show } = ratings
 	const { data: chartData, seasons } = transformRatingsData(ratings)

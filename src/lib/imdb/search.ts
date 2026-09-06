@@ -3,6 +3,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { show } from '@/db/tables'
 
+/** Finds up to five shows matching a fuzzy title query. */
 export async function fetchSuggestions(db: NodePgDatabase, q: string) {
 	if (!q) {
 		throw new Error('Empty search parameter (q)')

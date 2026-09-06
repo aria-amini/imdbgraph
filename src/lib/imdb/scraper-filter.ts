@@ -1,5 +1,6 @@
 const showTypes = new Set(['tvSeries', 'tvShort', 'tvSpecial', 'tvMiniSeries'])
 
+/** Parses an IMDb ratings TSV row. */
 export function parseRatingsLine(line: string): {
 	imdbId: string | undefined
 	numVotes: number
@@ -8,6 +9,7 @@ export function parseRatingsLine(line: string): {
 	return { imdbId, numVotes: Number(numVotesRaw) }
 }
 
+/** Parses an IMDb episode TSV row. */
 export function parseEpisodeLine(line: string): {
 	episodeId: string | undefined
 	showId: string | undefined
@@ -16,6 +18,7 @@ export function parseEpisodeLine(line: string): {
 	return { episodeId, showId }
 }
 
+/** Returns whether an IMDb title row should be copied into the database. */
 export function shouldCopyTitle(
 	line: string,
 	ratedIds: ReadonlySet<string>,

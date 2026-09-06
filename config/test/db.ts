@@ -47,6 +47,7 @@ function createDbTest(seed: Seed) {
 	})
 }
 
+/** Creates a database-backed Vitest fixture seeded for each test file. */
 export function initDb(seed: Seed) {
 	return createDbTest(seed)
 }

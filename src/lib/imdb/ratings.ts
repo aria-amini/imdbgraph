@@ -9,6 +9,7 @@ import type { Episode, Ratings } from '@/lib/imdb/types'
 
 export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
+/** Loads ratings for a show through the server-function boundary. */
 export const getRatings = createServerFn()
 	.validator(z.object({ showId: imdbIdSchema }))
 	.handler(async ({ data }) => {
@@ -16,6 +17,7 @@ export const getRatings = createServerFn()
 		return getRatingsDb(db, data.showId)
 	})
 
+/** Loads a show's metadata and episodes, grouped by season. */
 export async function getRatingsDb(
 	db: NodePgDatabase,
 	showId: string,

@@ -35,10 +35,9 @@ values resolve through Varlock; do not commit generated or local secret files.
 
 ### Always build `className` with `cn()`
 
-Compose conditional or combined classes with `cn()` from `@/lib/utils` (exported
-from `src/lib/utils.ts`). Never interpolate classes with template literals or
-string concatenation — an oxlint `no-restricted-syntax` rule rejects template
-literals in `className`.
+Compose conditional or combined classes with `cn()` from `cn`. Never interpolate
+classes with template literals or string concatenation — an oxlint
+`no-restricted-syntax` rule rejects template literals in `className`.
 
 Bad:
 
