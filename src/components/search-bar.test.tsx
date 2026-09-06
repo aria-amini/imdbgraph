@@ -90,6 +90,37 @@ describe('searchbar tests', () => {
 		}
 	})
 
+	test('opens a keyboard-docked mobile search overlay', async () => {
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			const screen = await render(<SearchBar mobileSearchOverlay />, {
+				wrapper: MockRouter,
+			})
+
+			await userEvent.click(screen.getByRole('combobox'))
+			await userEvent.fill(screen.getByRole('combobox'), 'avatar')
+			await expect
+				.element(screen.getByText(/Avatar: The Last Airbender/).first())
+				.toBeVisible()
+			await expect
+				.element(page.getByRole('button', { name: 'Close search' }))
+				.toBeVisible()
+			expect(document.querySelector('[cmdk-root]')?.className).toContain(
+				'max-md:fixed',
+			)
+			expect(document.querySelector('[cmdk-root]')?.className).toContain(
+				'max-md:inset-0',
+			)
+			expect(document.querySelector('[cmdk-list]')?.className).toContain(
+				'max-md:static',
+			)
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
+	})
+
 	test('basic search', async () => {
 		const screen = await render(<SearchBar fullWidthDropdown />, {
 			wrapper: MockRouter,

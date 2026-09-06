@@ -21,7 +21,7 @@ function Home() {
 							Episode ratings for every TV series.
 						</p>
 
-						<SearchBar className="mx-auto mt-10 max-w-xl" />
+						<SearchBar className="mx-auto mt-10 max-w-xl" mobileSearchOverlay />
 					</div>
 				</section>
 			</main>
