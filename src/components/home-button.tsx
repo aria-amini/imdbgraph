@@ -3,6 +3,7 @@ import { Home } from 'lucide-react'
 
 import { buttonVariants } from '@/components/ui/button'
 
+/** Renders the application home-navigation button. */
 export function HomeButton({ className }: { className?: string }) {
 	return (
 		<a

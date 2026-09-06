@@ -11,6 +11,7 @@ export type ImdbFile =
 	| 'title.episode.tsv.gz'
 	| 'title.ratings.tsv.gz'
 
+/** Downloads and decompresses an IMDb dataset as a readable stream. */
 export async function downloadStream(file: ImdbFile): Promise<Readable> {
 	const uri = `${baseUri}/${file}`
 	const { body, ok, status } = await fetch(uri)
@@ -24,6 +25,7 @@ export async function downloadStream(file: ImdbFile): Promise<Readable> {
 	return Readable.fromWeb(body as ReadableStream).pipe(createGunzip())
 }
 
+/** Downloads and decompresses an IMDb dataset to a local file. */
 export async function download(file: ImdbFile, output: string): Promise<void> {
 	const uri = `${baseUri}/${file}`
 	try {

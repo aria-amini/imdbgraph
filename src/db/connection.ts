@@ -14,6 +14,7 @@ function getPool() {
 	return pool
 }
 
+/** Creates a Drizzle database client backed by the application pool. */
 export const createDb = createServerOnlyFn(() => {
 	return drizzle({
 		client: getPool(),

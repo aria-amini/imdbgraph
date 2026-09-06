@@ -62,8 +62,7 @@ const lint = {
 		'eslint-js/no-restricted-syntax': [
 			'error',
 			{
-				selector:
-					'JSXAttribute[name.name="className"] > JSXExpressionContainer > TemplateLiteral',
+				selector: 'JSXAttribute[name.name="className"] TemplateLiteral',
 				message:
 					'Do not build className with template literals. Use cn() from "cn" instead.',
 			},
@@ -108,7 +107,7 @@ export default defineConfig({
 		'*': 'vp check --fix',
 	},
 	root,
-	server: { host: '0.0.0.0', port: Number(process.env.APP_PORT ?? 3000) },
+	server: { host: '127.0.0.1', port: Number(process.env.APP_PORT ?? 3000) },
 	resolve: {
 		tsconfigPaths: true,
 		dedupe: ['react', 'react-dom'],

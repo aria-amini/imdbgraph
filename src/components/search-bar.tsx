@@ -17,7 +17,7 @@ import {
 } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
 
-/** https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/ */
+/** Renders the title search input and its suggestion list. */
 export function SearchBar({ className }: { className?: string }) {
 	const [search, setSearch] = useState('')
 	const [isHydrated, setIsHydrated] = useState(false)

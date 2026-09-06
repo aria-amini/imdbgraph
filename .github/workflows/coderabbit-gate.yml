@@ -27,6 +27,7 @@ jobs:
           PR_NUMBER:
             ${{ github.event.pull_request.number || github.event.issue.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
           REPOSITORY: ${{ github.repository }}
         run: |
           if [ -n "$PR_HEAD_SHA" ]; then
@@ -39,26 +40,23 @@ jobs:
           fi
 
           sha=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')
-          body=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate |
-            jq -r --arg sha "$sha" '
-              [
-                .[] |
-                select(.user.login == "coderabbitai[bot]") |
-                select(.body | contains($sha))
-              ] |
-              last |
-              .body // ""
-            ')
+          body="$COMMENT_BODY"
 
-          if [[ "$body" == *"review in progress"* ]]; then
+          if [[ "$body" == *"Review rate limited"* ||
+            "$body" == *"Action not completed"* ]]; then
+            state=failure
+            description='CodeRabbit review did not complete.'
+          elif [[ "$body" == *"Review triggered"* ||
+            "$body" == *"review in progress"* ]]; then
             state=pending
             description='CodeRabbit is reviewing this commit.'
-          elif [ -n "$body" ]; then
+          elif [[ "$body" == *"Review finished"* ||
+            "$body" == *"Action performed"* ||
+            "$body" == *"Actionable comments posted"* ]]; then
             state=success
             description='CodeRabbit reviewed this commit.'
           else
-            state=failure
-            description='CodeRabbit has not reviewed this commit.'
+            exit 0
           fi
 
           gh api "repos/$REPOSITORY/statuses/$sha" \

@@ -11,6 +11,7 @@ const suggestionSchema = z.object({
 
 export type Suggestion = z.infer<typeof suggestionSchema>
 
+/** Fetches and validates title suggestions from the application API. */
 export async function fetchSuggestionsFromApi(
 	query: string,
 ): Promise<Suggestion[]> {
