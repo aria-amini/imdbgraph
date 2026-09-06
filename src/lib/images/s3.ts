@@ -41,12 +41,10 @@ export function createStorage(config: StorageConfig = {}): Storage {
 
 	let bucketReady: Promise<void> | undefined
 	const ensureBucket = () => {
-		bucketReady ??= createBucketIfNeeded(client, bucketName).catch(
-			(error) => {
-				bucketReady = undefined
-				throw error
-			},
-		)
+		bucketReady ??= createBucketIfNeeded(client, bucketName).catch((error) => {
+			bucketReady = undefined
+			throw error
+		})
 		return bucketReady
 	}
 
@@ -75,10 +73,7 @@ export function createStorage(config: StorageConfig = {}): Storage {
 					contentType: output.ContentType,
 				}
 			} catch (error) {
-				const status = (
-					error as { $metadata?: { httpStatusCode?: number } }
-				).$metadata?.httpStatusCode
-				if (status === 404 || (error as Error).name === 'NoSuchKey') {
+				if (errorStatus(error) === 404 || errorName(error) === 'NoSuchKey') {
 					return null
 				}
 				throw error
@@ -98,9 +93,7 @@ async function createBucketIfNeeded(
 		await client.send(new HeadBucketCommand({ Bucket: bucketName }))
 		return
 	} catch (error) {
-		const status = (error as { $metadata?: { httpStatusCode?: number } })
-			.$metadata?.httpStatusCode
-		if (status !== 404) {
+		if (errorStatus(error) !== 404) {
 			throw error
 		}
 	}
@@ -110,9 +103,29 @@ async function createBucketIfNeeded(
 	} catch (error) {
 		// Production buckets are pre-provisioned and concurrent views can race
 		// on first use; both surface as an "already exists" error.
-		const name = (error as Error).name
+		const name = errorName(error)
 		if (name !== 'BucketAlreadyOwnedByYou' && name !== 'BucketAlreadyExists') {
 			throw error
 		}
 	}
+}
+
+function errorStatus(error: unknown): number | undefined {
+	if (typeof error !== 'object' || error === null || !('$metadata' in error)) {
+		return undefined
+	}
+	const metadata: unknown = error.$metadata
+	if (
+		typeof metadata !== 'object' ||
+		metadata === null ||
+		!('httpStatusCode' in metadata)
+	) {
+		return undefined
+	}
+	const status: unknown = metadata.httpStatusCode
+	return typeof status === 'number' ? status : undefined
+}
+
+function errorName(error: unknown): string {
+	return error instanceof Error ? error.name : ''
 }

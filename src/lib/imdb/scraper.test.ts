@@ -99,8 +99,8 @@ describe('scraper tests', () => {
 		expect(await getRatingsDb(db, SIMPSONS_ID)).toBeUndefined()
 
 		const latestScrapeRun = await getLatestScrapeRunDb(db)
-		expect(latestScrapeRun).toEqual(expect.any(String))
-		expect(Number.isNaN(Date.parse(latestScrapeRun as string))).toBe(false)
+		expect(await getLatestScrapeRunDb(db)).toEqual(expect.any(String))
+		expect(Number.isNaN(Date.parse(latestScrapeRun ?? ''))).toBe(false)
 		expect(await db.select().from(scrapeRun)).toHaveLength(1)
 	})
 

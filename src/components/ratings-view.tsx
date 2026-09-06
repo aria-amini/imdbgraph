@@ -28,13 +28,23 @@ export function RatingsView({
 		<div>
 			<div className="mb-3 flex items-start justify-between gap-4">
 				{image ? (
-					<img
-						src={image.url}
-						alt={`${ratings.show.title} poster`}
-						width={image.width ?? undefined}
-						height={image.height ?? undefined}
-						className="h-48 w-auto rounded-md border border-border"
-					/>
+					<div>
+						<img
+							src={image.url}
+							alt={`${ratings.show.title} poster`}
+							width={image.width ?? undefined}
+							height={image.height ?? undefined}
+							className="border-border h-48 w-auto rounded-md border"
+						/>
+						<a
+							href="https://www.tvmaze.com"
+							target="_blank"
+							rel="noreferrer"
+							className="text-muted-foreground hover:text-foreground mt-0.5 block text-[10px]"
+						>
+							data: TVmaze
+						</a>
+					</div>
 				) : (
 					<span aria-hidden />
 				)}

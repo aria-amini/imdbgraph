@@ -1,8 +1,14 @@
 import { createWriteStream } from 'node:fs'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
-import type { ReadableStream } from 'node:stream/web'
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 import { createGunzip } from 'node:zlib'
+
+import { z } from 'zod'
+
+const nodeWebStreamSchema = z.custom<NodeWebReadableStream<Uint8Array>>(
+	(value) => value instanceof ReadableStream,
+)
 
 // https://www.imdb.com/interfaces
 const baseUri = 'https://datasets.imdbws.com'
@@ -22,7 +28,7 @@ export async function downloadStream(file: ImdbFile): Promise<Readable> {
 		throw new Error('Response body is null')
 	}
 
-	return Readable.fromWeb(body as ReadableStream).pipe(createGunzip())
+	return Readable.fromWeb(nodeWebStreamSchema.parse(body)).pipe(createGunzip())
 }
 
 /** Downloads and decompresses an IMDb dataset to a local file. */

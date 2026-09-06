@@ -98,7 +98,10 @@ export function SearchBar({
 		if (!isFocused) return
 		const handlePointerDown = (event: PointerEvent) => {
 			const container = containerRef.current
-			if (!container || container.contains(event.target as Node)) return
+			if (!container) return
+			const pointerInContainer =
+				event.target instanceof Node && container.contains(event.target)
+			if (pointerInContainer) return
 			setIsFocused(false)
 			if (isMobileSearchActive) {
 				setIsMobileSearchActive(false)
@@ -244,7 +247,7 @@ export function SearchBar({
 					if (
 						isMobileSearchActive &&
 						sheet &&
-						!sheet.contains(event.target as Node)
+						!(event.target instanceof Node && sheet.contains(event.target))
 					) {
 						closeMobileSearch()
 					}

@@ -3,8 +3,8 @@ import { eq } from 'drizzle-orm'
 
 import { createDb } from '@/db/connection'
 import { thumbnail } from '@/db/tables'
-import { imdbIdSchema } from '@/lib/imdb/ratings'
 import { getStorage } from '@/lib/images/s3'
+import { imdbIdSchema } from '@/lib/imdb/ratings'
 
 export const Route = createFileRoute('/api/thumbnails/$id')({
 	server: {

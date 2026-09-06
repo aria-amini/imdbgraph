@@ -272,9 +272,7 @@ function registerProxySlug(mainRoot: string): string {
 	const isDefaultWorkspace = realpathSync('.') === mainRoot
 	const appSlug = slugify(basename(mainRoot))
 	const dirLabel = slugify(basename(realpathSync('.')))
-	const slug = isDefaultWorkspace
-		? appSlug
-		: slugify(`${dirLabel}-${appSlug}`)
+	const slug = isDefaultWorkspace ? appSlug : slugify(`${dirLabel}-${appSlug}`)
 	try {
 		pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
 		pitchfork([
