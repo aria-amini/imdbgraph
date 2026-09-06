@@ -8,16 +8,13 @@ import {
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import posthog from 'posthog-js'
-import { Github, Linkedin, Mail } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 
 import { ReportBug } from '@/components/report-bug'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { buttonVariants } from '@/components/ui/button'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
 import { themeInitScript } from '@/lib/theme'
-import { cn } from 'cn'
 
 import appCss from '../styles.css?url'
 
@@ -125,37 +122,35 @@ function SiteFooter({ completedAt }: { completedAt: string | null }) {
 		: 'Data has not been updated yet'
 
 	return (
-		<footer className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 md:px-6">
-			<p className="text-xs">{label}</p>
-			<div className="ml-auto flex items-center gap-1">
-				<a
-					href={SITE_LINKS.github}
-					target="_blank"
-					rel="noreferrer"
-					className="hover:text-foreground px-1.5 text-xs transition-colors"
-				>
-					GitHub
-				</a>
-				<a
-					href={SITE_LINKS.linkedin}
-					target="_blank"
-					rel="noreferrer"
-					className="hover:text-foreground px-1.5 text-xs transition-colors"
-				>
-					LinkedIn
-				</a>
-				<ReportBug />
-				<a
-					href={`mailto:${SITE_LINKS.contactEmail}`}
-					aria-label="Email"
-					className={cn(
-						buttonVariants({ variant: 'ghost', size: 'icon' }),
-						'text-muted-foreground hover:text-foreground size-8',
-					)}
-				>
-					<Mail aria-hidden className="size-4" />
-				</a>
-				<ThemeToggle className="ml-2" />
+		<footer className="text-muted-foreground border-t px-4 py-4 md:px-6">
+			<div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2">
+				<p className="text-xs">{label}</p>
+				<div className="flex items-center gap-4 sm:ml-auto">
+					<a
+						href={SITE_LINKS.github}
+						target="_blank"
+						rel="noreferrer"
+						className="hover:text-foreground text-xs transition-colors"
+					>
+						GitHub
+					</a>
+					<a
+						href={SITE_LINKS.linkedin}
+						target="_blank"
+						rel="noreferrer"
+						className="hover:text-foreground text-xs transition-colors"
+					>
+						LinkedIn
+					</a>
+					<ReportBug />
+					<a
+						href={`mailto:${SITE_LINKS.contactEmail}`}
+						className="hover:text-foreground text-xs transition-colors"
+					>
+						Email
+					</a>
+					<ThemeToggle className="ml-1" />
+				</div>
 			</div>
 		</footer>
 	)

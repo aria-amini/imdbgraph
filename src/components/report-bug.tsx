@@ -2,7 +2,7 @@ import { cn } from 'cn'
 import { Bug } from 'lucide-react'
 import { useState } from 'react'
 
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
 /** Footer control that opens an inline bug report form; submissions are
@@ -45,8 +45,8 @@ export function ReportBug() {
 				aria-expanded={open}
 				onClick={() => (open ? reset() : setOpen(true))}
 				className={cn(
-					buttonVariants({ variant: 'ghost', size: 'sm' }),
-					'text-muted-foreground hover:text-foreground h-8 gap-1.5 px-2 text-xs',
+					'text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1.5 text-xs transition-colors',
+					open && 'text-foreground',
 				)}
 			>
 				<Bug aria-hidden className="size-3.5" />
@@ -64,7 +64,9 @@ export function ReportBug() {
 					{status === 'sent' ? (
 						<div className="px-1 py-4 text-center text-sm">
 							Thanks — noted.{' '}
-							{email ? 'We will reply by email.' : 'No reply unless you left an email.'}
+							{email
+								? 'We will reply by email.'
+								: 'No reply unless you left an email.'}
 						</div>
 					) : (
 						<>
@@ -82,7 +84,7 @@ export function ReportBug() {
 								onChange={(event) => setEmail(event.target.value)}
 								placeholder="Email for follow-up (optional)"
 								aria-label="Contact email"
-								className="border-input bg-input/10 placeholder:text-muted-foreground mb-2 h-8 w-full rounded-md border px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+								className="border-input bg-input/10 placeholder:text-muted-foreground focus-visible:ring-ring/50 mb-2 h-8 w-full rounded-md border px-2 text-sm outline-none focus-visible:ring-2"
 							/>
 							<div className="flex items-center justify-end gap-2">
 								{status === 'error' && (
