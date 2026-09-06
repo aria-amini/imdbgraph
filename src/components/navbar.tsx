@@ -26,7 +26,7 @@ export function Navbar({ center }: NavbarProps) {
 					href="/"
 					className={cn(
 						buttonVariants({ variant: 'outline', size: 'icon' }),
-						'size-9 justify-self-start md:size-8',
+						'size-11 justify-self-start md:size-8',
 					)}
 				>
 					<Home />

@@ -17,3 +17,6 @@ e2e/.auth
 pitchfork.local.toml
 
 src/components/__screenshots__/
+
+.lavish/
+.impeccable/
