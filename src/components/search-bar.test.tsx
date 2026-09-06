@@ -90,7 +90,7 @@ describe('searchbar tests', () => {
 		}
 	})
 
-	test('opens a keyboard-docked mobile search overlay', async () => {
+	test('opens a keyboard-docked mobile search overlay with popover styling', async () => {
 		const originalWidth = window.innerWidth
 		const originalHeight = window.innerHeight
 		try {
@@ -111,11 +111,13 @@ describe('searchbar tests', () => {
 				'max-md:fixed',
 			)
 			expect(document.querySelector('[cmdk-root]')?.className).toContain(
-				'max-md:inset-0',
+				'max-md:animate-in',
 			)
-			expect(document.querySelector('[cmdk-list]')?.className).toContain(
-				'max-md:static',
-			)
+			const list = document.querySelector('[cmdk-list]')
+			expect(list?.className).toContain('max-md:static')
+			expect(list?.className).toContain('bg-popover')
+			expect(list?.className).toContain('border')
+			expect(list?.className).toContain('p-2')
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
 		}
@@ -239,6 +241,116 @@ describe('searchbar tests', () => {
 		expect(command?.className).toContain('w-full')
 		expect(list?.className).toContain('w-full')
 		expect(list?.className).toContain('fixed')
+	})
+
+	test('search menu anchors to the input on mobile even with fullWidthDropdown', async () => {
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			const screen = await render(<SearchBar fullWidthDropdown />, {
+				wrapper: MockRouter,
+			})
+
+			const searchBar = screen.getByRole('combobox')
+			await userEvent.fill(searchBar, 'avatar')
+			await expect
+				.element(screen.getByText(/Avatar: The Last Airbender/).first())
+				.toBeVisible()
+			const list = document.querySelector('[cmdk-list]')
+			expect(list?.className).toContain('max-md:absolute')
+			expect(list?.className).toContain('max-md:top-full')
+			expect(list?.className).not.toContain('max-md:w-auto')
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
+	})
+
+	test('clear button empties the query and hides the results', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+
+		await userEvent.click(page.getByRole('button', { name: 'Clear search' }))
+
+		expect(searchBar).toHaveValue('')
+		expect(document.body.textContent).not.toContain(
+			'Avatar: The Last Airbender',
+		)
+		expect(
+			page.getByRole('button', { name: 'Clear search' }),
+		).not.toBeInTheDocument()
+	})
+
+	test('shows default top shows when focused with an empty query', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		await userEvent.click(screen.getByRole('combobox'))
+
+		await expect.element(screen.getByText('Breaking Bad')).toBeVisible()
+		await expect.element(screen.getByText('The Sopranos')).toBeVisible()
+		expect(screen.container.querySelectorAll('[cmdk-item]').length).toBe(5)
+	})
+
+	test('clicking outside closes the dropdown and keeps the query', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+
+		document.body.dispatchEvent(
+			new PointerEvent('pointerdown', { bubbles: true }),
+		)
+
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.not.toBeInTheDocument()
+		expect(searchBar).toHaveValue('avatar')
+	})
+
+	test('clicking outside the mobile dialog dismisses it and clears the query', async () => {
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			const screen = await render(<SearchBar mobileSearchOverlay />, {
+				wrapper: MockRouter,
+			})
+
+			const searchBar = screen.getByRole('combobox')
+			await userEvent.click(searchBar)
+			await userEvent.fill(searchBar, 'avatar')
+			await expect
+				.element(screen.getByText(/Avatar: The Last Airbender/).first())
+				.toBeVisible()
+
+			document.body.dispatchEvent(
+				new PointerEvent('pointerdown', { bubbles: true }),
+			)
+
+			await expect
+				.element(page.getByText(/Avatar: The Last Airbender/).first())
+				.not.toBeInTheDocument()
+			expect(
+				page.getByRole('button', { name: 'Close search' }),
+			).not.toBeInTheDocument()
+			expect(searchBar).toHaveValue('')
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
 	})
 
 	test('click navigates once and closes the results', async () => {

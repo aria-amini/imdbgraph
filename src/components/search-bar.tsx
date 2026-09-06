@@ -2,13 +2,14 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Command } from 'cmdk'
 import { cn } from 'cn'
-import { Search as SearchIcon, Star, X } from 'lucide-react'
+import { CircleX, Search as SearchIcon, Star, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
 	InputGroup,
 	InputGroupAddon,
+	InputGroupButton,
 	InputGroupInput,
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
@@ -19,6 +20,50 @@ import {
 import { formatYears } from '@/lib/imdb/types'
 
 const NO_SUGGESTION_SELECTED = '__no_suggestion_selected__'
+
+// Placeholder until a real top-rated query backs it.
+const DEFAULT_SUGGESTIONS: Suggestion[] = [
+	{
+		imdbId: 'tt7366338',
+		title: 'Chernobyl',
+		startYear: '2019',
+		endYear: '2019',
+		rating: 9.6,
+		numVotes: 1_400_000,
+	},
+	{
+		imdbId: 'tt0903747',
+		title: 'Breaking Bad',
+		startYear: '2008',
+		endYear: '2013',
+		rating: 9.5,
+		numVotes: 2_400_000,
+	},
+	{
+		imdbId: 'tt0185906',
+		title: 'Band of Brothers',
+		startYear: '2001',
+		endYear: '2001',
+		rating: 9.4,
+		numVotes: 750_000,
+	},
+	{
+		imdbId: 'tt0944947',
+		title: 'Game of Thrones',
+		startYear: '2011',
+		endYear: '2019',
+		rating: 9.2,
+		numVotes: 2_300_000,
+	},
+	{
+		imdbId: 'tt0141842',
+		title: 'The Sopranos',
+		startYear: '1999',
+		endYear: '2007',
+		rating: 9.2,
+		numVotes: 1_200_000,
+	},
+]
 
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({
@@ -37,6 +82,7 @@ export function SearchBar({
 	const [isMobileSearchActive, setIsMobileSearchActive] = useState(false)
 	const hasNavigatedSuggestionsRef = useRef(false)
 	const containerRef = useRef<HTMLDivElement>(null)
+	const sheetRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const allowSuggestionSelectionRef = useRef(false)
 	const router = useRouter()
@@ -44,6 +90,25 @@ export function SearchBar({
 	useEffect(() => {
 		setIsHydrated(true)
 	}, [])
+
+	// A click outside the search box dismisses the results; inside the mobile
+	// dialog it also clears the query since the whole overlay acts as the
+	// modal surface.
+	useEffect(() => {
+		if (!isFocused) return
+		const handlePointerDown = (event: PointerEvent) => {
+			const container = containerRef.current
+			if (!container || container.contains(event.target as Node)) return
+			setIsFocused(false)
+			if (isMobileSearchActive) {
+				setIsMobileSearchActive(false)
+				resetQueryState()
+			}
+			container.querySelector<HTMLInputElement>('input')?.blur()
+		}
+		document.addEventListener('pointerdown', handlePointerDown)
+		return () => document.removeEventListener('pointerdown', handlePointerDown)
+	}, [isFocused, isMobileSearchActive])
 
 	const handleBlur = () => {
 		requestAnimationFrame(() => {
@@ -86,10 +151,20 @@ export function SearchBar({
 	const closeMobileSearch = () => {
 		setIsFocused(false)
 		setIsMobileSearchActive(false)
+		resetQueryState()
+		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
+	}
+
+	const resetQueryState = () => {
 		setSearch('')
 		setSelectedSuggestion('')
 		allowSuggestionSelectionRef.current = false
-		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
+	}
+
+	const clearSearch = () => {
+		resetQueryState()
+		hasNavigatedSuggestionsRef.current = false
+		containerRef.current?.querySelector<HTMLInputElement>('input')?.focus()
 	}
 
 	const selectShow = (showId: string) => {
@@ -100,9 +175,7 @@ export function SearchBar({
 
 		setIsFocused(false)
 		setIsMobileSearchActive(false)
-		setSearch('')
-		setSelectedSuggestion('')
-		allowSuggestionSelectionRef.current = false
+		resetQueryState()
 		// The state reset alone desyncs from the DOM: Safari keeps focus on the
 		// input after a link click and cmdk never blurs after Enter, so the next
 		// keystroke fires no focus event and the results stay closed until a
@@ -123,9 +196,7 @@ export function SearchBar({
 
 		setIsFocused(false)
 		setIsMobileSearchActive(false)
-		setSearch('')
-		setSelectedSuggestion('')
-		allowSuggestionSelectionRef.current = false
+		resetQueryState()
 		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
 		void router.navigate({
 			to: '/search/$query',
@@ -143,6 +214,8 @@ export function SearchBar({
 		enabled: isHydrated && Boolean(search),
 		placeholderData: keepPreviousData,
 	})
+
+	const suggestions = search ? searchResults : DEFAULT_SUGGESTIONS
 
 	return (
 		<div
@@ -164,8 +237,18 @@ export function SearchBar({
 					'flex w-full flex-col',
 					className,
 					isMobileSearchActive &&
-						'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))]',
+						'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:duration-200',
 				)}
+				onPointerDown={(event) => {
+					const sheet = sheetRef.current
+					if (
+						isMobileSearchActive &&
+						sheet &&
+						!sheet.contains(event.target as Node)
+					) {
+						closeMobileSearch()
+					}
+				}}
 				style={
 					isMobileSearchActive && overlayViewport
 						? { top: overlayViewport.top, height: overlayViewport.height }
@@ -182,6 +265,7 @@ export function SearchBar({
 				}}
 			>
 				<div
+					ref={sheetRef}
 					className={cn(
 						'relative',
 						isMobileSearchActive &&
@@ -237,18 +321,28 @@ export function SearchBar({
 								{isFetching && (
 									<Spinner aria-hidden data-testid="loading-spinner" />
 								)}
+								{isHydrated && search && (
+									<InputGroupButton
+										size="icon-sm"
+										onClick={clearSearch}
+										aria-label="Clear search"
+										className="text-muted-foreground hover:text-foreground"
+									>
+										<CircleX className="size-4" aria-hidden />
+									</InputGroupButton>
+								)}
 							</InputGroupAddon>
 						</InputGroup>
 						{isMobileSearchActive && (
 							<Button
 								type="button"
-								variant="outline"
+								variant="ghost"
 								size="icon"
 								onClick={closeMobileSearch}
 								className="hidden size-11 shrink-0 max-md:flex"
 								aria-label="Close search"
 							>
-								<X aria-hidden />
+								<X className="size-5" aria-hidden />
 							</Button>
 						)}
 					</div>
@@ -262,19 +356,18 @@ export function SearchBar({
 						</div>
 					)}
 
-					{isFocused && search && !error && searchResults && (
+					{isFocused && !error && suggestions && (
 						<Command.List
 							className={cn(
 								'bg-popover z-50 w-full border p-2 shadow-md',
+								fullWidthDropdown
+									? 'max-md:absolute max-md:top-full max-md:right-0 max-md:left-0 max-md:mt-2 md:fixed md:inset-x-0 md:top-14'
+									: 'absolute top-full right-0 left-0 mt-2',
 								isMobileSearchActive &&
-									'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:border-0 max-md:bg-card max-md:p-0 max-md:shadow-none',
-								fullWidthDropdown && !isMobileSearchActive
-									? 'fixed inset-x-4 top-[4.25rem] max-md:w-auto md:inset-x-0 md:top-14'
-									: !isMobileSearchActive &&
-											'absolute top-full right-0 left-0 mt-2',
+									'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:animate-in max-md:fade-in max-md:slide-in-from-top-1 max-md:duration-200',
 							)}
 						>
-							{searchResults.length === 0 && !isFetching && (
+							{search && suggestions.length === 0 && !isFetching && (
 								<div
 									className={cn(
 										'text-muted-foreground px-2 py-1.5 text-center',
@@ -283,7 +376,7 @@ export function SearchBar({
 									No TV Shows Found.
 								</div>
 							)}
-							{searchResults.map((show: Suggestion) => (
+							{suggestions.map((show: Suggestion) => (
 								<Command.Item
 									key={show.imdbId}
 									value={show.imdbId}
@@ -291,8 +384,6 @@ export function SearchBar({
 									onSelect={() => selectShow(show.imdbId)}
 									className={cn(
 										'w-full cursor-pointer px-2 py-1.5 text-sm outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-										isMobileSearchActive &&
-											'max-md:border-b max-md:px-3 max-md:py-2.5 last:max-md:border-b-0',
 										{
 											'opacity-50': isFetching,
 										},
@@ -316,12 +407,7 @@ export function SearchBar({
 											<span className="wrap-break-word">
 												{show.title}&nbsp;
 											</span>
-											<span
-												className={cn(
-													'text-muted-foreground group-aria-selected:text-accent-foreground text-xs',
-													isMobileSearchActive && 'max-md:hidden',
-												)}
-											>
+											<span className="text-muted-foreground group-aria-selected:text-accent-foreground text-xs">
 												{formatYears(show)}
 											</span>
 										</div>
@@ -332,7 +418,7 @@ export function SearchBar({
 									</Link>
 								</Command.Item>
 							))}
-							{!isMobileSearchActive && (
+							{search && (
 								<Link
 									to="/search/$query"
 									params={{ query: search.trim() }}

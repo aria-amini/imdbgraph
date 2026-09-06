@@ -8,9 +8,16 @@ import {
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import posthog from 'posthog-js'
+import { Github, Linkedin, Mail } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 
+import { ReportBug } from '@/components/report-bug'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { buttonVariants } from '@/components/ui/button'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import { SITE_LINKS } from '@/lib/site'
+import { themeInitScript } from '@/lib/theme'
+import { cn } from 'cn'
 
 import appCss from '../styles.css?url'
 
@@ -62,8 +69,9 @@ function DocumentShell({ children }: { children: ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
+				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
-			<body className="dark flex min-h-dvh min-w-80 flex-col font-sans">
+			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
 				{children}
 				<Scripts />
 			</body>
@@ -103,7 +111,7 @@ function RootComponent() {
 			<div className="flex-1">
 				<Outlet />
 			</div>
-			<DataLastUpdated completedAt={latestScrapeRun} />
+			<SiteFooter completedAt={latestScrapeRun} />
 			<ClientOnly fallback={null}>
 				<Analytics />
 			</ClientOnly>
@@ -111,15 +119,45 @@ function RootComponent() {
 	)
 }
 
-function DataLastUpdated({ completedAt }: { completedAt: string | null }) {
+function SiteFooter({ completedAt }: { completedAt: string | null }) {
 	const label = completedAt
 		? `Data last updated on ${formatDataLastUpdated(completedAt)}`
 		: 'Data has not been updated yet'
 
 	return (
-		<p className="text-muted-foreground/60 px-4 py-2 text-center text-xs">
-			{label}
-		</p>
+		<footer className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 md:px-6">
+			<p className="text-xs">{label}</p>
+			<div className="ml-auto flex items-center gap-1">
+				<a
+					href={SITE_LINKS.github}
+					target="_blank"
+					rel="noreferrer"
+					className="hover:text-foreground px-1.5 text-xs transition-colors"
+				>
+					GitHub
+				</a>
+				<a
+					href={SITE_LINKS.linkedin}
+					target="_blank"
+					rel="noreferrer"
+					className="hover:text-foreground px-1.5 text-xs transition-colors"
+				>
+					LinkedIn
+				</a>
+				<ReportBug />
+				<a
+					href={`mailto:${SITE_LINKS.contactEmail}`}
+					aria-label="Email"
+					className={cn(
+						buttonVariants({ variant: 'ghost', size: 'icon' }),
+						'text-muted-foreground hover:text-foreground size-8',
+					)}
+				>
+					<Mail aria-hidden className="size-4" />
+				</a>
+				<ThemeToggle className="ml-2" />
+			</div>
+		</footer>
 	)
 }
 
