@@ -54,7 +54,7 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 	})
 
 	return (
-		<Card data-testid="ratings-graph" className="px-2 py-4 sm:px-4 lg:px-8">
+		<Card data-testid="ratings-graph" className="px-4 py-6 sm:px-6 lg:px-8">
 			<CardContent className="px-0">
 				<ChartContainer
 					config={chartConfig}
@@ -122,15 +122,17 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 	const episodeData = episode.data
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>
+		<Card className="gap-1.5 px-3 py-2.5 shadow-lg">
+			<CardHeader className="px-0">
+				<CardTitle className="font-mono text-xs font-bold tracking-widest">
 					S{episodeData.seasonNum}E{episodeData.episodeNum}:
 				</CardTitle>
-				<CardDescription>{episodeData.title}</CardDescription>
+				<CardDescription className="text-xs leading-snug">
+					{episodeData.title}
+				</CardDescription>
 			</CardHeader>
-			<CardContent>
-				<CardDescription>
+			<CardContent className="px-0">
+				<CardDescription className="font-mono text-xs tabular-nums">
 					{episodeData.rating.toFixed(1)} / 10.0 (
 					{episodeData.numVotes.toLocaleString()} votes)
 				</CardDescription>

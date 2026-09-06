@@ -68,26 +68,26 @@ export function ShowHeader({
 	const schedule = scheduleLine(image)
 
 	return (
-		<header className="border-border mb-5 flex gap-5 border-b pb-6 lg:gap-8">
+		<header className="border-border mb-8 flex gap-5 border-b pb-6 lg:gap-8">
 			{image && (
 				<div className="w-24 shrink-0 sm:w-36 lg:w-44">
 					<a
 						href={image.url}
 						target="_blank"
 						rel="noreferrer"
-						className="focus-visible:ring-ring block outline-none focus-visible:ring-2"
+						className="focus-visible:ring-ring focus-visible:ring-offset-background block outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 					>
 						<img
 							src={image.url}
 							alt={`${show.title} poster`}
-							className="border-border aspect-[2/3] w-full border object-cover shadow-[0_10px_24px_-12px_rgb(0_0_0/0.4)]"
+							className="border-border aspect-[2/3] w-full border object-cover shadow-md"
 						/>
 					</a>
 					<a
 						href="https://www.tvmaze.com"
 						target="_blank"
 						rel="noreferrer"
-						className="text-muted-foreground hover:text-foreground mt-1 block font-mono text-[10px] tracking-wide"
+						className="text-muted-foreground hover:text-foreground mt-2 block font-mono text-[10px] tracking-widest uppercase transition-colors"
 					>
 						data: TVmaze
 					</a>
@@ -111,7 +111,7 @@ export function ShowHeader({
 					{action && <div className="shrink-0">{action}</div>}
 				</div>
 
-				<dl className="border-border mt-5 flex flex-wrap items-center gap-x-7 gap-y-2 border-y py-2.5">
+				<dl className="border-border mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y py-3">
 					<div className="flex items-center gap-1.5">
 						<Star
 							className="size-4 shrink-0"
@@ -138,7 +138,7 @@ export function ShowHeader({
 					{image?.status && <Stat value={image.status} />}
 				</dl>
 
-				<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+				<div className="mt-4 flex flex-wrap items-center gap-3">
 					{schedule && (
 						<p className="text-muted-foreground font-mono text-[11px] tracking-widest uppercase">
 							{schedule}
@@ -150,7 +150,7 @@ export function ShowHeader({
 						rel="noreferrer"
 						className={cn(
 							'border-border text-muted-foreground hover:bg-foreground hover:text-background',
-							'ml-auto inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase transition-colors focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
+							'ml-auto inline-flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
 						)}
 					>
 						View on IMDb

@@ -24,7 +24,7 @@ export function Block({ ratings }: { ratings: Ratings }) {
 			className={cn('mx-auto max-w-7xl border border-border bg-card/35')}
 		>
 			<div
-				className={cn('flex flex-col gap-4 px-4 py-6 sm:gap-5 sm:px-6 lg:px-8')}
+				className={cn('flex flex-col gap-4 px-4 py-6 sm:gap-6 sm:px-6 lg:px-8')}
 				aria-label="Episode ratings by season"
 			>
 				{seasons.map((season, seasonIndex) => (
@@ -69,8 +69,10 @@ export function Block({ ratings }: { ratings: Ratings }) {
 									</span>
 									<span
 										className={cn(
-											'pointer-events-none absolute left-1/2 z-10 hidden w-44 -translate-x-1/2 border border-border bg-background px-2 py-1.5 text-left text-xs font-normal text-foreground shadow-lg group-hover:block group-focus-visible:block',
-											seasonIndex === 0 ? 'top-full mt-1' : 'bottom-full mb-1',
+											'pointer-events-none absolute left-1/2 z-10 hidden w-52 -translate-x-1/2 border border-border bg-background px-2.5 py-2 text-left text-xs font-normal text-foreground shadow-lg group-hover:block group-focus-visible:block',
+											seasonIndex === 0
+												? 'top-full mt-1.5'
+												: 'bottom-full mb-1.5',
 										)}
 									>
 										{episode.title}

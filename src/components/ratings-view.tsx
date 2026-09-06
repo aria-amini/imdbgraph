@@ -31,7 +31,7 @@ function ViewToggle({
 					disabled={disabled}
 					onClick={() => onViewChange(option)}
 					className={cn(
-						'px-2.5 py-1 font-mono text-[10px] font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50',
+						'px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-50',
 						view === option
 							? 'bg-foreground text-background'
 							: 'text-muted-foreground hover:bg-muted hover:text-foreground',
