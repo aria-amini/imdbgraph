@@ -88,7 +88,13 @@ async function expectScreenshot(
 	name: string,
 	{ soft = false }: { soft?: boolean } = {},
 ) {
-	const options = { screenshotOptions: { scale: 'css' } } as const
+	const options = {
+		screenshotOptions: {
+			animations: 'disabled',
+			caret: 'hide',
+			scale: 'css',
+		},
+	} as const
 	if (soft) {
 		await expect
 			.soft(screen.locator, `${name} page screenshot`)

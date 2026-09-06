@@ -58,12 +58,9 @@ const pages = [
 	},
 ] satisfies PageScreenshotCase[]
 
-test.each(pages)(
-	'$name page matches desktop screenshot',
-	async (visualPage) => {
-		await expectPageScreenshot(visualPage)
-	},
-)
+test.each(pages)('$name page matches screenshot', async (visualPage) => {
+	await expectPageScreenshot(visualPage)
+})
 
 test('home page search interaction matches desktop screenshots', async ({
 	worker,

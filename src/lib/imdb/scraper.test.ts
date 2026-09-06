@@ -2,7 +2,7 @@ import { createReadStream } from 'node:fs'
 import path from 'node:path'
 
 import { initDb } from '@config/test/db'
-import { describe, expect, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, vi } from 'vitest'
 
 import { scrapeRun } from '@/db/tables'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
@@ -12,6 +12,14 @@ import { update } from '@/lib/imdb/scraper'
 import type { Ratings } from '@/lib/imdb/types'
 
 vi.mock(import('@/lib/imdb/file-downloader'))
+
+beforeAll(() => {
+	vi.spyOn(console, 'log').mockImplementation(() => {})
+})
+
+afterAll(() => {
+	vi.restoreAllMocks()
+})
 
 const GAME_OF_THRONES_ID = 'tt0944947'
 const SIMPSONS_ID = 'tt0096697'
