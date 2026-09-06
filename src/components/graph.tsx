@@ -1,6 +1,5 @@
 'use client'
 
-import { cn } from 'cn'
 import type { ReactNode } from 'react'
 import {
 	CartesianGrid,
@@ -62,17 +61,16 @@ export function Graph({
 	})
 
 	return (
-		<Card data-testid="ratings-graph" className="px-4 py-6 sm:px-6 lg:px-8">
+		<Card
+			data-testid="ratings-graph"
+			className="border-border bg-card gap-0 rounded-none py-0 shadow-none"
+		>
 			{toolbar && (
-				<div
-					className={cn(
-						'flex items-center justify-end border-border border-b py-2 pr-4 sm:pr-6 lg:pr-8',
-					)}
-				>
+				<div className="border-border flex items-center justify-end border-b px-4 py-2 sm:px-6 lg:px-8">
 					{toolbar}
 				</div>
 			)}
-			<CardContent className="px-0">
+			<CardContent className="px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[clamp(260px,min(56vw,calc(100dvh-12rem)),620px)]"

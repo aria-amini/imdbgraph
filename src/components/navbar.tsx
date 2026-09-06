@@ -16,7 +16,11 @@ export function Navbar({ center }: NavbarProps) {
 	if (isHome && !center) return null
 
 	return (
-		<nav className={cn('flex items-center gap-2 border-b px-4 py-3 md:px-6')}>
+		<nav
+			className={cn(
+				'flex items-center gap-2 border-b px-4 py-3 md:px-6 lg:px-8',
+			)}
+		>
 			{!isHome && (
 				<a
 					href="/"

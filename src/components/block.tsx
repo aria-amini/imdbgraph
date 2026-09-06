@@ -28,7 +28,7 @@ export function Block({
 	return (
 		<section
 			data-testid="ratings-block"
-			className={cn('mx-auto max-w-7xl border border-border bg-card/35')}
+			className={cn('mx-auto max-w-7xl border border-border bg-card')}
 		>
 			{toolbar && (
 				<div
@@ -47,7 +47,7 @@ export function Block({
 					<div
 						key={season.seasonNum}
 						className={cn(
-							'grid grid-cols-[2.25rem_1fr] items-start gap-x-2 sm:grid-cols-[2.75rem_1fr] sm:gap-x-3',
+							'grid grid-cols-[2.25rem_1fr] items-start gap-x-1.5 sm:grid-cols-[2.75rem_1fr] sm:gap-2',
 						)}
 					>
 						<span
@@ -69,7 +69,7 @@ export function Block({
 									aria-label={episodeLabel(episode)}
 									title={episodeLabel(episode)}
 									className={cn(
-										'group relative flex size-9 items-center justify-center border border-foreground/15 text-[10px] font-bold text-white transition-transform hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
+										'group relative flex size-9 items-center justify-center border border-background/40 text-[10px] font-bold text-white transition-transform hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
 									)}
 									style={{ backgroundColor: ratingColor(episode.rating) }}
 								>

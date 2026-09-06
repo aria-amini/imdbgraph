@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Ratings header — four hierarchy directions</title>
+		<style>
+			:root {
+				--bg: #d2d2d2;
+				--fg: #2e2e2e;
+				--card: #bcbcbc;
+				--muted-fg: #5f5f5f;
+				--border: #666666;
+				--rating: hsl(129 72% 38%);
+				--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+				--sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+			}
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+			}
+			body {
+				background: var(--bg);
+				color: var(--fg);
+				font-family: var(--sans);
+				margin: 0;
+				padding: 32px clamp(16px, 4vw, 48px);
+				max-width: 1080px;
+				margin: 0 auto;
+			}
+			h1 {
+				font-size: 15px;
+				font-family: var(--mono);
+				text-transform: uppercase;
+				letter-spacing: 0.14em;
+				margin: 0 0 4px;
+			}
+			.lede {
+				color: var(--muted-fg);
+				font-family: var(--mono);
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				margin: 0 0 28px;
+			}
+			.option {
+				margin-bottom: 40px;
+			}
+			.opt-head {
+				display: flex;
+				align-items: baseline;
+				gap: 12px;
+				margin-bottom: 10px;
+			}
+			.opt-tag {
+				font-family: var(--mono);
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.14em;
+				border: 1px solid var(--border);
+				padding: 2px 8px;
+			}
+			.opt-name {
+				font-family: var(--mono);
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.14em;
+				text-transform: uppercase;
+			}
+			.tradeoff {
+				color: var(--muted-fg);
+				font-size: 12.5px;
+				margin: 0 0 10px;
+				max-width: 70ch;
+			}
+			.mock {
+				background: var(--card);
+				border: 1px solid var(--border);
+				padding: 24px;
+				display: flex;
+				gap: 20px;
+				align-items: flex-start;
+				overflow: hidden;
+			}
+			.poster {
+				width: 96px;
+				aspect-ratio: 2/3;
+				background: var(--bg);
+				border: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+				font-family: var(--mono);
+				font-size: 9px;
+				letter-spacing: 0.14em;
+				color: var(--muted-fg);
+			}
+			.meta,
+			.label {
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--muted-fg);
+			}
+			.title {
+				font-size: 34px;
+				font-weight: 900;
+				letter-spacing: -0.5px;
+				line-height: 1.05;
+			}
+			.meta-line {
+				margin-top: 8px;
+			}
+			.note {
+				font-family: var(--mono);
+				font-size: 9px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--muted-fg);
+				margin-top: 8px;
+			}
+			.linkish {
+				text-decoration: underline;
+				text-underline-offset: 2px;
+			}
+			.star-svg {
+				width: 1em;
+				height: 1em;
+				fill: var(--rating);
+				flex-shrink: 0;
+			}
+
+			/* A - ledger */
+			.a-strip {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px 24px;
+				margin-top: 18px;
+				font-family: var(--mono);
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				align-items: center;
+			}
+			.a-strip .pair {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+			}
+			.a-strip b {
+				font-weight: 700;
+			}
+
+			/* B - scoreboard */
+			.b-body {
+				flex: 1;
+				display: flex;
+				justify-content: space-between;
+				gap: 24px;
+			}
+			.b-left {
+				flex: 1;
+			}
+			.b-board {
+				border-left: 1px solid var(--border);
+				padding-left: 20px;
+				text-align: right;
+				flex-shrink: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: flex-end;
+			}
+			.b-num-row {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.b-num-row .star-svg {
+				width: 22px;
+				height: 22px;
+			}
+			.b-num {
+				font-size: 54px;
+				font-weight: 900;
+				line-height: 1;
+			}
+			.b-of {
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.12em;
+				color: var(--muted-fg);
+				margin-top: 4px;
+			}
+			.b-votes {
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.1em;
+				color: var(--muted-fg);
+				margin-top: 10px;
+				text-transform: uppercase;
+			}
+
+			/* C - hero */
+			.c-body {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				gap: 24px;
+			}
+			.c-num-block {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				flex-shrink: 0;
+			}
+			.c-num-row {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.c-num-row .star-svg {
+				width: 26px;
+				height: 26px;
+			}
+			.c-num {
+				font-size: 84px;
+				font-weight: 900;
+				line-height: 1;
+			}
+			.c-right {
+				min-width: 0;
+			}
+			.c-caption {
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: var(--muted-fg);
+				margin-top: 12px;
+			}
+
+			/* D - statusbar */
+			.d-wrap {
+				flex: 1;
+			}
+			.d-mock-top {
+				display: flex;
+				gap: 20px;
+				align-items: flex-start;
+			}
+			.d-bar {
+				margin-top: 20px;
+				border: 1px solid var(--border);
+				background: var(--bg);
+				font-family: var(--mono);
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				padding: 8px 12px;
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				row-gap: 6px;
+			}
+			.d-item {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				white-space: nowrap;
+			}
+			.d-sep {
+				color: var(--muted-fg);
+				margin: 0 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Ratings header — four hierarchy directions</h1>
+		<p class="lede">
+			Same data, four ways to rank it. Annotate freely; say "B but with …" etc.
+		</p>
+
+		<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+			<defs>
+				<symbol id="ic-star" viewBox="0 0 24 24">
+					<path
+						d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z"
+					/>
+				</symbol>
+			</defs>
+		</svg>
+
+		<section class="option">
+			<div class="opt-head">
+				<span class="opt-tag">A</span
+				><span class="opt-name">Ledger — equal-weight data line</span>
+			</div>
+			<p class="tradeoff">
+				Calmest. Rating stays first but visually equal; hierarchy deliberately
+				lives in the episode grid, not the header. Least risk of over-emphasis.
+			</p>
+			<div class="mock">
+				<div class="poster">POSTER</div>
+				<div style="flex: 1">
+					<div class="title">Game of Thrones</div>
+					<p class="meta meta-line">2011–2019 · Adventure · Drama · Fantasy</p>
+					<div class="a-strip">
+						<span class="pair"
+							><svg class="star-svg"><use href="#ic-star" /></svg> <b>9.2</b> /
+							10</span
+						>
+						<span>2,616,222 votes</span>
+						<span>~57m / ep</span>
+						<span>Continuing</span>
+					</div>
+					<p class="note">
+						Airs Sunday 21:00 on HBO ·
+						<span class="linkish">star + votes link to IMDb</span>
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="option">
+			<div class="opt-head">
+				<span class="opt-tag">B</span
+				><span class="opt-name">Scoreboard — rating owns the right column</span>
+			</div>
+			<p class="tradeoff">
+				Asymmetric split: title/story left, one big number right in its own
+				ruled column. The header mirrors what the page is about: the score.
+				Costs the title some width.
+			</p>
+			<div class="mock">
+				<div class="poster">POSTER</div>
+				<div class="b-body">
+					<div class="b-left">
+						<div class="title">Game of Thrones</div>
+						<p class="meta meta-line">
+							2011–2019<br />Adventure · Drama · Fantasy
+						</p>
+						<p class="note" style="margin-top: 14px">
+							Airs Sunday 21:00 on HBO
+						</p>
+					</div>
+					<div class="b-board">
+						<div class="b-num-row">
+							<svg class="star-svg"><use href="#ic-star" /></svg
+							><span class="b-num">9.2</span>
+						</div>
+						<div class="b-of">/ 10</div>
+						<div class="b-votes linkish">2,616,222 votes ON IMDB</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="option">
+			<div class="opt-head">
+				<span class="opt-tag">C</span
+				><span class="opt-name">Hero number — the score is the header</span>
+			</div>
+			<p class="tradeoff">
+				Most editorial. The 9.2 is the loudest object on the page; title becomes
+				the second read. Bold, but fights the episode grid for attention.
+			</p>
+			<div class="mock" style="align-items: center">
+				<div class="poster" style="width: 72px">POSTER</div>
+				<div class="c-body">
+					<div class="c-num-block">
+						<div class="c-num-row">
+							<svg class="star-svg"><use href="#ic-star" /></svg
+							><span class="c-num">9.2</span>
+						</div>
+					</div>
+					<div class="c-right">
+						<div class="title" style="font-size: 28px">Game of Thrones</div>
+						<p class="meta meta-line">
+							2011–2019 · Adventure · Drama · Fantasy
+						</p>
+						<p class="c-caption">
+							/ 10 · 2,616,222 votes · ~57m/ep · Continuing ·
+							<span class="linkish">9.2 links to IMDb</span>
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="option">
+			<div class="opt-head">
+				<span class="opt-tag">D</span
+				><span class="opt-name"
+					>Statusbar — one terminal line for all metadata</span
+				>
+			</div>
+			<p class="tradeoff">
+				Purest terminal look: header holds only identity; every stat, schedule
+				and link lives in one pipe-separated bar. Most compact, wraps on mobile.
+			</p>
+			<div
+				class="mock"
+				style="flex-direction: column; align-items: stretch; gap: 16px"
+			>
+				<div class="d-mock-top">
+					<div class="poster" style="width: 72px">POSTER</div>
+					<div>
+						<div class="title">Game of Thrones</div>
+						<p class="meta meta-line">
+							2011–2019 · Adventure · Drama · Fantasy
+						</p>
+					</div>
+				</div>
+				<div class="d-bar">
+					<span class="d-item"
+						><svg class="star-svg"><use href="#ic-star" /></svg> IMDb
+						9.2/10</span
+					>
+					<span class="d-sep">|</span>
+					<span class="d-item">2,616,222 votes</span>
+					<span class="d-sep">|</span>
+					<span class="d-item">~57m/ep</span>
+					<span class="d-sep">|</span>
+					<span class="d-item">Continuing</span>
+					<span class="d-sep">|</span>
+					<span class="d-item">Sun 21:00 HBO</span>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>

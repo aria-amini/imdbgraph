@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "appRoot": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image",
+  "repoRoot": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image",
+  "contextRoot": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image",
+  "sessionRoot": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image/.impeccable/live",
+  "productPath": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image/PRODUCT.md",
+  "designPath": "/home/aamini.guest/.herdr/workspaces/imdbgraph/image/DESIGN.md",
+  "resolvedFrom": "target:src/components/show-header.tsx"
+}
