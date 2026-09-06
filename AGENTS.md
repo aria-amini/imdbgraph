@@ -31,6 +31,20 @@ root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
 Use `pnpm` through Vite+ (`vp i`, `vp run <script>`). Secrets and environment
 values resolve through Varlock; do not commit generated or local secret files.
 
+## Jujutsu safety
+
+Treat immutable commits as shared history. Never rewrite, rebase, squash,
+abandon, or otherwise bypass jj's immutable-commit protection without the
+user's explicit permission for that exact operation. Do not use
+`--ignore-immutable` based on an assumption that it is needed to finish the
+task.
+
+Rewriting immutable commits can move shared bookmarks, invalidate stacked PRs,
+make parallel workspaces stale or divergent, and discard reviewable history.
+Before any such operation, identify the affected commits and explain the
+impact; proceed only after the user explicitly approves it. Prefer creating a
+new descendant commit and moving the bookmark forward.
+
 ## Style rules
 
 ### Always build `className` with `cn()`
