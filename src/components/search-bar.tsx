@@ -17,6 +17,8 @@ import {
 } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
 
+const NO_SUGGESTION_SELECTED = '__no_suggestion_selected__'
+
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({
 	className,
@@ -26,11 +28,13 @@ export function SearchBar({
 	fullWidthDropdown?: boolean
 }) {
 	const [search, setSearch] = useState('')
+	const [selectedSuggestion, setSelectedSuggestion] = useState('')
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isFocused, setIsFocused] = useState(false)
 	const hasNavigatedSuggestionsRef = useRef(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
+	const allowSuggestionSelectionRef = useRef(false)
 	const router = useRouter()
 
 	useEffect(() => {
@@ -56,6 +60,8 @@ export function SearchBar({
 
 		setIsFocused(false)
 		setSearch('')
+		setSelectedSuggestion('')
+		allowSuggestionSelectionRef.current = false
 		// The state reset alone desyncs from the DOM: Safari keeps focus on the
 		// input after a link click and cmdk never blurs after Enter, so the next
 		// keystroke fires no focus event and the results stay closed until a
@@ -76,6 +82,8 @@ export function SearchBar({
 
 		setIsFocused(false)
 		setSearch('')
+		setSelectedSuggestion('')
+		allowSuggestionSelectionRef.current = false
 		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
 		void router.navigate({
 			to: '/search/$query',
@@ -104,6 +112,14 @@ export function SearchBar({
 			<Command
 				className={cn('flex w-full flex-col', className)}
 				shouldFilter={false}
+				value={selectedSuggestion || `${NO_SUGGESTION_SELECTED}:${search}`}
+				onValueChange={(value) => {
+					if (allowSuggestionSelectionRef.current) {
+						setSelectedSuggestion(value)
+						return
+					}
+					setSelectedSuggestion(`${NO_SUGGESTION_SELECTED}:${value}`)
+				}}
 			>
 				<div className="relative">
 					<InputGroup
@@ -120,11 +136,14 @@ export function SearchBar({
 						<Command.Input
 							value={search}
 							onValueChange={(value) => {
+								allowSuggestionSelectionRef.current = false
+								setSelectedSuggestion('')
 								hasNavigatedSuggestionsRef.current = false
 								setSearch(value)
 							}}
 							onKeyDown={(event) => {
 								if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+									allowSuggestionSelectionRef.current = true
 									hasNavigatedSuggestionsRef.current = true
 								}
 								if (

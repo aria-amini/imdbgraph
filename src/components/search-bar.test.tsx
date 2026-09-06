@@ -148,7 +148,7 @@ describe('searchbar tests', () => {
 		await userEvent.keyboard('{ArrowDown}{Enter}')
 
 		expect(navigateSpy).toHaveBeenCalledWith({
-			params: { id: 'tt9018736' },
+			params: { id: 'tt0417299' },
 			to: '/ratings/$id',
 		})
 		expect(searchBar).toHaveValue('')
@@ -175,6 +175,22 @@ describe('searchbar tests', () => {
 			params: { query: 'sopranos' },
 			to: '/search/$query',
 		})
+	})
+
+	test('does not highlight a suggestion until keyboard navigation starts', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+		expect(document.querySelector('[aria-selected="true"]')).toBeNull()
+
+		await userEvent.keyboard('{ArrowDown}')
+		expect(document.querySelector('[aria-selected="true"]')).not.toBeNull()
 	})
 
 	test('search menu is full width', async () => {
