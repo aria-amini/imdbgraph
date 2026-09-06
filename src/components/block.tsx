@@ -4,7 +4,7 @@ import { ratingColor } from '@/lib/imdb/rating-color'
 import type { Episode, Ratings } from '@/lib/imdb/types'
 
 function episodeLabel(episode: Episode): string {
-	return `Season ${episode.seasonNum}, episode ${episode.episodeNum}: ${episode.title}. Rating ${episode.rating.toFixed(1)} out of 10.`
+	return `Season ${episode.seasonNum}, episode ${episode.episodeNum}: ${episode.title}. Rating ${episode.rating.toFixed(1)} out of 10. Opens IMDb in a new tab.`
 }
 
 export function Block({ ratings }: { ratings: Ratings }) {
@@ -45,9 +45,11 @@ export function Block({ ratings }: { ratings: Ratings }) {
 							className={cn('flex flex-wrap justify-start gap-1.5 sm:gap-2')}
 						>
 							{season.episodes.map((episode) => (
-								<button
+								<a
 									key={`${episode.seasonNum}-${episode.episodeNum}`}
-									type="button"
+									href={`https://www.imdb.com/title/${episode.episodeId}/`}
+									target="_blank"
+									rel="noopener noreferrer"
 									aria-label={episodeLabel(episode)}
 									title={episodeLabel(episode)}
 									className={cn(
@@ -78,7 +80,7 @@ export function Block({ ratings }: { ratings: Ratings }) {
 											{episode.rating.toFixed(1)}
 										</span>
 									</span>
-								</button>
+								</a>
 							))}
 						</div>
 					</div>

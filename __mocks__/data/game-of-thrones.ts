@@ -5,6 +5,7 @@ export const gameOfThronesRatings: Ratings = {
 		1: {
 			1: {
 				title: 'Winter Is Coming',
+				episodeId: 'tt00000001',
 				seasonNum: 1,
 				episodeNum: 1,
 				numVotes: 77872,
@@ -12,6 +13,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'The Kingsroad',
+				episodeId: 'tt00000002',
 				seasonNum: 1,
 				episodeNum: 2,
 				numVotes: 59282,
@@ -19,6 +21,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'Lord Snow',
+				episodeId: 'tt00000003',
 				seasonNum: 1,
 				episodeNum: 3,
 				numVotes: 56230,
@@ -26,6 +29,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'Cripples, Bastards, and Broken Things',
+				episodeId: 'tt00000004',
 				seasonNum: 1,
 				episodeNum: 4,
 				numVotes: 53639,
@@ -33,6 +37,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'The Wolf and the Lion',
+				episodeId: 'tt00000005',
 				seasonNum: 1,
 				episodeNum: 5,
 				numVotes: 56467,
@@ -40,6 +45,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'A Golden Crown',
+				episodeId: 'tt00000006',
 				seasonNum: 1,
 				episodeNum: 6,
 				numVotes: 55541,
@@ -47,6 +53,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'You Win or You Die',
+				episodeId: 'tt00000007',
 				seasonNum: 1,
 				episodeNum: 7,
 				numVotes: 56346,
@@ -54,6 +61,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'The Pointy End',
+				episodeId: 'tt00000008',
 				seasonNum: 1,
 				episodeNum: 8,
 				numVotes: 52526,
@@ -61,6 +69,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'Baelor',
+				episodeId: 'tt00000009',
 				seasonNum: 1,
 				episodeNum: 9,
 				numVotes: 76831,
@@ -68,6 +77,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			10: {
 				title: 'Fire and Blood',
+				episodeId: 'tt00000010',
 				seasonNum: 1,
 				episodeNum: 10,
 				numVotes: 64746,
@@ -77,6 +87,7 @@ export const gameOfThronesRatings: Ratings = {
 		2: {
 			1: {
 				title: 'The North Remembers',
+				episodeId: 'tt00000011',
 				seasonNum: 2,
 				episodeNum: 1,
 				numVotes: 48596,
@@ -84,6 +95,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'The Night Lands',
+				episodeId: 'tt00000012',
 				seasonNum: 2,
 				episodeNum: 2,
 				numVotes: 46349,
@@ -91,6 +103,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'What Is Dead May Never Die',
+				episodeId: 'tt00000013',
 				seasonNum: 2,
 				episodeNum: 3,
 				numVotes: 45779,
@@ -98,6 +111,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'Garden of Bones',
+				episodeId: 'tt00000014',
 				seasonNum: 2,
 				episodeNum: 4,
 				numVotes: 44749,
@@ -105,6 +119,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'The Ghost of Harrenhal',
+				episodeId: 'tt00000015',
 				seasonNum: 2,
 				episodeNum: 5,
 				numVotes: 44936,
@@ -112,6 +127,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'The Old Gods and the New',
+				episodeId: 'tt00000016',
 				seasonNum: 2,
 				episodeNum: 6,
 				numVotes: 46838,
@@ -119,6 +135,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'A Man Without Honor',
+				episodeId: 'tt00000017',
 				seasonNum: 2,
 				episodeNum: 7,
 				numVotes: 45347,
@@ -126,6 +143,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'The Prince of Winterfell',
+				episodeId: 'tt00000018',
 				seasonNum: 2,
 				episodeNum: 8,
 				numVotes: 44572,
@@ -133,6 +151,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'Blackwater',
+				episodeId: 'tt00000019',
 				seasonNum: 2,
 				episodeNum: 9,
 				numVotes: 84365,
@@ -140,6 +159,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			10: {
 				title: 'Valar Morghulis',
+				episodeId: 'tt00000020',
 				seasonNum: 2,
 				episodeNum: 10,
 				numVotes: 54893,
@@ -149,6 +169,7 @@ export const gameOfThronesRatings: Ratings = {
 		3: {
 			1: {
 				title: 'Valar Dohaeris',
+				episodeId: 'tt00000021',
 				seasonNum: 3,
 				episodeNum: 1,
 				numVotes: 46736,
@@ -156,6 +177,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'Dark Wings, Dark Words',
+				episodeId: 'tt00000022',
 				seasonNum: 3,
 				episodeNum: 2,
 				numVotes: 43795,
@@ -163,6 +185,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'Walk of Punishment',
+				episodeId: 'tt00000023',
 				seasonNum: 3,
 				episodeNum: 3,
 				numVotes: 44308,
@@ -170,6 +193,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'And Now His Watch Is Ended',
+				episodeId: 'tt00000024',
 				seasonNum: 3,
 				episodeNum: 4,
 				numVotes: 61149,
@@ -177,6 +201,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'Kissed by Fire',
+				episodeId: 'tt00000025',
 				seasonNum: 3,
 				episodeNum: 5,
 				numVotes: 46478,
@@ -184,6 +209,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'The Climb',
+				episodeId: 'tt00000026',
 				seasonNum: 3,
 				episodeNum: 6,
 				numVotes: 45051,
@@ -191,6 +217,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'The Bear and the Maiden Fair',
+				episodeId: 'tt00000027',
 				seasonNum: 3,
 				episodeNum: 7,
 				numVotes: 43632,
@@ -198,6 +225,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'Second Sons',
+				episodeId: 'tt00000028',
 				seasonNum: 3,
 				episodeNum: 8,
 				numVotes: 44913,
@@ -205,6 +233,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'The Rains of Castamere',
+				episodeId: 'tt00000029',
 				seasonNum: 3,
 				episodeNum: 9,
 				numVotes: 181506,
@@ -212,6 +241,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			10: {
 				title: 'Mhysa',
+				episodeId: 'tt00000030',
 				seasonNum: 3,
 				episodeNum: 10,
 				numVotes: 51090,
@@ -221,6 +251,7 @@ export const gameOfThronesRatings: Ratings = {
 		4: {
 			1: {
 				title: 'Two Swords',
+				episodeId: 'tt00000031',
 				seasonNum: 4,
 				episodeNum: 1,
 				numVotes: 53565,
@@ -228,6 +259,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'The Lion and the Rose',
+				episodeId: 'tt00000032',
 				seasonNum: 4,
 				episodeNum: 2,
 				numVotes: 87730,
@@ -235,6 +267,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'Breaker of Chains',
+				episodeId: 'tt00000033',
 				seasonNum: 4,
 				episodeNum: 3,
 				numVotes: 47073,
@@ -242,6 +275,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'Oathkeeper',
+				episodeId: 'tt00000034',
 				seasonNum: 4,
 				episodeNum: 4,
 				numVotes: 45478,
@@ -249,6 +283,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'First of His Name',
+				episodeId: 'tt00000035',
 				seasonNum: 4,
 				episodeNum: 5,
 				numVotes: 44842,
@@ -256,6 +291,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'The Laws of Gods and Men',
+				episodeId: 'tt00000036',
 				seasonNum: 4,
 				episodeNum: 6,
 				numVotes: 90236,
@@ -263,6 +299,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'Mockingbird',
+				episodeId: 'tt00000037',
 				seasonNum: 4,
 				episodeNum: 7,
 				numVotes: 49485,
@@ -270,6 +307,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'The Mountain and the Viper',
+				episodeId: 'tt00000038',
 				seasonNum: 4,
 				episodeNum: 8,
 				numVotes: 87969,
@@ -277,6 +315,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'The Watchers on the Wall',
+				episodeId: 'tt00000039',
 				seasonNum: 4,
 				episodeNum: 9,
 				numVotes: 80104,
@@ -284,6 +323,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			10: {
 				title: 'The Children',
+				episodeId: 'tt00000040',
 				seasonNum: 4,
 				episodeNum: 10,
 				numVotes: 78705,
@@ -293,6 +333,7 @@ export const gameOfThronesRatings: Ratings = {
 		5: {
 			1: {
 				title: 'The Wars to Come',
+				episodeId: 'tt00000041',
 				seasonNum: 5,
 				episodeNum: 1,
 				numVotes: 45887,
@@ -300,6 +341,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'The House of Black and White',
+				episodeId: 'tt00000042',
 				seasonNum: 5,
 				episodeNum: 2,
 				numVotes: 42629,
@@ -307,6 +349,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'High Sparrow',
+				episodeId: 'tt00000043',
 				seasonNum: 5,
 				episodeNum: 3,
 				numVotes: 41554,
@@ -314,6 +357,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'Sons of the Harpy',
+				episodeId: 'tt00000044',
 				seasonNum: 5,
 				episodeNum: 4,
 				numVotes: 42454,
@@ -321,6 +365,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'Kill the Boy',
+				episodeId: 'tt00000045',
 				seasonNum: 5,
 				episodeNum: 5,
 				numVotes: 42627,
@@ -328,6 +373,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'Unbowed, Unbent, Unbroken',
+				episodeId: 'tt00000046',
 				seasonNum: 5,
 				episodeNum: 6,
 				numVotes: 49724,
@@ -335,6 +381,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'The Gift',
+				episodeId: 'tt00000047',
 				seasonNum: 5,
 				episodeNum: 7,
 				numVotes: 45050,
@@ -342,6 +389,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'Hardhome',
+				episodeId: 'tt00000048',
 				seasonNum: 5,
 				episodeNum: 8,
 				numVotes: 142038,
@@ -349,12 +397,14 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'The Dance of Dragons',
+				episodeId: 'tt00000049',
 				seasonNum: 5,
 				episodeNum: 9,
 				numVotes: 64946,
 				rating: 9.4,
 			},
 			10: {
+				episodeId: 'tt3658062',
 				title: "Mother's Mercy",
 				seasonNum: 5,
 				episodeNum: 10,
@@ -365,6 +415,7 @@ export const gameOfThronesRatings: Ratings = {
 		6: {
 			1: {
 				title: 'The Red Woman',
+				episodeId: 'tt00000050',
 				seasonNum: 6,
 				episodeNum: 1,
 				numVotes: 55948,
@@ -372,6 +423,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'Home',
+				episodeId: 'tt00000051',
 				seasonNum: 6,
 				episodeNum: 2,
 				numVotes: 64952,
@@ -379,6 +431,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'Oathbreaker',
+				episodeId: 'tt00000052',
 				seasonNum: 6,
 				episodeNum: 3,
 				numVotes: 50563,
@@ -386,6 +439,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'Book of the Stranger',
+				episodeId: 'tt00000053',
 				seasonNum: 6,
 				episodeNum: 4,
 				numVotes: 54954,
@@ -393,6 +447,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'The Door',
+				episodeId: 'tt00000054',
 				seasonNum: 6,
 				episodeNum: 5,
 				numVotes: 106836,
@@ -400,6 +455,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'Blood of My Blood',
+				episodeId: 'tt00000055',
 				seasonNum: 6,
 				episodeNum: 6,
 				numVotes: 49486,
@@ -407,6 +463,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'The Broken Man',
+				episodeId: 'tt00000056',
 				seasonNum: 6,
 				episodeNum: 7,
 				numVotes: 48765,
@@ -414,6 +471,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			8: {
 				title: 'No One',
+				episodeId: 'tt00000057',
 				seasonNum: 6,
 				episodeNum: 8,
 				numVotes: 53462,
@@ -421,6 +479,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			9: {
 				title: 'Battle of the Bastards',
+				episodeId: 'tt00000058',
 				seasonNum: 6,
 				episodeNum: 9,
 				numVotes: 307112,
@@ -428,6 +487,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			10: {
 				title: 'The Winds of Winter',
+				episodeId: 'tt00000059',
 				seasonNum: 6,
 				episodeNum: 10,
 				numVotes: 226340,
@@ -437,6 +497,7 @@ export const gameOfThronesRatings: Ratings = {
 		7: {
 			1: {
 				title: 'Dragonstone',
+				episodeId: 'tt00000060',
 				seasonNum: 7,
 				episodeNum: 1,
 				numVotes: 67434,
@@ -444,12 +505,14 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'Stormborn',
+				episodeId: 'tt00000061',
 				seasonNum: 7,
 				episodeNum: 2,
 				numVotes: 60613,
 				rating: 8.8,
 			},
 			3: {
+				episodeId: 'tt4283088',
 				title: "The Queen's Justice",
 				seasonNum: 7,
 				episodeNum: 3,
@@ -458,6 +521,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'The Spoils of War',
+				episodeId: 'tt00000062',
 				seasonNum: 7,
 				episodeNum: 4,
 				numVotes: 123083,
@@ -465,6 +529,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'Eastwatch',
+				episodeId: 'tt00000063',
 				seasonNum: 7,
 				episodeNum: 5,
 				numVotes: 60358,
@@ -472,6 +537,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'Beyond the Wall',
+				episodeId: 'tt00000064',
 				seasonNum: 7,
 				episodeNum: 6,
 				numVotes: 86243,
@@ -479,6 +545,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			7: {
 				title: 'The Dragon and the Wolf',
+				episodeId: 'tt00000065',
 				seasonNum: 7,
 				episodeNum: 7,
 				numVotes: 87860,
@@ -488,6 +555,7 @@ export const gameOfThronesRatings: Ratings = {
 		8: {
 			1: {
 				title: 'Winterfell',
+				episodeId: 'tt00000066',
 				seasonNum: 8,
 				episodeNum: 1,
 				numVotes: 157936,
@@ -495,6 +563,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			2: {
 				title: 'A Knight of the Seven Kingdoms',
+				episodeId: 'tt00000067',
 				seasonNum: 8,
 				episodeNum: 2,
 				numVotes: 157964,
@@ -502,6 +571,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			3: {
 				title: 'The Long Night',
+				episodeId: 'tt00000068',
 				seasonNum: 8,
 				episodeNum: 3,
 				numVotes: 252781,
@@ -509,6 +579,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			4: {
 				title: 'The Last of the Starks',
+				episodeId: 'tt00000069',
 				seasonNum: 8,
 				episodeNum: 4,
 				numVotes: 193045,
@@ -516,6 +587,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			5: {
 				title: 'The Bells',
+				episodeId: 'tt00000070',
 				seasonNum: 8,
 				episodeNum: 5,
 				numVotes: 224620,
@@ -523,6 +595,7 @@ export const gameOfThronesRatings: Ratings = {
 			},
 			6: {
 				title: 'The Iron Throne',
+				episodeId: 'tt00000071',
 				seasonNum: 8,
 				episodeNum: 6,
 				numVotes: 301691,

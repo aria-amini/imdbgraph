@@ -33,6 +33,7 @@ export async function getRatingsDb(
 
 	const episodes = await db
 		.select({
+			episodeId: episode.episodeId,
 			title: episode.title,
 			seasonNum: episode.seasonNum,
 			episodeNum: episode.episodeNum,

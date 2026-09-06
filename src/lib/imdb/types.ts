@@ -5,7 +5,7 @@ import type { episode, show } from '@/db/tables'
 export type Show = InferSelectModel<typeof show>
 export type Episode = Pick<
 	InferSelectModel<typeof episode>,
-	'title' | 'seasonNum' | 'episodeNum' | 'rating' | 'numVotes'
+	'episodeId' | 'title' | 'seasonNum' | 'episodeNum' | 'rating' | 'numVotes'
 >
 
 export type RatingsData = Record<number, Record<number, Episode>>
