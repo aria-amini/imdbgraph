@@ -1,5 +1,7 @@
 'use client'
 
+import { cn } from 'cn'
+import type { ReactNode } from 'react'
 import {
 	CartesianGrid,
 	Line,
@@ -35,7 +37,13 @@ const episodeSchema: z.ZodType<Episode> = z.object({
 })
 
 /** Renders episode ratings as a season-by-season line chart. */
-export function Graph({ ratings }: { ratings: Ratings }) {
+export function Graph({
+	ratings,
+	toolbar,
+}: {
+	ratings: Ratings
+	toolbar?: ReactNode
+}) {
 	const { data: chartData, seasons } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
 	const chartColors = [
@@ -55,6 +63,15 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 
 	return (
 		<Card data-testid="ratings-graph" className="px-4 py-6 sm:px-6 lg:px-8">
+			{toolbar && (
+				<div
+					className={cn(
+						'flex items-center justify-end border-border border-b py-2 pr-4 sm:pr-6 lg:pr-8',
+					)}
+				>
+					{toolbar}
+				</div>
+			)}
 			<CardContent className="px-0">
 				<ChartContainer
 					config={chartConfig}

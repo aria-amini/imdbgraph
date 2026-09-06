@@ -2,7 +2,6 @@
 
 import { cn } from 'cn'
 import { ExternalLink, Star } from 'lucide-react'
-import type { ReactNode } from 'react'
 
 import type { ShowImage } from '@/lib/images/thumbnail'
 import { ratingColor } from '@/lib/imdb/rating-color'
@@ -57,14 +56,11 @@ function Stat({
 export function ShowHeader({
 	ratings,
 	image,
-	action,
 }: {
 	ratings: Ratings
 	image: ShowImage | null
-	action?: ReactNode
 }) {
 	const { show } = ratings
-	const seasonCount = Object.keys(ratings.allEpisodeRatings).length
 	const schedule = scheduleLine(image)
 
 	return (
@@ -95,24 +91,21 @@ export function ShowHeader({
 			)}
 
 			<div className="min-w-0 flex-1">
-				<div className="flex items-start justify-between gap-4">
-					<div className="min-w-0">
-						<h1 className="text-3xl leading-[1.05] font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
-							{show.title}
-						</h1>
-						<p className="text-muted-foreground mt-2 font-mono text-[11px] tracking-widest uppercase">
-							{formatYears(show)}
-							{show.genres && show.genres.length > 0 && (
-								<span aria-hidden> · </span>
-							)}
-							{show.genres?.join(' · ')}
-						</p>
-					</div>
-					{action && <div className="shrink-0">{action}</div>}
-				</div>
+				<h1 className="text-3xl leading-[1.05] font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
+					{show.title}
+				</h1>
+				<p className="text-muted-foreground mt-2 font-mono text-[11px] tracking-widest uppercase">
+					{formatYears(show)}
+					{show.genres && show.genres.length > 0 && (
+						<span aria-hidden> · </span>
+					)}
+					{show.genres?.join(' · ')}
+				</p>
 
-				<dl className="border-border mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y py-3">
-					<div className="flex items-center gap-1.5">
+				<dl
+					className={cn('mt-6 flex flex-wrap items-baseline gap-x-8 gap-y-3')}
+				>
+					<div className="flex items-baseline gap-1.5">
 						<Star
 							className="size-4 shrink-0"
 							aria-hidden
@@ -120,18 +113,15 @@ export function ShowHeader({
 						/>
 						<dt className="sr-only">IMDb rating</dt>
 						<dd className="flex items-baseline gap-1.5">
-							<span className="text-sm font-bold tabular-nums">
+							<span className="text-2xl leading-none font-black tabular-nums sm:text-3xl">
 								{show.rating.toFixed(1)}
 							</span>
-							<span className="text-muted-foreground text-[10px] tracking-widest uppercase">
+							<span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
 								/ 10
 							</span>
 						</dd>
 					</div>
 					<Stat value={show.numVotes.toLocaleString('en-US')} label="votes" />
-					{seasonCount > 0 && (
-						<Stat value={String(seasonCount)} label="seasons" />
-					)}
 					{show.runtimeMinutes != null && (
 						<Stat value={`~${show.runtimeMinutes}m`} label="per ep" />
 					)}

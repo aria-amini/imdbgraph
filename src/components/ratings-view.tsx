@@ -58,23 +58,17 @@ export function RatingsView({
 		setIsHydrated(true)
 	}, [])
 
+	const toolbar = (
+		<ViewToggle view={view} onViewChange={setView} disabled={!isHydrated} />
+	)
+
 	return (
 		<div>
-			<ShowHeader
-				ratings={ratings}
-				image={image}
-				action={
-					<ViewToggle
-						view={view}
-						onViewChange={setView}
-						disabled={!isHydrated}
-					/>
-				}
-			/>
+			<ShowHeader ratings={ratings} image={image} />
 			{view === 'blocks' ? (
-				<Block ratings={ratings} />
+				<Block ratings={ratings} toolbar={toolbar} />
 			) : (
-				<Graph ratings={ratings} />
+				<Graph ratings={ratings} toolbar={toolbar} />
 			)}
 		</div>
 	)

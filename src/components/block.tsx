@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import type { ReactNode } from 'react'
 
 import { ratingColor } from '@/lib/imdb/rating-color'
 import type { Episode, Ratings } from '@/lib/imdb/types'
@@ -7,7 +8,13 @@ function episodeLabel(episode: Episode): string {
 	return `Season ${episode.seasonNum}, episode ${episode.episodeNum}: ${episode.title}. Rating ${episode.rating.toFixed(1)} out of 10. Opens IMDb in a new tab.`
 }
 
-export function Block({ ratings }: { ratings: Ratings }) {
+export function Block({
+	ratings,
+	toolbar,
+}: {
+	ratings: Ratings
+	toolbar?: ReactNode
+}) {
 	const seasons = Object.entries(ratings.allEpisodeRatings)
 		.map(([seasonNum, episodes]) => ({
 			seasonNum: Number(seasonNum),
@@ -23,6 +30,15 @@ export function Block({ ratings }: { ratings: Ratings }) {
 			data-testid="ratings-block"
 			className={cn('mx-auto max-w-7xl border border-border bg-card/35')}
 		>
+			{toolbar && (
+				<div
+					className={cn(
+						'flex items-center justify-end border-border border-b px-4 py-2 sm:px-6 lg:px-8',
+					)}
+				>
+					{toolbar}
+				</div>
+			)}
 			<div
 				className={cn('flex flex-col gap-4 px-4 py-6 sm:gap-6 sm:px-6 lg:px-8')}
 				aria-label="Episode ratings by season"
