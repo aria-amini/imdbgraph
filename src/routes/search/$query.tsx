@@ -1,0 +1,77 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
+import { cn } from 'cn'
+import { Star } from 'lucide-react'
+
+import { Navbar } from '@/components/navbar'
+import { SearchBar } from '@/components/search-bar'
+import { getSearchResults } from '@/lib/imdb/search'
+import type { Suggestion } from '@/lib/imdb/suggestions'
+import { formatYears } from '@/lib/imdb/types'
+
+export const Route = createFileRoute('/search/$query')({
+	component: SearchResults,
+	loader: async ({ params }) => {
+		const query = params.query.trim()
+		return {
+			query,
+			results: await getSearchResults({ data: { query } }),
+		}
+	},
+})
+
+function SearchResults() {
+	const { query, results } = Route.useLoaderData()
+
+	return (
+		<>
+			<Navbar center={<SearchBar className={cn('w-full')} />} />
+			<main className={cn('mx-auto w-full max-w-3xl px-4 py-10 sm:px-6')}>
+				<h1 className={cn('text-3xl font-black tracking-tight sm:text-4xl')}>
+					Search results
+				</h1>
+				<p className={cn('text-muted-foreground mt-2 text-sm')}>
+					Matches for “{query}”
+				</p>
+
+				{results.length > 0 ? (
+					<div className={cn('mt-8 border-y border-border')}>
+						{results.map((show) => (
+							<ShowResult key={show.imdbId} show={show} />
+						))}
+					</div>
+				) : (
+					<p className={cn('text-muted-foreground mt-12 text-center text-sm')}>
+						No TV shows found. Try a different search.
+					</p>
+				)}
+			</main>
+		</>
+	)
+}
+
+function ShowResult({ show }: { show: Suggestion }) {
+	return (
+		<Link
+			to="/ratings/$id"
+			params={{ id: show.imdbId }}
+			className={cn(
+				'flex items-center gap-4 border-b border-border px-2 py-4 transition-colors last:border-b-0 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
+			)}
+		>
+			<div className={cn('min-w-0 flex-1')}>
+				<span className={cn('block truncate font-medium')}>{show.title}</span>
+				<span className={cn('text-muted-foreground mt-1 block text-xs')}>
+					{formatYears(show)}
+				</span>
+			</div>
+			<div className={cn('flex shrink-0 items-center gap-1 text-sm')}>
+				<span>{show.rating.toFixed(1)}</span>
+				<Star
+					className={cn('text-primary size-4 fill-current')}
+					aria-hidden="true"
+				/>
+			</div>
+		</Link>
+	)
+}

@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
-import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
+import { RatingsView } from '@/components/ratings-view'
 import { SearchBar } from '@/components/search-bar'
 import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
 import { type Ratings } from '@/lib/imdb/types'
@@ -40,14 +40,14 @@ function Ratings() {
 
 	return (
 		<>
-			<Navbar center={<SearchBar className="w-full max-w-md" />} />
+			<Navbar center={<SearchBar className="w-full" />} />
 			<main className="px-2 py-3 sm:px-4 lg:px-8">
 				{!hasRatings(ratings) ? (
 					<h1 className="pt-8 text-center text-6xl leading-tight">
 						No Ratings Found
 					</h1>
 				) : (
-					<Graph ratings={ratings} />
+					<RatingsView ratings={ratings} />
 				)}
 			</main>
 		</>
