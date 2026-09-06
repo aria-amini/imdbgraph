@@ -11,9 +11,10 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 
 ## Local URLs
 
-Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
-worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from
-root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+Pitchfork maps the default workspace to `https://<app>.lvh.ariaamini.com` and
+each additional workspace to `https://<workspace>-<app>.lvh.ariaamini.com`.
+Slugs derive from directory names (`mise-tasks/setup.ts`), which also writes
+`BASE_URL`.
 
 ## Commands
 

@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Navbar } from '@/components/navbar'
 import { RatingsView } from '@/components/ratings-view'
 import { SearchBar } from '@/components/search-bar'
+import { getShowImage } from '@/lib/images/thumbnail'
 import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
 import { type Ratings } from '@/lib/imdb/types'
 
@@ -25,18 +26,21 @@ export const Route = createFileRoute('/ratings/$id')({
 			throw notFound()
 		}
 
-		const ratings = await getRatings({ data: { showId: showId.data } })
+		const [ratings, image] = await Promise.all([
+			getRatings({ data: { showId: showId.data } }),
+			getShowImage({ data: showId.data }),
+		])
 
 		if (!ratings) {
 			throw notFound()
 		}
 
-		return ratings
+		return { ratings, image }
 	},
 })
 
 function Ratings() {
-	const ratings = Route.useLoaderData()
+	const { ratings, image } = Route.useLoaderData()
 
 	return (
 		<>
@@ -47,7 +51,7 @@ function Ratings() {
 						No Ratings Found
 					</h1>
 				) : (
-					<RatingsView ratings={ratings} />
+					<RatingsView ratings={ratings} image={image} />
 				)}
 			</main>
 		</>

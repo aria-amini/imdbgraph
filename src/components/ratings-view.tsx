@@ -5,11 +5,18 @@ import { useEffect, useState } from 'react'
 
 import { Block } from '@/components/block'
 import { Graph } from '@/components/graph'
+import type { ShowImage } from '@/lib/images/thumbnail'
 import type { Ratings } from '@/lib/imdb/types'
 
 type View = 'blocks' | 'graph'
 
-export function RatingsView({ ratings }: { ratings: Ratings }) {
+export function RatingsView({
+	ratings,
+	image,
+}: {
+	ratings: Ratings
+	image: ShowImage | null
+}) {
 	const [view, setView] = useState<View>('blocks')
 	const [isHydrated, setIsHydrated] = useState(false)
 
@@ -19,7 +26,18 @@ export function RatingsView({ ratings }: { ratings: Ratings }) {
 
 	return (
 		<div>
-			<div className={cn('mb-2 flex justify-end')}>
+			<div className="mb-3 flex items-start justify-between gap-4">
+				{image ? (
+					<img
+						src={image.url}
+						alt={`${ratings.show.title} poster`}
+						width={image.width ?? undefined}
+						height={image.height ?? undefined}
+						className="h-48 w-auto rounded-md border border-border"
+					/>
+				) : (
+					<span aria-hidden />
+				)}
 				<fieldset className={cn('flex border border-border p-0.5')}>
 					<legend className={cn('sr-only')}>Ratings view</legend>
 					{(['blocks', 'graph'] as const).map((option) => (

@@ -15,6 +15,7 @@ import { Route as ApiSuggestionsRouteImport } from './routes/api/suggestions'
 import { Route as RatingsIdRouteImport } from './routes/ratings/$id'
 import { Route as SearchQueryRouteImport } from './routes/search/$query'
 import { Route as ApiIngestSplatRouteImport } from './routes/api/ingest/$'
+import { Route as ApiThumbnailsIdRouteImport } from './routes/api/thumbnails/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const ApiIngestSplatRoute = ApiIngestSplatRouteImport.update({
   path: '/api/ingest/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiThumbnailsIdRoute = ApiThumbnailsIdRouteImport.update({
+  id: '/api/thumbnails/$id',
+  path: '/api/thumbnails/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/ratings/$id': typeof RatingsIdRoute
   '/search/$query': typeof SearchQueryRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
+  '/api/thumbnails/$id': typeof ApiThumbnailsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/ratings/$id': typeof RatingsIdRoute
   '/search/$query': typeof SearchQueryRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
+  '/api/thumbnails/$id': typeof ApiThumbnailsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/ratings/$id': typeof RatingsIdRoute
   '/search/$query': typeof SearchQueryRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
+  '/api/thumbnails/$id': typeof ApiThumbnailsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/ratings/$id'
     | '/search/$query'
     | '/api/ingest/$'
+    | '/api/thumbnails/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/ratings/$id'
     | '/search/$query'
     | '/api/ingest/$'
+    | '/api/thumbnails/$id'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/ratings/$id'
     | '/search/$query'
     | '/api/ingest/$'
+    | '/api/thumbnails/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   RatingsIdRoute: typeof RatingsIdRoute
   SearchQueryRoute: typeof SearchQueryRoute
   ApiIngestSplatRoute: typeof ApiIngestSplatRoute
+  ApiThumbnailsIdRoute: typeof ApiThumbnailsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIngestSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/thumbnails/$id': {
+      id: '/api/thumbnails/$id'
+      path: '/api/thumbnails/$id'
+      fullPath: '/api/thumbnails/$id'
+      preLoaderRoute: typeof ApiThumbnailsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   RatingsIdRoute: RatingsIdRoute,
   SearchQueryRoute: SearchQueryRoute,
   ApiIngestSplatRoute: ApiIngestSplatRoute,
+  ApiThumbnailsIdRoute: ApiThumbnailsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

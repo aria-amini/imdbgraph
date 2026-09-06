@@ -262,16 +262,19 @@ function slugify(value: string): string {
 	return `${slug.slice(0, 63 - suffix.length - 1).replace(/-+$/, '')}-${suffix}`
 }
 
-// Registers a stable https://<slug>.<tld> URL for every workspace. Explicit
-// workspace slugs avoid relying on proxy.worktree auto-discovery, which can
-// route a workspace hostname to the default daemon when its mapping is stale.
-// Best effort: pitchfork is a local convenience, never a bootstrap blocker.
-// `proxy trust` needs sudo, so it stays a one-time manual step.
+// Registers a stable https://<slug>.<tld> URL for every workspace: the app
+// slug for the default workspace, `<workspace>-<app>` for every other one.
+// Explicit workspace slugs avoid relying on proxy.worktree auto-discovery,
+// which can route a workspace hostname to the default daemon when its mapping
+// is stale. Best effort: pitchfork is a local convenience, never a bootstrap
+// blocker. `proxy trust` needs sudo, so it stays a one-time manual step.
 function registerProxySlug(mainRoot: string): string {
 	const isDefaultWorkspace = realpathSync('.') === mainRoot
-	const slug = slugify(
-		basename(isDefaultWorkspace ? mainRoot : realpathSync('.')),
-	)
+	const appSlug = slugify(basename(mainRoot))
+	const dirLabel = slugify(basename(realpathSync('.')))
+	const slug = isDefaultWorkspace
+		? appSlug
+		: slugify(`${dirLabel}-${appSlug}`)
 	try {
 		pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
 		pitchfork([
@@ -333,11 +336,7 @@ function main(): void {
 	const mainRoot = defaultWorkspaceRoot()
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
-	const worktreeLabel = slugify(worktree)
-	const proxyHost =
-		worktreeLabel === proxySlug
-			? `${proxySlug}.${tld}`
-			: `${worktreeLabel}.${proxySlug}.${tld}`
+	const proxyHost = `${proxySlug}.${tld}`
 	const proxyUp = pitchforkAvailable()
 
 	updateEnvFile(

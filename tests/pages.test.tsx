@@ -38,25 +38,25 @@ const pages = [
 		component: RatingsRoute.options.component as ComponentType,
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
-		setup: () => {
-			;(
-				RatingsRoute as unknown as { useLoaderData: () => unknown }
-			).useLoaderData = () => gameOfThronesRatings
-		},
+	setup: () => {
+		;(
+			RatingsRoute as unknown as { useLoaderData: () => unknown }
+		).useLoaderData = () => ({ ratings: gameOfThronesRatings, image: null })
 	},
-	{
-		name: 'ratings-game-of-thrones-mobile',
-		path: '/ratings/$id',
-		component: RatingsRoute.options.component as ComponentType,
-		waitFor: (screen) =>
-			screen.getByRole('heading', { name: /game of thrones/i }),
-		viewport: { width: 375, height: 812 },
-		setup: () => {
-			;(
-				RatingsRoute as unknown as { useLoaderData: () => unknown }
-			).useLoaderData = () => gameOfThronesRatings
-		},
+},
+{
+	name: 'ratings-game-of-thrones-mobile',
+	path: '/ratings/$id',
+	component: RatingsRoute.options.component as ComponentType,
+	waitFor: (screen) =>
+		screen.getByRole('heading', { name: /game of thrones/i }),
+	viewport: { width: 375, height: 812 },
+	setup: () => {
+		;(
+			RatingsRoute as unknown as { useLoaderData: () => unknown }
+		).useLoaderData = () => ({ ratings: gameOfThronesRatings, image: null })
 	},
+},
 ] satisfies PageScreenshotCase[]
 
 test.each(pages)('$name page matches screenshot', async (visualPage) => {
