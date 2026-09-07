@@ -17,3 +17,10 @@ e2e/.auth
 pitchfork.local.toml
 
 src/components/__screenshots__/
+
+.lavish/
+.impeccable/
+
+# Vitest failure screenshots (auto-captured on red runs)
+tests/**/__screenshots__/**/*-*.png
+!tests/**/__screenshots__/**/*-chromium-linux.png

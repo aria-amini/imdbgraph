@@ -130,6 +130,8 @@ async function transfer(client: PoolClient) {
       tt.primary_title as title,
       tt.start_year,
       tt.end_year,
+      string_to_array(tt.genres, ',') AS genres,
+      tt.runtime_minutes,
       COALESCE(tr.imdb_rating, 0.0) AS rating,
       COALESCE(tr.num_votes, 0) AS num_votes
     FROM temp_title tt JOIN temp_ratings tr ON tt.imdb_id = tr.imdb_id
@@ -315,7 +317,9 @@ async function copyFromImdbStream(
 		await finished(ingestStream)
 		console.log(`Successfully transferred ${file}`)
 	} catch (error) {
-		ingestStream.destroy(error as Error)
+		ingestStream.destroy(
+			error instanceof Error ? error : new Error(String(error)),
+		)
 		throw error
 	} finally {
 		reader.close()

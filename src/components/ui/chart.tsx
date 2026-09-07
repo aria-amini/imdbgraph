@@ -9,6 +9,9 @@ const THEMES = { light: '', dark: '.dark' } as const
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
+type ChartCustomProperties = React.CSSProperties &
+	Record<`--${string}`, string | number | undefined>
+
 export type ChartConfig = Record<
 	string,
 	{
@@ -97,7 +100,7 @@ ${prefix} [data-chart=${id}] {
 ${colorConfig
 	.map(([key, itemConfig]) => {
 		const color =
-			itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
+			(theme === 'light' ? itemConfig.theme?.light : itemConfig.theme?.dark) ??
 			itemConfig.color
 		return color ? `  --color-${key}: ${color};` : null
 	})
@@ -202,6 +205,10 @@ function ChartTooltipContent({
 						const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`
 						const itemConfig = getPayloadConfigFromPayload(config, item, key)
 						const indicatorColor = color ?? item.payload?.fill ?? item.color
+						const indicatorStyle: ChartCustomProperties = {
+							'--color-bg': indicatorColor,
+							'--color-border': indicatorColor,
+						}
 
 						return (
 							<div
@@ -230,12 +237,7 @@ function ChartTooltipContent({
 															'my-0.5': nestLabel && indicator === 'dashed',
 														},
 													)}
-													style={
-														{
-															'--color-bg': indicatorColor,
-															'--color-border': indicatorColor,
-														} as React.CSSProperties
-													}
+													style={indicatorStyle}
 												/>
 											)
 										)}
@@ -327,6 +329,11 @@ function ChartLegendContent({
 	)
 }
 
+function readStringField(source: object, key: string): string | undefined {
+	const value: unknown = Reflect.get(source, key)
+	return typeof value === 'string' ? value : undefined
+}
+
 function getPayloadConfigFromPayload(
 	config: ChartConfig,
 	payload: unknown,
@@ -345,19 +352,11 @@ function getPayloadConfigFromPayload(
 
 	let configLabelKey: string = key
 
-	if (
-		key in payload &&
-		typeof payload[key as keyof typeof payload] === 'string'
-	) {
-		configLabelKey = payload[key as keyof typeof payload] as string
-	} else if (
-		payloadPayload &&
-		key in payloadPayload &&
-		typeof payloadPayload[key as keyof typeof payloadPayload] === 'string'
-	) {
-		configLabelKey = payloadPayload[
-			key as keyof typeof payloadPayload
-		] as string
+	const direct = readStringField(payload, key)
+	if (direct !== undefined) {
+		configLabelKey = direct
+	} else if (payloadPayload) {
+		configLabelKey = readStringField(payloadPayload, key) ?? configLabelKey
 	}
 
 	return configLabelKey in config ? config[configLabelKey] : config[key]

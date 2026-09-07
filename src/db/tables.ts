@@ -40,6 +40,8 @@ export const show = pgTable(
 		title: text().notNull(),
 		startYear: char('start_year', { length: 4 }).notNull(),
 		endYear: char('end_year', { length: 4 }),
+		genres: text().array(),
+		runtimeMinutes: integer('runtime_minutes'),
 		rating: doublePrecision().default(0).notNull(),
 		numVotes: integer('num_votes').default(0).notNull(),
 	},
@@ -49,9 +51,44 @@ export const show = pgTable(
 	],
 )
 
+export const thumbnail = pgTable(
+	'thumbnail',
+	{
+		imdbId: varchar('imdb_id', { length: 10 }).primaryKey().notNull(),
+		// Null marks a known-missing image, so the upstream API is not re-queried.
+		objectKey: text('object_key'),
+		contentType: text('content_type'),
+		width: integer(),
+		height: integer(),
+		status: text(),
+		network: text(),
+		airsDays: text('airs_days').array(),
+		airsTime: text('airs_time'),
+		fetchedAt: timestamp('fetched_at', { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.imdbId],
+			foreignColumns: [show.imdbId],
+			name: 'thumbnail_show_imdb_id_fk',
+		}),
+	],
+)
+
 export const scrapeRun = pgTable('scrape_run', {
 	id: serial().primaryKey().notNull(),
 	completedAt: timestamp('completed_at', { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+})
+
+export const feedback = pgTable('feedback', {
+	id: serial().primaryKey().notNull(),
+	message: text().notNull(),
+	email: varchar('email', { length: 254 }),
+	createdAt: timestamp('created_at', { withTimezone: true })
 		.defaultNow()
 		.notNull(),
 })

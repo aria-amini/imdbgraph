@@ -22,7 +22,7 @@
 		"e2e": "varlock run -- playwright test",
 		"e2e:update": "varlock run -- playwright test --update-snapshots",
 		"report": "playwright show-report .playwright/report",
-		"compose:up": "docker compose --env-file .env.development.local up -d --wait --remove-orphans postgres",
+		"compose:up": "docker compose --env-file .env.development.local up -d --wait --remove-orphans postgres minio",
 		"compose:down": "docker compose --env-file .env.development.local down",
 		"compose:reset": "docker compose --env-file .env.development.local down --volumes --remove-orphans && vp run compose:up",
 		"db:push": "varlock run -- drizzle-kit push",
@@ -34,7 +34,9 @@
 		"dead-code": "fallow dead-code"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.908.0",
 		"@base-ui/react": "^1.8.0",
+		"@phosphor-icons/react": "^2.1.10",
 		"@rolldown/plugin-babel": "^0.2.3",
 		"@tanstack/react-query": "5.101.0",
 		"@tanstack/react-router": "1.170.18",
@@ -46,8 +48,7 @@
 		"cmdk": "^1.1.1",
 		"cn": "^0.2.5",
 		"drizzle-orm": "^0.45.1",
-		"lucide-react": "^1.16.0",
-		"nitro": "3.0.260610-beta",
+		"nitro": "3.0.260903-beta",
 		"pg": "^8.22.0",
 		"pg-copy-streams": "^7.0.0",
 		"posthog-js": "^1.391.2",
