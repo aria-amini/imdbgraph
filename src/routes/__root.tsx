@@ -1,3 +1,4 @@
+import { GithubLogo, LinkedinLogo } from '@phosphor-icons/react/dist/ssr'
 import type { QueryClient } from '@tanstack/react-query'
 import {
 	ClientOnly,
@@ -10,7 +11,15 @@ import {
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
-import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import { FeedbackDialog } from '@/components/feedback-dialog'
+import { ReportBug } from '@/components/report-bug'
+import { ThemeToggle } from '@/components/theme-toggle'
+import {
+	latestScrapeRunQuery,
+	scrapeRunStaleTime,
+} from '@/lib/imdb/scrape-run-query'
+import { SITE_LINKS } from '@/lib/site'
+import { themeInitScript } from '@/lib/theme'
 
 import appCss from '../styles.css?url'
 
@@ -33,8 +42,15 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
-	loader: async () => {
-		return { latestScrapeRun: await getLatestScrapeRun() }
+	loader: async ({ context: { queryClient } }) => {
+		const { queryKey } = latestScrapeRunQuery(0)
+		return {
+			latestScrapeRun: await queryClient.fetchQuery(
+				latestScrapeRunQuery(
+					scrapeRunStaleTime(queryClient.getQueryData<string>(queryKey)),
+				),
+			),
+		}
 	},
 	head: () => ({
 		meta: [
@@ -43,7 +59,7 @@ export const Route = createRootRouteWithContext<{
 			},
 			{
 				name: 'viewport',
-				content: 'width=device-width, initial-scale=1',
+				content: 'width=device-width, initial-scale=1, viewport-fit=cover',
 			},
 			{
 				title: 'IMDB Graph',
@@ -62,8 +78,9 @@ function DocumentShell({ children }: { children: ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
+				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
-			<body className="dark flex min-h-dvh min-w-80 flex-col font-sans">
+			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
 				{children}
 				<Scripts />
 			</body>
@@ -103,7 +120,7 @@ function RootComponent() {
 			<div className="flex-1">
 				<Outlet />
 			</div>
-			<DataLastUpdated completedAt={latestScrapeRun} />
+			<SiteFooter completedAt={latestScrapeRun} />
 			<ClientOnly fallback={null}>
 				<Analytics />
 			</ClientOnly>
@@ -111,15 +128,40 @@ function RootComponent() {
 	)
 }
 
-function DataLastUpdated({ completedAt }: { completedAt: string | null }) {
+function SiteFooter({ completedAt }: { completedAt: string | null }) {
 	const label = completedAt
 		? `Data last updated on ${formatDataLastUpdated(completedAt)}`
 		: 'Data has not been updated yet'
 
 	return (
-		<p className="text-muted-foreground/60 px-4 py-2 text-center text-xs">
-			{label}
-		</p>
+		<footer className="text-muted-foreground border-t px-4 py-4 md:px-6">
+			<div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2">
+				<p className="text-xs">{label}</p>
+				<div className="flex flex-wrap items-center gap-4 sm:ml-auto">
+					<a
+						href={SITE_LINKS.github}
+						target="_blank"
+						rel="noreferrer"
+						className="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
+					>
+						<GithubLogo aria-hidden className="size-3.5" weight="bold" />
+						GitHub
+					</a>
+					<a
+						href={SITE_LINKS.linkedin}
+						target="_blank"
+						rel="noreferrer"
+						className="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
+					>
+						<LinkedinLogo aria-hidden className="size-3.5" weight="bold" />
+						LinkedIn
+					</a>
+					<FeedbackDialog />
+					<ReportBug />
+					<ThemeToggle className="ml-1" />
+				</div>
+			</div>
+		</footer>
 	)
 }
 

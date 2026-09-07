@@ -1,7 +1,14 @@
 #!/usr/bin/env -S vp exec tsx
 //MISE description="Generate per-workspace ports and .env.development.local"
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import {
+	existsSync,
+	lstatSync,
+	readFileSync,
+	realpathSync,
+	unlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { basename } from 'node:path'
 
 const MASK_64 = (1n << 64n) - 1n
@@ -87,6 +94,14 @@ function run(command: string, args: string[]): string {
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'ignore'],
 	}).trim()
+}
+
+function tailscaleIp(): string | null {
+	try {
+		return run('tailscale', ['ip', '-4']) || null
+	} catch {
+		return null
+	}
 }
 
 function detectWorkspace(): { branch: string; worktree: string } {
@@ -255,22 +270,40 @@ function slugify(value: string): string {
 	return `${slug.slice(0, 63 - suffix.length - 1).replace(/-+$/, '')}-${suffix}`
 }
 
-// Registers a stable https://<slug>.<tld> URL for the project. Only the
-// default workspace registers; other jj workspaces are reached via
-// https://<workspace>.<slug>.<tld> through `proxy.worktree` auto-discovery.
-// Best effort: pitchfork is a local convenience, never a bootstrap blocker.
-// `proxy trust` needs sudo, so it stays a one-time manual step.
+// Registers a stable https://<slug>.<tld> URL for every workspace: the app
+// slug for the default workspace, `<workspace>-<app>` for every other one.
+// Explicit workspace slugs avoid relying on proxy.worktree auto-discovery,
+// which can route a workspace hostname to the default daemon when its mapping
+// is stale. Best effort: pitchfork is a local convenience, never a bootstrap
+// blocker. `proxy trust` needs sudo, so it stays a one-time manual step.
 function registerProxySlug(mainRoot: string): string {
-	const slug = slugify(basename(mainRoot))
-	if (realpathSync('.') === mainRoot) {
-		try {
-			pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
-			pitchfork(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
-		} catch {
-			// pitchfork unavailable — skip registration
-		}
+	const isDefaultWorkspace = realpathSync('.') === mainRoot
+	const appSlug = slugify(basename(mainRoot))
+	const dirLabel = slugify(basename(realpathSync('.')))
+	const slug = isDefaultWorkspace ? appSlug : slugify(`${dirLabel}-${appSlug}`)
+	try {
+		pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
+		pitchfork([
+			'proxy',
+			'add',
+			slug,
+			'--daemon',
+			'dev',
+			'--dir',
+			isDefaultWorkspace ? mainRoot : realpathSync('.'),
+		])
+	} catch {
+		// pitchfork unavailable — skip registration
 	}
 	return slug
+}
+
+function detachSymlink(path: string): void {
+	try {
+		if (lstatSync(path).isSymbolicLink()) unlinkSync(path)
+	} catch {
+		// The env file may not exist yet.
+	}
 }
 
 // Ports are stable once assigned: only regenerate when the env file is
@@ -290,36 +323,43 @@ function main(): void {
 	// nothing legitimate sets them (wt passes template vars, not env), and
 	// inherited stale values from another workspace must not steer setup.
 	const { branch, worktree } = detectWorkspace()
-	const compose = sanitizeDatabaseName(worktree)
+	const mainRoot = defaultWorkspaceRoot()
 	const existing = existingPorts(worktree)
 	const isForeign =
 		existsSync('.env.development.local') &&
 		readEnvFile('.env.development.local')['WORKTREE_NAME'] !== worktree
-	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
-	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
-	const postgresPort =
-		Number(existing['POSTGRES_PORT']) || hashPort(`db-${branch}`)
-	const minioPort =
-		Number(existing['MINIO_PORT']) || hashPort(`minio-${branch}`)
-	const minioConsolePort =
-		Number(existing['MINIO_CONSOLE_PORT']) ||
-		hashPort(`minio-console-${branch}`)
+	detachSymlink('.env.development.local')
 
-	const mainRoot = defaultWorkspaceRoot()
+	// All worktrees share one database and object store so scraped data is
+	// seeded once. The ports derive from fixed strings, so every workspace
+	// computes the same stack without coordination. Only APP_PORT stays
+	// per-worktree: each pitchfork daemon needs its own listening socket.
+	const postgresPort = hashPort('imdbgraph-shared-postgres')
+	const minioPort = hashPort('imdbgraph-shared-minio')
+	const minioConsolePort = hashPort('imdbgraph-shared-minio-console')
+	const database = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
+	const compose = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
+
+	// Ports are stable once assigned: only regenerate when the env file is
+	// absent or belongs to another worktree (wt copy-ignored clones the default
+	// workspace's file into new workspaces, which must not keep its ports —
+	// and re-running setup here must not move this workspace's existing
+	// database or registered OAuth redirect URIs out from under it).
+	// A foreign file is fully rewritten so the canonical key order is restored.
+	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
+
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
-	const worktreeLabel = slugify(worktree)
-	const proxyHost =
-		worktreeLabel === proxySlug
-			? `${proxySlug}.${tld}`
-			: `${worktreeLabel}.${proxySlug}.${tld}`
+	const proxyHost = `${proxySlug}.${tld}`
 	const proxyUp = pitchforkAvailable()
+	const tailscaleIP = tailscaleIp()
 
 	updateEnvFile(
 		'.env.development.local',
 		[
 			{
 				APP_PORT: String(appPort),
+				...(tailscaleIP ? { TAILSCALE_IP: tailscaleIP } : {}),
 				BASE_URL: proxyUp
 					? `https://${proxyHost}`
 					: `http://localhost:${appPort}`,
@@ -358,6 +398,10 @@ function main(): void {
 	console.log(`  minio:    http://localhost:${minioPort}`)
 	if (proxyUp) {
 		console.log(`  proxy:    https://${proxyHost}`)
+	}
+	if (tailscaleIP) {
+		console.log(`  app (tailnet): http://${tailscaleIP}:${appPort}`)
+		console.log(`  tailscale: ${tailscaleIP}`)
 	}
 }
 

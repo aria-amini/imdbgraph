@@ -1,27 +1,41 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1755320498466,
-			"tag": "0000_marvelous_quasimodo",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1778374493240,
-			"tag": "0001_glamorous_speed_demon",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1779020000000,
-			"tag": "0002_add_scrape_run",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1755320498466,
+      "tag": "0000_marvelous_quasimodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778374493240,
+      "tag": "0001_glamorous_speed_demon",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779020000000,
+      "tag": "0002_add_scrape_run",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788687889405,
+      "tag": "0003_aberrant_siren",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788711224956,
+      "tag": "0004_lucky_lily_hollister",
+      "breakpoints": true
+    }
+  ]
 }
