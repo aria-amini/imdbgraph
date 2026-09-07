@@ -56,9 +56,10 @@ jobs:
       - name: Run Tests
         run: vp test run --project browser
       - name: Upload screenshot diff report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: visual-test-report
           path: .vitest-attachments/
           retention-days: 14
+          if-no-files-found: ignore
