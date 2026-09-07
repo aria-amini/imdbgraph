@@ -111,7 +111,10 @@ export default defineConfig({
 		'*': 'vp check --fix',
 	},
 	root,
-	server: { host: '127.0.0.1', port: Number(process.env.APP_PORT ?? 3000) },
+	server: {
+		host: true,
+		port: Number(process.env.APP_PORT ?? 3000),
+	},
 	resolve: {
 		tsconfigPaths: true,
 		dedupe: ['react', 'react-dom'],
