@@ -107,7 +107,12 @@ export default defineConfig({
 		'*': 'vp check --fix',
 	},
 	root,
-	server: { host: '127.0.0.1', port: Number(process.env.APP_PORT ?? 3000) },
+	server: {
+		// Loopback only: the pitchfork proxy serves clients and dials the daemon
+		// locally. Widen the bind with `vp dev --host <addr>` when needed.
+		host: '127.0.0.1',
+		port: Number(process.env.APP_PORT ?? 3000),
+	},
 	resolve: {
 		tsconfigPaths: true,
 		dedupe: ['react', 'react-dom'],
