@@ -1,0 +1,4 @@
+# CodeRabbit reviews are opt-in: comment @coderabbitai review on a PR.
+reviews:
+  auto_review:
+    enabled: false
