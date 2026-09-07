@@ -5,22 +5,63 @@ import { cn } from 'cn'
 
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
-import { getSearchResults } from '@/lib/imdb/search'
+import { scrapeVersion } from '@/lib/imdb/scrape-run-query'
+import { searchResultsQuery } from '@/lib/imdb/search-query'
 import type { Suggestion } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
+import { usePreloadRatingsChunk } from '@/lib/preload-ratings-chunk'
+
+function SearchSkeleton() {
+	return (
+		<>
+			<Navbar
+				center={
+					<SearchBar
+						className="w-full md:mx-auto md:max-w-md"
+						fullWidthDropdown
+					/>
+				}
+			/>
+			<main
+				aria-busy="true"
+				className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6"
+			>
+				<div className="bg-muted h-9 w-56 animate-pulse" />
+				<div className="border-border mt-8 border-y">
+					{Array.from({ length: 5 }, (_, row) => (
+						<div
+							key={row}
+							className="border-border flex items-center justify-between border-b px-2 py-4 last:border-b-0"
+						>
+							<div className="space-y-2">
+								<div className="bg-muted h-4 w-40 animate-pulse" />
+								<div className="bg-muted h-3 w-24 animate-pulse" />
+							</div>
+							<div className="bg-muted h-4 w-10 animate-pulse" />
+						</div>
+					))}
+				</div>
+			</main>
+		</>
+	)
+}
 
 export const Route = createFileRoute('/search/$query')({
 	component: SearchResults,
-	loader: async ({ params }) => {
+	pendingComponent: SearchSkeleton,
+	loader: async ({ params, context: { queryClient } }) => {
 		const query = params.query.trim()
 		return {
 			query,
-			results: await getSearchResults({ data: { query } }),
+			results: await queryClient.ensureQueryData(
+				searchResultsQuery(scrapeVersion(queryClient), query),
+			),
 		}
 	},
 })
 
 function SearchResults() {
+	usePreloadRatingsChunk()
 	const { query, results } = Route.useLoaderData()
 
 	return (

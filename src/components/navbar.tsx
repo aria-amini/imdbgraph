@@ -1,5 +1,5 @@
 import { House } from '@phosphor-icons/react/dist/ssr'
-import { useLocation } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
 
@@ -22,15 +22,16 @@ export function Navbar({ center }: NavbarProps) {
 			)}
 		>
 			{!isHome && (
-				<a
-					href="/"
+				<Link
+					to="/"
+					aria-label="Home"
 					className={cn(
 						buttonVariants({ variant: 'outline', size: 'icon' }),
 						'size-11 justify-self-start md:size-8',
 					)}
 				>
 					<House weight="bold" />
-				</a>
+				</Link>
 			)}
 			{center && <div className={cn('min-w-0 flex-1')}>{center}</div>}
 		</nav>

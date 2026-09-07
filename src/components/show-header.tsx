@@ -1,9 +1,9 @@
 'use client'
 
-import { Star } from '@phosphor-icons/react/dist/ssr'
+import { ImageSquare, Star } from '@phosphor-icons/react/dist/ssr'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { cn } from 'cn'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 
 import { showImageQuery } from '@/lib/images/image-query'
 import { ratingColor } from '@/lib/imdb/rating-color'
@@ -17,9 +17,26 @@ function PosterSkeleton() {
 	)
 }
 
+function PosterUnavailable() {
+	return (
+		<div className="border-border bg-muted text-muted-foreground/60 flex aspect-[2/3] w-full items-center justify-center border">
+			<ImageSquare aria-hidden className="size-8" />
+			<span className="sr-only">Poster unavailable</span>
+		</div>
+	)
+}
+
 function ShowPoster({ show }: { show: Ratings['show'] }) {
 	const { data: image } = useSuspenseQuery(showImageQuery(show.imdbId))
-	if (!image) return null
+	const [failedSrc, setFailedSrc] = useState<string | null>(null)
+
+	if (!image || failedSrc === image.url) {
+		return (
+			<div className="w-24 shrink-0 sm:w-36 lg:w-44">
+				<PosterUnavailable />
+			</div>
+		)
+	}
 
 	return (
 		<div className="w-24 shrink-0 sm:w-36 lg:w-44">
@@ -29,12 +46,51 @@ function ShowPoster({ show }: { show: Ratings['show'] }) {
 				rel="noreferrer"
 				className="focus-visible:ring-ring focus-visible:ring-offset-background block outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 			>
-				<img
+				<PosterImage
 					src={image.url}
 					alt={`${show.title} poster`}
-					className="border-border aspect-[2/3] w-full border object-cover shadow-md"
+					onError={() => setFailedSrc(image.url)}
 				/>
 			</a>
+		</div>
+	)
+}
+
+function PosterImage({
+	src,
+	alt,
+	onError,
+}: {
+	src: string
+	alt: string
+	onError: () => void
+}) {
+	const [loaded, setLoaded] = useState(false)
+
+	return (
+		<div className="relative">
+			<img
+				ref={(node) => {
+					// Cached images finish before hydration, so onLoad never fires.
+					if (!node?.complete) return
+					if (node.naturalWidth > 0) {
+						setLoaded(true)
+					} else {
+						onError()
+					}
+				}}
+				src={src}
+				alt={alt}
+				onLoad={() => setLoaded(true)}
+				onError={onError}
+				className="border-border aspect-[2/3] w-full border object-cover shadow-md"
+			/>
+			{!loaded && (
+				<div
+					aria-hidden
+					className="border-border bg-muted absolute inset-0 animate-pulse border"
+				/>
+			)}
 		</div>
 	)
 }

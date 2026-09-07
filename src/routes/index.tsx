@@ -2,12 +2,15 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
+import { usePreloadRatingsChunk } from '@/lib/preload-ratings-chunk'
 
 export const Route = createFileRoute('/')({
 	component: Home,
 })
 
 function Home() {
+	usePreloadRatingsChunk()
+
 	return (
 		<div className="flex flex-1 flex-col">
 			<Navbar />

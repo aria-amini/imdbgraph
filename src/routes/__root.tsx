@@ -17,7 +17,10 @@ import { useEffect, type ReactNode } from 'react'
 
 import { ReportBug } from '@/components/report-bug'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import {
+	latestScrapeRunQuery,
+	scrapeRunStaleTime,
+} from '@/lib/imdb/scrape-run-query'
 import { SITE_LINKS } from '@/lib/site'
 import { themeInitScript } from '@/lib/theme'
 
@@ -42,8 +45,15 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
-	loader: async () => {
-		return { latestScrapeRun: await getLatestScrapeRun() }
+	loader: async ({ context: { queryClient } }) => {
+		const { queryKey } = latestScrapeRunQuery(0)
+		return {
+			latestScrapeRun: await queryClient.ensureQueryData(
+				latestScrapeRunQuery(
+					scrapeRunStaleTime(queryClient.getQueryData<string>(queryKey)),
+				),
+			),
+		}
 	},
 	head: () => ({
 		meta: [

@@ -42,6 +42,9 @@ importers:
       '@tanstack/react-start':
         specifier: 1.168.32
         version: 1.168.32(@voidzero-dev/vite-plus-core@0.2.1(@types/node@26.4.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0))(crossws@0.4.12(srvx@1.0.3))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@tanstack/router-core':
+        specifier: 1.171.15
+        version: 1.171.15
       '@tanstack/router-plugin':
         specifier: 1.168.18
         version: 1.168.18(@tanstack/react-router@1.170.18(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@voidzero-dev/vite-plus-core@0.2.1(@types/node@26.4.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0))
