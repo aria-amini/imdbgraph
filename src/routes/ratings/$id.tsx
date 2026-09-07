@@ -3,7 +3,7 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Navbar } from '@/components/navbar'
 import { RatingsView } from '@/components/ratings-view'
 import { SearchBar } from '@/components/search-bar'
-import { getShowImage } from '@/lib/images/thumbnail'
+import { showImageQuery } from '@/lib/images/image-query'
 import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
 import { type Ratings } from '@/lib/imdb/types'
 
@@ -20,27 +20,26 @@ function hasRatings(ratings: Ratings): boolean {
 
 export const Route = createFileRoute('/ratings/$id')({
 	component: Ratings,
-	loader: async ({ params }) => {
+	loader: async ({ params, context: { queryClient } }) => {
 		const showId = imdbIdSchema.safeParse(params.id)
 		if (!showId.success) {
 			throw notFound()
 		}
 
-		const [ratings, image] = await Promise.all([
-			getRatings({ data: { showId: showId.data } }),
-			getShowImage({ data: showId.data }),
-		])
+		// The poster streams in through Suspense; only ratings block the page.
+		void queryClient.prefetchQuery(showImageQuery(showId.data))
 
+		const ratings = await getRatings({ data: { showId: showId.data } })
 		if (!ratings) {
 			throw notFound()
 		}
 
-		return { ratings, image }
+		return { ratings }
 	},
 })
 
 function Ratings() {
-	const { ratings, image } = Route.useLoaderData()
+	const { ratings } = Route.useLoaderData()
 
 	return (
 		<>
@@ -58,7 +57,7 @@ function Ratings() {
 						No Ratings Found
 					</h1>
 				) : (
-					<RatingsView ratings={ratings} image={image} />
+					<RatingsView ratings={ratings} />
 				)}
 			</main>
 		</>

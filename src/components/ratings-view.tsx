@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { Block } from '@/components/block'
 import { Graph } from '@/components/graph'
 import { ShowHeader } from '@/components/show-header'
-import type { ShowImage } from '@/lib/images/thumbnail'
 import type { Ratings } from '@/lib/imdb/types'
 
 export type View = 'blocks' | 'graph'
@@ -44,13 +43,7 @@ function ViewToggle({
 	)
 }
 
-export function RatingsView({
-	ratings,
-	image,
-}: {
-	ratings: Ratings
-	image: ShowImage | null
-}) {
+export function RatingsView({ ratings }: { ratings: Ratings }) {
 	const [view, setView] = useState<View>('blocks')
 	const [isHydrated, setIsHydrated] = useState(false)
 
@@ -64,7 +57,7 @@ export function RatingsView({
 
 	return (
 		<div>
-			<ShowHeader ratings={ratings} image={image} />
+			<ShowHeader ratings={ratings} />
 			{view === 'blocks' ? (
 				<Block ratings={ratings} toolbar={toolbar} />
 			) : (
