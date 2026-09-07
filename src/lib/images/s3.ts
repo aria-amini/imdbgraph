@@ -29,14 +29,19 @@ export interface StorageConfig {
 
 export function createStorage(config: StorageConfig = {}): Storage {
 	const bucketName = config.bucketName ?? env.AWS_S3_BUCKET_NAME
+	if (!bucketName) {
+		throw new Error('S3 storage is not configured (missing AWS_S3_BUCKET_NAME)')
+	}
+	const accessKeyId = config.accessKeyId ?? env.AWS_ACCESS_KEY_ID
+	const secretAccessKey = config.secretAccessKey ?? env.AWS_SECRET_ACCESS_KEY
+	const endpoint = config.endpointUrl ?? env.AWS_ENDPOINT_URL
 	const client = new S3Client({
 		forcePathStyle: true,
 		region: config.region ?? 'us-east-1',
-		endpoint: config.endpointUrl ?? env.AWS_ENDPOINT_URL,
-		credentials: {
-			accessKeyId: config.accessKeyId ?? env.AWS_ACCESS_KEY_ID,
-			secretAccessKey: config.secretAccessKey ?? env.AWS_SECRET_ACCESS_KEY,
-		},
+		...(endpoint ? { endpoint } : {}),
+		...(accessKeyId && secretAccessKey
+			? { credentials: { accessKeyId, secretAccessKey } }
+			: {}),
 	})
 
 	let bucketReady: Promise<void> | undefined
