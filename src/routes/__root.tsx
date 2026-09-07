@@ -130,7 +130,7 @@ function SiteFooter({ completedAt }: { completedAt: string | null }) {
 		<footer className="text-muted-foreground border-t px-4 py-4 md:px-6">
 			<div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2">
 				<p className="text-xs">{label}</p>
-				<div className="flex items-center gap-4 sm:ml-auto">
+				<div className="flex flex-wrap items-center gap-4 sm:ml-auto">
 					<a
 						href={SITE_LINKS.github}
 						target="_blank"

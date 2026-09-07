@@ -26,7 +26,12 @@ function SearchResults() {
 	return (
 		<>
 			<Navbar
-				center={<SearchBar className={cn('w-full')} fullWidthDropdown />}
+				center={
+					<SearchBar
+						className={cn('w-full md:mx-auto md:max-w-md')}
+						fullWidthDropdown
+					/>
+				}
 			/>
 			<main className={cn('mx-auto w-full max-w-3xl px-4 py-10 sm:px-6')}>
 				<h1 className={cn('text-3xl font-black tracking-tight sm:text-4xl')}>

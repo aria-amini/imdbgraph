@@ -288,269 +288,283 @@ export function SearchBar({
 	const suggestions = search ? searchResults : DEFAULT_SUGGESTIONS
 
 	return (
-		<div
-			ref={containerRef}
-			className="relative h-full w-full"
-			onFocus={() => {
-				setIsFocused(true)
-				if (
-					mobileSearchOverlay &&
-					window.matchMedia('(max-width: 767px)').matches
-				) {
-					preOverlayRectRef.current =
-						inputRowRef.current?.getBoundingClientRect() ?? null
-					setIsMobileSearchActive(true)
-				}
-			}}
-			onBlur={handleBlur}
-		>
-			<Command
-				className={cn(
-					'flex w-full flex-col',
-					className,
-					isMobileSearchActive &&
-						'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:duration-200',
-				)}
-				onPointerDown={(event) => {
-					const sheet = sheetRef.current
-					if (
-						isMobileSearchActive &&
-						sheet &&
-						!(event.target instanceof Node && sheet.contains(event.target))
-					) {
-						closeMobileSearch()
-					}
-				}}
-				style={
-					isMobileSearchActive && overlayViewport
-						? { top: overlayViewport.top, height: overlayViewport.height }
-						: undefined
-				}
-				shouldFilter={false}
-				loop
-				value={selectedSuggestion || `${NO_SUGGESTION_SELECTED}:${search}`}
-				onValueChange={(value) => {
-					if (allowSuggestionSelectionRef.current) {
-						setSelectedSuggestion(value)
-						return
-					}
-					setSelectedSuggestion(`${NO_SUGGESTION_SELECTED}:${value}`)
-				}}
-			>
+		<>
+			{fullWidthDropdown && isFocused && (
 				<div
-					ref={sheetRef}
+					aria-hidden="true"
+					data-slot="search-backdrop"
+					className="bg-background/60 animate-in fade-in fixed inset-x-0 top-17 bottom-0 z-40 backdrop-blur-sm duration-200 md:top-14"
+				/>
+			)}
+			<div
+				ref={containerRef}
+				className="relative h-full w-full"
+				onFocus={() => {
+					setIsFocused(true)
+					if (
+						mobileSearchOverlay &&
+						window.matchMedia('(max-width: 767px)').matches
+					) {
+						preOverlayRectRef.current =
+							inputRowRef.current?.getBoundingClientRect() ?? null
+						setIsMobileSearchActive(true)
+					}
+				}}
+				onBlur={handleBlur}
+			>
+				<Command
 					className={cn(
-						'relative',
+						'flex w-full flex-col',
+						className,
 						isMobileSearchActive &&
-							'max-md:flex max-md:min-h-0 max-md:flex-1 max-md:flex-col',
+							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:duration-200',
 					)}
+					onPointerDown={(event) => {
+						const sheet = sheetRef.current
+						if (
+							isMobileSearchActive &&
+							sheet &&
+							!(event.target instanceof Node && sheet.contains(event.target))
+						) {
+							closeMobileSearch()
+						}
+					}}
+					style={
+						isMobileSearchActive && overlayViewport
+							? { top: overlayViewport.top, height: overlayViewport.height }
+							: undefined
+					}
+					shouldFilter={false}
+					loop
+					value={selectedSuggestion || `${NO_SUGGESTION_SELECTED}:${search}`}
+					onValueChange={(value) => {
+						if (allowSuggestionSelectionRef.current) {
+							setSelectedSuggestion(value)
+							return
+						}
+						setSelectedSuggestion(`${NO_SUGGESTION_SELECTED}:${value}`)
+					}}
 				>
 					<div
-						ref={inputRowRef}
-						className={cn('flex', isMobileSearchActive && 'max-md:gap-3')}
-					>
-						<InputGroup
-							className={cn(
-								'h-11 flex-1 border-input bg-input/10 shadow-none transition-opacity md:h-8',
-								{
-									'cursor-progress opacity-70': !isHydrated,
-								},
-							)}
-						>
-							<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
-								<MagnifyingGlass weight="bold" />
-							</InputGroupAddon>
-							<Command.Input
-								value={search}
-								onValueChange={(value) => {
-									allowSuggestionSelectionRef.current = false
-									setSelectedSuggestion('')
-									hasNavigatedSuggestionsRef.current = false
-									setSearch(value)
-								}}
-								onKeyDown={(event) => {
-									if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-										allowSuggestionSelectionRef.current = true
-										hasNavigatedSuggestionsRef.current = true
-									}
-									if (
-										event.key === 'Enter' &&
-										!hasNavigatedSuggestionsRef.current
-									) {
-										event.preventDefault()
-										openSearchPage()
-									}
-								}}
-								placeholder={
-									isHydrated ? 'Search for any TV show...' : 'Loading search...'
-								}
-								className="h-full flex-1 py-0 text-base placeholder:text-sm md:text-sm md:placeholder:text-xs"
-								disabled={!isHydrated}
-								aria-label="Search TV shows"
-								aria-busy={!isHydrated || isFetching}
-								asChild={true}
-							>
-								<InputGroupInput />
-							</Command.Input>
-
-							<InputGroupAddon align="inline-end">
-								{isFetching && (
-									<Spinner aria-hidden data-testid="loading-spinner" />
-								)}
-								{isHydrated && search && (
-									<InputGroupButton
-										size="icon-sm"
-										onClick={clearSearch}
-										aria-label="Clear search"
-										className="text-muted-foreground hover:text-foreground"
-									>
-										<XCircle aria-hidden className="size-4" weight="bold" />
-									</InputGroupButton>
-								)}
-							</InputGroupAddon>
-						</InputGroup>
-						{isMobileSearchActive && (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								onClick={closeMobileSearch}
-								className="hidden size-11 shrink-0 max-md:flex"
-								aria-label="Close search"
-							>
-								<X aria-hidden className="size-5" weight="bold" />
-							</Button>
+						ref={sheetRef}
+						className={cn(
+							'relative',
+							isMobileSearchActive &&
+								'max-md:flex max-md:min-h-0 max-md:flex-1 max-md:flex-col',
 						)}
-					</div>
-
-					{error && (
+					>
 						<div
-							aria-live="polite"
-							className="flex items-center justify-center gap-2 px-2 py-1.5"
+							ref={inputRowRef}
+							className={cn('flex', isMobileSearchActive && 'max-md:gap-3')}
 						>
-							<span className="text-destructive font-mono text-[11px] tracking-widest uppercase">
-								Couldn’t load suggestions
-							</span>
-							<Button
-								type="button"
-								variant="outline"
-								size="xs"
-								className="font-mono text-[11px] tracking-widest uppercase"
-								onClick={() => void refetch()}
+							<InputGroup
+								className={cn(
+									'h-11 flex-1 border-input bg-input/10 shadow-none transition-opacity md:h-8',
+									{
+										'cursor-progress opacity-70': !isHydrated,
+									},
+								)}
 							>
-								Retry
-							</Button>
-						</div>
-					)}
-
-					{isFocused && !error && suggestions && (
-						<Command.List
-							className={cn(
-								'bg-popover z-50 w-full border p-2 shadow-md',
-								fullWidthDropdown
-									? 'max-md:absolute max-md:top-full max-md:right-0 max-md:left-0 max-md:mt-2 md:fixed md:inset-x-0 md:top-14'
-									: 'absolute top-full right-0 left-0 mt-2',
-								isMobileSearchActive &&
-									'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:animate-in max-md:fade-in max-md:slide-in-from-top-1 max-md:duration-200',
-							)}
-						>
-							{search && suggestions.length === 0 && !isFetching && (
-								<div
-									className={cn(
-										'text-muted-foreground px-2 py-1.5 text-center',
-									)}
-								>
-									No TV Shows Found.
-								</div>
-							)}
-							{suggestions.map((show: Suggestion) => (
-								<Command.Item
-									key={show.imdbId}
-									value={show.imdbId}
-									asChild
-									onSelect={() => selectShow(show.imdbId)}
-									className={cn(
-										'w-full cursor-pointer px-2 py-1.5 text-sm outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-										{
-											'opacity-50': isFetching,
-										},
-									)}
-								>
-									<Link
-										to="/ratings/$id"
-										params={{ id: show.imdbId }}
-										onClickCapture={(event) => {
-											linkClickRef.current =
-												event.metaKey ||
-												event.ctrlKey ||
-												event.shiftKey ||
-												event.altKey
-													? 'modified'
-													: 'plain'
-										}}
-										className="group aria-selected:bg-accent aria-selected:text-accent-foreground flex items-center gap-4"
-									>
-										<SuggestionPoster imdbId={show.imdbId} title={show.title} />
-										<div className="flex flex-1 flex-col">
-											<span className="wrap-break-word">
-												{show.title}&nbsp;
-											</span>
-											<span className="text-muted-foreground group-aria-selected:text-accent-foreground text-xs">
-												{formatYears(show)}
-											</span>
-										</div>
-										<div className="text-muted-foreground group-aria-selected:text-accent-foreground flex items-center gap-1 text-sm">
-											<span>{`${show.rating.toFixed(1)} / 10.0`}</span>
-											<Star
-												className="text-primary group-aria-selected:text-accent-foreground size-4"
-												weight="bold"
-											/>
-										</div>
-									</Link>
-								</Command.Item>
-							))}
-							{search && (
-								<Command.Item
-									value={`search-all:${search.trim()}`}
-									asChild
-									onSelect={() => {
-										const linkClick = linkClickRef.current
-										linkClickRef.current = null
-										if (linkClick === 'modified') return
-										setIsFocused(false)
-										setIsMobileSearchActive(false)
-										resetQueryState()
-										containerRef.current
-											?.querySelector<HTMLInputElement>('input')
-											?.blur()
-										if (linkClick !== 'plain') {
+								<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
+									<MagnifyingGlass weight="bold" />
+								</InputGroupAddon>
+								<Command.Input
+									value={search}
+									onValueChange={(value) => {
+										allowSuggestionSelectionRef.current = false
+										setSelectedSuggestion('')
+										hasNavigatedSuggestionsRef.current = false
+										setSearch(value)
+									}}
+									onKeyDown={(event) => {
+										if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+											allowSuggestionSelectionRef.current = true
+											hasNavigatedSuggestionsRef.current = true
+										}
+										if (
+											event.key === 'Enter' &&
+											!hasNavigatedSuggestionsRef.current
+										) {
+											event.preventDefault()
 											openSearchPage()
 										}
 									}}
-									className="border-border w-full cursor-pointer border-t text-sm outline-none select-none"
+									placeholder={
+										isHydrated
+											? 'Search for any TV show...'
+											: 'Loading search...'
+									}
+									className="h-full flex-1 py-0 text-base placeholder:text-sm md:text-sm md:placeholder:text-xs"
+									disabled={!isHydrated}
+									aria-label="Search TV shows"
+									aria-busy={!isHydrated || isFetching}
+									asChild={true}
 								>
-									<Link
-										to="/search/$query"
-										params={{ query: search.trim() }}
-										onClickCapture={(event) => {
-											linkClickRef.current =
-												event.metaKey ||
-												event.ctrlKey ||
-												event.shiftKey ||
-												event.altKey
-													? 'modified'
-													: 'plain'
-										}}
-										className="group hover:bg-muted focus-visible:bg-muted aria-selected:bg-muted block px-2 py-1.5 focus-visible:outline-none"
-									>
-										Search all results for “{search.trim()}”
-									</Link>
-								</Command.Item>
+									<InputGroupInput />
+								</Command.Input>
+
+								<InputGroupAddon align="inline-end">
+									{isFetching && (
+										<Spinner aria-hidden data-testid="loading-spinner" />
+									)}
+									{isHydrated && search && (
+										<InputGroupButton
+											size="icon-sm"
+											onClick={clearSearch}
+											aria-label="Clear search"
+											className="text-muted-foreground hover:text-foreground"
+										>
+											<XCircle aria-hidden className="size-4" weight="bold" />
+										</InputGroupButton>
+									)}
+								</InputGroupAddon>
+							</InputGroup>
+							{isMobileSearchActive && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									onClick={closeMobileSearch}
+									className="hidden size-11 shrink-0 max-md:flex"
+									aria-label="Close search"
+								>
+									<X aria-hidden className="size-5" weight="bold" />
+								</Button>
 							)}
-						</Command.List>
-					)}
-				</div>
-			</Command>
-		</div>
+						</div>
+
+						{error && (
+							<div
+								aria-live="polite"
+								className="flex items-center justify-center gap-2 px-2 py-1.5"
+							>
+								<span className="text-destructive font-mono text-[11px] tracking-widest uppercase">
+									Couldn’t load suggestions
+								</span>
+								<Button
+									type="button"
+									variant="outline"
+									size="xs"
+									className="font-mono text-[11px] tracking-widest uppercase"
+									onClick={() => void refetch()}
+								>
+									Retry
+								</Button>
+							</div>
+						)}
+
+						{isFocused && !error && suggestions && (
+							<Command.List
+								className={cn(
+									'bg-popover z-50 border p-2 shadow-md',
+									fullWidthDropdown
+										? 'fixed inset-x-4 top-17 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto md:inset-x-0 md:top-14 md:max-h-[calc(100dvh-5rem)]'
+										: 'absolute top-full right-0 left-0 mt-2 w-full',
+									isMobileSearchActive &&
+										'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:animate-in max-md:fade-in max-md:slide-in-from-top-1 max-md:duration-200',
+								)}
+							>
+								{search && suggestions.length === 0 && !isFetching && (
+									<div
+										className={cn(
+											'text-muted-foreground px-2 py-1.5 text-center',
+										)}
+									>
+										No TV Shows Found.
+									</div>
+								)}
+								{suggestions.map((show: Suggestion) => (
+									<Command.Item
+										key={show.imdbId}
+										value={show.imdbId}
+										asChild
+										onSelect={() => selectShow(show.imdbId)}
+										className={cn(
+											'w-full cursor-pointer px-2 py-1.5 text-sm outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+											{
+												'opacity-50': isFetching,
+											},
+										)}
+									>
+										<Link
+											to="/ratings/$id"
+											params={{ id: show.imdbId }}
+											onClickCapture={(event) => {
+												linkClickRef.current =
+													event.metaKey ||
+													event.ctrlKey ||
+													event.shiftKey ||
+													event.altKey
+														? 'modified'
+														: 'plain'
+											}}
+											className="group aria-selected:bg-accent aria-selected:text-accent-foreground flex items-center gap-4"
+										>
+											<SuggestionPoster
+												imdbId={show.imdbId}
+												title={show.title}
+											/>
+											<div className="flex flex-1 flex-col">
+												<span className="wrap-break-word">
+													{show.title}&nbsp;
+												</span>
+												<span className="text-muted-foreground group-aria-selected:text-accent-foreground text-xs">
+													{formatYears(show)}
+												</span>
+											</div>
+											<div className="text-muted-foreground group-aria-selected:text-accent-foreground flex items-center gap-1 text-sm">
+												<span>{`${show.rating.toFixed(1)} / 10.0`}</span>
+												<Star
+													className="text-primary group-aria-selected:text-accent-foreground size-4"
+													weight="bold"
+												/>
+											</div>
+										</Link>
+									</Command.Item>
+								))}
+								{search && (
+									<Command.Item
+										value={`search-all:${search.trim()}`}
+										asChild
+										onSelect={() => {
+											const linkClick = linkClickRef.current
+											linkClickRef.current = null
+											if (linkClick === 'modified') return
+											setIsFocused(false)
+											setIsMobileSearchActive(false)
+											resetQueryState()
+											containerRef.current
+												?.querySelector<HTMLInputElement>('input')
+												?.blur()
+											if (linkClick !== 'plain') {
+												openSearchPage()
+											}
+										}}
+										className="border-border w-full cursor-pointer border-t text-sm outline-none select-none"
+									>
+										<Link
+											to="/search/$query"
+											params={{ query: search.trim() }}
+											onClickCapture={(event) => {
+												linkClickRef.current =
+													event.metaKey ||
+													event.ctrlKey ||
+													event.shiftKey ||
+													event.altKey
+														? 'modified'
+														: 'plain'
+											}}
+											className="group hover:bg-muted focus-visible:bg-muted aria-selected:bg-muted block px-2 py-1.5 focus-visible:outline-none"
+										>
+											Search all results for “{search.trim()}”
+										</Link>
+									</Command.Item>
+								)}
+							</Command.List>
+						)}
+					</div>
+				</Command>
+			</div>
+		</>
 	)
 }

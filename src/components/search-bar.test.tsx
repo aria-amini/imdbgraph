@@ -266,11 +266,11 @@ describe('searchbar tests', () => {
 		const command = document.querySelector('[cmdk-root]')
 		const list = document.querySelector('[cmdk-list]')
 		expect(command?.className).toContain('w-full')
-		expect(list?.className).toContain('w-full')
 		expect(list?.className).toContain('fixed')
+		expect(list?.className).toContain('md:inset-x-0')
 	})
 
-	test('search menu anchors to the input on mobile even with fullWidthDropdown', async () => {
+	test('search menu is fixed full width on mobile with fullWidthDropdown', async () => {
 		const originalWidth = window.innerWidth
 		const originalHeight = window.innerHeight
 		try {
@@ -285,12 +285,38 @@ describe('searchbar tests', () => {
 				.element(screen.getByText(/Avatar: The Last Airbender/).first())
 				.toBeVisible()
 			const list = document.querySelector('[cmdk-list]')
-			expect(list?.className).toContain('max-md:absolute')
-			expect(list?.className).toContain('max-md:top-full')
-			expect(list?.className).not.toContain('max-md:w-auto')
+			expect(list?.className).toContain('fixed')
+			expect(list?.className).toContain('inset-x-4')
+			expect(list?.className).toContain('md:inset-x-0')
+			expect(list?.className).not.toContain('max-md:absolute')
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
 		}
+	})
+
+	test('renders a blurred backdrop behind the open search with fullWidthDropdown', async () => {
+		const screen = await render(<SearchBar fullWidthDropdown />, {
+			wrapper: MockRouter,
+		})
+
+		expect(document.querySelector('[data-slot="search-backdrop"]')).toBeNull()
+
+		await userEvent.click(screen.getByRole('combobox'))
+		await expect.element(screen.getByText(/Breaking Bad/)).toBeVisible()
+		const backdrop = document.querySelector('[data-slot="search-backdrop"]')
+		expect(backdrop?.className).toContain('fixed')
+		expect(backdrop?.className).toContain('backdrop-blur-sm')
+		expect(backdrop?.className).toContain('bg-background/60')
+	})
+
+	test('no backdrop behind the home page search', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+
+		await userEvent.click(screen.getByRole('combobox'))
+		await expect.element(screen.getByText(/Breaking Bad/)).toBeVisible()
+		expect(document.querySelector('[data-slot="search-backdrop"]')).toBeNull()
 	})
 
 	test('clear button empties the query and hides the results', async () => {

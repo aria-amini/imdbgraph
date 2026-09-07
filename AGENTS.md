@@ -18,7 +18,9 @@ Slugs derive from directory names (`mise-tasks/setup.ts`), which also writes
 
 ## Commands
 
-- `vp dev` — start development (usually managed by pitchfork instead)
+- `vp dev` — start development (usually managed by pitchfork instead); in a
+  fresh workspace, run `mise run setup` first, or the server binds default port
+  3000 and the proxy URL routes nowhere
 - `pitchfork list` / `pitchfork logs dev` / `pitchfork tui` — inspect the dev
   daemon
 - `vp check` — format, lint, and type-check
