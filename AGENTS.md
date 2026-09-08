@@ -7,17 +7,38 @@ Docker Compose (Postgres). The dev server runs as a pitchfork daemon (see
 each jj workspace gets unique ports via `mise-tasks/setup` (run by
 `mise run bootstrap`; re-run anytime with `mise run setup`).
 
+All worktrees share one Postgres database and one MinIO bucket. Setup derives
+the shared ports, database name, and compose project from fixed strings, so
+every workspace computes the same stack. `vp run compose:up` and
+`vp run compose:down` from any worktree manage that one stack, and
+`vp run compose:reset` wipes the shared data for every worktree. Branches with
+divergent schemas share one physical schema; run `vp run db:migrate` from the
+worktree that owns the change.
+
 Product analytics run through PostHog behind a `/api/ingest` proxy.
 
 ## Local URLs
 
-Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
-worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from
-root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+Pitchfork maps the default workspace to `https://<app>.lvh.ariaamini.com` and
+each additional workspace to `https://<workspace>-<app>.lvh.ariaamini.com`.
+Slugs derive from directory names (`mise-tasks/setup.ts`), which also writes
+`BASE_URL`. Never assemble or guess a URL. Copy it verbatim from
+`pitchfork list`; `pitchfork proxy status` lists every registered slug. A
+registered slug with a stopped daemon does not serve; start it with
+`pitchfork start <name>`.
+
+`.env.development.local` records `TAILSCALE_IP` (the zshrc exports it too). The
+dev server binds every interface, so the app answers at
+`http://$TAILSCALE_IP:$APP_PORT` as well as on localhost. Tools that cannot load
+workspace proxy hostnames take the raw-IP URL.
 
 ## Commands
 
-- `vp dev` — start development (usually managed by pitchfork instead)
+- `mise run bootstrap` — run this first in a fresh workspace. It installs
+  dependencies, writes per-workspace ports, starts compose, and migrates. The
+  dev daemon fails with `ERR_MODULE_NOT_FOUND` until it completes
+- `vp dev` — start development (usually managed by pitchfork instead); without
+  setup it binds default port 3000 and the proxy URL routes nowhere
 - `pitchfork list` / `pitchfork logs dev` / `pitchfork tui` — inspect the dev
   daemon
 - `vp check` — format, lint, and type-check
