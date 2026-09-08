@@ -24,7 +24,12 @@ function RatingsSkeleton() {
 	return (
 		<>
 			<Navbar
-				center={<SearchBar className="w-full md:mx-auto md:max-w-md" />}
+				center={
+					<SearchBar
+						className="w-full md:mx-auto md:max-w-md"
+						fullWidthDropdown
+					/>
+				}
 			/>
 			<main
 				aria-busy="true"
@@ -72,7 +77,12 @@ function Ratings() {
 	return (
 		<>
 			<Navbar
-				center={<SearchBar className="w-full md:mx-auto md:max-w-md" />}
+				center={
+					<SearchBar
+						className="w-full md:mx-auto md:max-w-md"
+						fullWidthDropdown
+					/>
+				}
 			/>
 			<main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6 lg:px-8 lg:py-8">
 				{!hasRatings(ratings) ? (
