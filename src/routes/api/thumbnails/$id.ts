@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { eq } from 'drizzle-orm'
 
+
 import { createDb } from '@/db/connection'
 import { thumbnail } from '@/db/tables'
 import { getStorage } from '@/lib/images/s3'
@@ -29,6 +30,9 @@ export const Route = createFileRoute('/api/thumbnails/$id')({
 
 				const stored = await getStorage().get(row.objectKey)
 				if (!stored) {
+					// The DB row references a lost object, so drop the stale row and
+					// let the next view re-fetch the poster instead of 404ing forever.
+					await createDb().delete(thumbnail).where(eq(thumbnail.imdbId, parsed.data))
 					return new Response(null, { status: 404 })
 				}
 
