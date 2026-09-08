@@ -9,6 +9,8 @@ each jj workspace gets unique ports via `mise-tasks/setup` (run by
 
 Product analytics run through PostHog behind a `/api/ingest` proxy.
 
+todo: delete me
+
 ## Local URLs
 
 Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
