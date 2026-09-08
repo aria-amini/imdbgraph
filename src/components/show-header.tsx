@@ -96,12 +96,13 @@ function PosterImage({
 }
 
 /**
- * Page-leading title block: poster, title, meta line, and a quiet inline
+ * Page-leading title block: poster, title, year, genres, and a quiet inline
  * IMDb rating line that links to the show's IMDb page.
  */
 export function ShowHeader({ ratings }: { ratings: Ratings }) {
 	const { show } = ratings
 	const votes = show.numVotes.toLocaleString('en-US')
+	const hasGenres = Boolean(show.genres && show.genres.length > 0)
 
 	return (
 		<header
@@ -117,11 +118,12 @@ export function ShowHeader({ ratings }: { ratings: Ratings }) {
 				</h1>
 				<p className="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
 					{formatYears(show)}
-					{show.genres && show.genres.length > 0 && (
-						<span aria-hidden> · </span>
-					)}
-					{show.genres?.join(' · ')}
 				</p>
+				{hasGenres && (
+					<p className="text-muted-foreground mt-1 font-mono text-xs tracking-widest uppercase">
+						{show.genres?.join(' · ')}
+					</p>
+				)}
 				<a
 					href={`https://www.imdb.com/title/${show.imdbId}/`}
 					target="_blank"

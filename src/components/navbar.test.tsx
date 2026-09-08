@@ -7,8 +7,8 @@ import {
 	RouterContextProvider,
 	type AnyRouter,
 } from '@tanstack/react-router'
-import { render } from 'vitest-browser-react'
 import { userEvent } from 'vite-plus/test/browser'
+import { render } from 'vitest-browser-react'
 
 import { Navbar } from './navbar'
 

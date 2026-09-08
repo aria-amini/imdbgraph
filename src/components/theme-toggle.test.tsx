@@ -36,4 +36,17 @@ describe('theme toggle', () => {
 		await expect.element(control).toBeVisible()
 		expect(control.element().querySelectorAll('svg').length).toBe(2)
 	})
+
+	test('theme class drives the browser color-scheme', () => {
+		const root = document.documentElement
+
+		root.classList.remove('dark')
+		expect(getComputedStyle(root).colorScheme).toBe('light')
+
+		root.classList.add('dark')
+		expect(getComputedStyle(root).colorScheme).toBe('dark')
+
+		root.classList.remove('dark')
+		expect(getComputedStyle(root).colorScheme).toBe('light')
+	})
 })

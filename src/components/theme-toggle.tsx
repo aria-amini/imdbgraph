@@ -35,17 +35,17 @@ export function ThemeToggle({ className }: { className?: string }) {
 		>
 			<Moon
 				aria-hidden
-				className="text-muted-foreground absolute left-1 size-3"
+				className="absolute left-1 size-3 text-white"
 				weight="bold"
 			/>
 			<Sun
 				aria-hidden
-				className="text-muted-foreground absolute right-1 size-3"
+				className="absolute right-1 size-3 text-white"
 				weight="bold"
 			/>
 			<span
 				aria-hidden
-				className="ring-border/50 bg-background size-5 rounded-full shadow-sm ring-1 transition-transform dark:translate-x-5"
+				className="ring-border/50 bg-background relative size-5 rounded-full shadow-sm ring-1 transition-transform dark:translate-x-5"
 			/>
 		</button>
 	)
