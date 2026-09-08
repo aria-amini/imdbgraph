@@ -392,6 +392,7 @@ function main(): void {
 		console.log(`  proxy:    https://${proxyHost}`)
 	}
 	if (tailscaleIP) {
+		console.log(`  app (tailnet): http://${tailscaleIP}:${appPort}`)
 		console.log(`  tailscale: ${tailscaleIP}`)
 	}
 }

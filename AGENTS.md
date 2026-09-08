@@ -20,9 +20,9 @@ registered slug with a stopped daemon does not serve; start it with
 `pitchfork start <name>`.
 
 `.env.development.local` records `TAILSCALE_IP` (the zshrc exports it too). The
-pitchfork proxy and compose ports answer at that address. The app port binds
-loopback only, so a raw-IP app URL fails unless the daemon listens on the
-tailnet interface.
+dev server binds every interface, so the app answers at
+`http://$TAILSCALE_IP:$APP_PORT` as well as on localhost. Tools that cannot load
+workspace proxy hostnames take the raw-IP URL.
 
 ## Commands
 
