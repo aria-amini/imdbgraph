@@ -8,6 +8,7 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
+import { z } from 'zod'
 
 import {
 	Card,
@@ -23,6 +24,15 @@ import {
 } from '@/components/ui/chart'
 import { transformRatingsData } from '@/lib/imdb/chart-data'
 import type { Episode, Ratings } from '@/lib/imdb/types'
+
+const episodeSchema: z.ZodType<Episode> = z.object({
+	episodeId: z.string(),
+	title: z.string(),
+	seasonNum: z.number(),
+	episodeNum: z.number(),
+	rating: z.number(),
+	numVotes: z.number(),
+})
 
 /** Renders episode ratings as a season-by-season line chart. */
 export function Graph({ ratings }: { ratings: Ratings }) {
@@ -113,23 +123,26 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 		return null
 	}
 	const seasonNum = activeData.dataKey?.toString()?.replace('season', '')
-	const episode = activeData.payload[`episode${seasonNum}`] as Episode
-	if (!episode) {
+	const episode = episodeSchema.safeParse(
+		activeData.payload[`episode${seasonNum}`],
+	)
+	if (!episode.success) {
 		return null
 	}
+	const episodeData = episode.data
 
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle>
-					S{episode.seasonNum}E{episode.episodeNum}:
+					S{episodeData.seasonNum}E{episodeData.episodeNum}:
 				</CardTitle>
-				<CardDescription>{episode.title}</CardDescription>
+				<CardDescription>{episodeData.title}</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<CardDescription>
-					{episode.rating.toFixed(1)} / 10.0 (
-					{episode.numVotes.toLocaleString()} votes)
+					{episodeData.rating.toFixed(1)} / 10.0 (
+					{episodeData.numVotes.toLocaleString()} votes)
 				</CardDescription>
 			</CardContent>
 		</Card>

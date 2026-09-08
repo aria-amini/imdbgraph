@@ -31,7 +31,7 @@ async function proxyPosthogRequest({
 	headers.delete('host')
 	headers.delete('connection')
 
-	const response = await fetch(upstreamUrl, {
+	const requestInit: RequestInit & { duplex: 'half' } = {
 		method: request.method,
 		headers,
 		body:
@@ -39,7 +39,8 @@ async function proxyPosthogRequest({
 				? null
 				: request.body,
 		duplex: 'half',
-	} as RequestInit & { duplex: 'half' })
+	}
+	const response = await fetch(upstreamUrl, requestInit)
 
 	const responseHeaders = new Headers(response.headers)
 	for (const header of hopByHopHeaders) responseHeaders.delete(header)

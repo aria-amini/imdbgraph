@@ -30,30 +30,45 @@ interface PageScreenshotCase {
 	viewport?: { width: number; height: number }
 }
 
+function routeComponent({
+	options,
+}: {
+	options: { component?: ComponentType }
+}): ComponentType {
+	const { component } = options
+	if (!component) {
+		throw new Error('Route has no component')
+	}
+	return component
+}
+
+function stubLoaderData(
+	route: { useLoaderData: () => unknown },
+	data: unknown,
+) {
+	Object.assign(route, { useLoaderData: () => data })
+}
+
 const pages = [
 	{
 		name: 'ratings-game-of-thrones',
 		path: '/ratings/$id',
-		component: RatingsRoute.options.component as ComponentType,
+		component: routeComponent(RatingsRoute),
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		setup: () => {
-			;(
-				RatingsRoute as unknown as { useLoaderData: () => unknown }
-			).useLoaderData = () => gameOfThronesRatings
+			stubLoaderData(RatingsRoute, gameOfThronesRatings)
 		},
 	},
 	{
 		name: 'ratings-game-of-thrones-mobile',
 		path: '/ratings/$id',
-		component: RatingsRoute.options.component as ComponentType,
+		component: routeComponent(RatingsRoute),
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		viewport: { width: 375, height: 812 },
 		setup: () => {
-			;(
-				RatingsRoute as unknown as { useLoaderData: () => unknown }
-			).useLoaderData = () => gameOfThronesRatings
+			stubLoaderData(RatingsRoute, gameOfThronesRatings)
 		},
 	},
 ] satisfies PageScreenshotCase[]
@@ -90,7 +105,7 @@ test('home page search interaction matches desktop screenshots', async ({
 
 	const visualPage = await renderVisualPage({
 		path: '/',
-		component: HomeRoute.options.component as ComponentType,
+		component: routeComponent(HomeRoute),
 		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
 	})
 
