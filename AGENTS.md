@@ -7,6 +7,14 @@ Docker Compose (Postgres). The dev server runs as a pitchfork daemon (see
 each jj workspace gets unique ports via `mise-tasks/setup` (run by
 `mise run bootstrap`; re-run anytime with `mise run setup`).
 
+All worktrees share one Postgres database and one MinIO bucket. Setup derives
+the shared ports, database name, and compose project from fixed strings, so
+every workspace computes the same stack. `vp run compose:up` and
+`vp run compose:down` from any worktree manage that one stack, and
+`vp run compose:reset` wipes the shared data for every worktree. Branches with
+divergent schemas share one physical schema; run `vp run db:migrate` from the
+worktree that owns the change.
+
 Product analytics run through PostHog behind a `/api/ingest` proxy.
 
 ## Local URLs

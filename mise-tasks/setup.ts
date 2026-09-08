@@ -323,23 +323,31 @@ function main(): void {
 	// nothing legitimate sets them (wt passes template vars, not env), and
 	// inherited stale values from another workspace must not steer setup.
 	const { branch, worktree } = detectWorkspace()
-	const compose = sanitizeDatabaseName(worktree)
+	const mainRoot = defaultWorkspaceRoot()
 	const existing = existingPorts(worktree)
 	const isForeign =
 		existsSync('.env.development.local') &&
 		readEnvFile('.env.development.local')['WORKTREE_NAME'] !== worktree
 	detachSymlink('.env.development.local')
-	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
-	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
-	const postgresPort =
-		Number(existing['POSTGRES_PORT']) || hashPort(`db-${branch}`)
-	const minioPort =
-		Number(existing['MINIO_PORT']) || hashPort(`minio-${branch}`)
-	const minioConsolePort =
-		Number(existing['MINIO_CONSOLE_PORT']) ||
-		hashPort(`minio-console-${branch}`)
 
-	const mainRoot = defaultWorkspaceRoot()
+	// All worktrees share one database and object store so scraped data is
+	// seeded once. The ports derive from fixed strings, so every workspace
+	// computes the same stack without coordination. Only APP_PORT stays
+	// per-worktree: each pitchfork daemon needs its own listening socket.
+	const postgresPort = hashPort('imdbgraph-shared-postgres')
+	const minioPort = hashPort('imdbgraph-shared-minio')
+	const minioConsolePort = hashPort('imdbgraph-shared-minio-console')
+	const database = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
+	const compose = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
+
+	// Ports are stable once assigned: only regenerate when the env file is
+	// absent or belongs to another worktree (wt copy-ignored clones the default
+	// workspace's file into new workspaces, which must not keep its ports —
+	// and re-running setup here must not move this workspace's existing
+	// database or registered OAuth redirect URIs out from under it).
+	// A foreign file is fully rewritten so the canonical key order is restored.
+	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
+
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
 	const proxyHost = `${proxySlug}.${tld}`
