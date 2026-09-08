@@ -21,6 +21,15 @@ importers:
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@fontsource-variable/oxanium':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/source-code-pro':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@phosphor-icons/react':
+        specifier: ^2.1.10
+        version: 2.1.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@rolldown/plugin-babel':
         specifier: ^0.2.3
         version: 0.2.3(@babel/core@7.29.0)(@babel/runtime@7.29.7)(@voidzero-dev/vite-plus-core@0.2.1(@types/node@26.4.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0))(rolldown@1.2.6)
@@ -54,9 +63,6 @@ importers:
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(pg@8.23.0)
-      lucide-react:
-        specifier: ^1.16.0
-        version: 1.38.0(react@19.2.8)
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(@vercel/functions@3.5.1(@aws-sdk/credential-provider-web-identity@3.972.76))(@voidzero-dev/vite-plus-core@0.2.1(@types/node@26.4.0)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.23.13)(typescript@6.0.3)(yaml@2.9.0))(chokidar@5.0.0)(dotenv@17.4.2)(drizzle-orm@0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(pg@8.23.0))(jiti@2.7.0)
@@ -933,6 +939,12 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
+  '@fontsource-variable/oxanium@5.3.0':
+    resolution: {integrity: sha512-oVOH5mHRMDLQsxG6h2XAOCxyD+uQL2w5zAjy1FgnAlqt183JDVGPxy9FWK7dDnhEO8huXfP6V2C3QJUj1Ac/Sw==}
+
+  '@fontsource-variable/source-code-pro@5.3.0':
+    resolution: {integrity: sha512-CxzAbqtNrQ6EQXTb9ovRZIRiOhFPcBQhNKla58K5UV6IMoL/ROkWxXDSBOa/frIDLuV4B5PLHI4R1e9SWVinYg==}
+
   '@grpc/grpc-js@1.14.3':
     resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
     engines: {node: '>=12.10.0'}
@@ -1495,6 +1507,13 @@ packages:
   '@oxlint/plugins@1.68.0':
     resolution: {integrity: sha512-titLmukUt/h8ho7Svlf0xSBjoy2ccZKrXjpXpZCj+v6V4CJccC2KyP45BLSCMx8YIpifMyiDyUptM4+5sruKbQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@phosphor-icons/react@2.1.10':
+    resolution: {integrity: sha512-vt8Tvq8GLjheAZZYa+YG/pW7HDbov8El/MANW8pOAz4eGxrwhnbfrQZq0Cp4q8zBEu8NIhHdnr+r8thnfRSNYA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>= 16.8'
+      react-dom: '>= 16.8'
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -4017,11 +4036,6 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.38.0:
-    resolution: {integrity: sha512-xZCyBd/wiVUDactoCc+42TjL0aB7EBOXsuX+tjz+W/sGzw2KhHpL1NOH3FIaVUcpimvUBpIYfz34Ofj9S5JEzQ==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -5988,6 +6002,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
+  '@fontsource-variable/oxanium@5.3.0': {}
+
+  '@fontsource-variable/source-code-pro@5.3.0': {}
+
   '@grpc/grpc-js@1.14.3':
     dependencies:
       '@grpc/proto-loader': 0.8.1
@@ -6361,6 +6379,11 @@ snapshots:
     optional: true
 
   '@oxlint/plugins@1.68.0': {}
+
+  '@phosphor-icons/react@2.1.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -8571,10 +8594,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-react@1.38.0(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   lz-string@1.5.0: {}
 
