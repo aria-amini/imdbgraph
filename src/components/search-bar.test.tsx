@@ -317,7 +317,7 @@ describe('searchbar tests', () => {
 		expect(document.querySelector('[aria-selected="true"]')).not.toBeNull()
 	})
 
-	test('search menu is full width', async () => {
+	test('search menu matches the searchbar column on desktop', async () => {
 		const screen = await render(<SearchBar fullWidthDropdown />, {
 			wrapper: MockRouter,
 		})
@@ -327,11 +327,11 @@ describe('searchbar tests', () => {
 		await expect
 			.element(screen.getByText(/Avatar: The Last Airbender/).first())
 			.toBeVisible()
-		const command = document.querySelector('[cmdk-root]')
 		const list = document.querySelector('[cmdk-list]')
-		expect(command?.className).toContain('w-full')
 		expect(list?.className).toContain('fixed')
 		expect(list?.className).toContain('md:inset-x-0')
+		expect(list?.className).toContain('md:mx-auto')
+		expect(list?.className).toContain('md:max-w-md')
 	})
 
 	test('search menu is fixed full width on mobile with fullWidthDropdown', async () => {

@@ -453,7 +453,7 @@ export function SearchBar({
 								className={cn(
 									'bg-popover z-50 border p-2 shadow-md',
 									fullWidthDropdown
-										? 'fixed inset-x-4 top-17 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto md:inset-x-0 md:top-14 md:max-h-[calc(100dvh-5rem)]'
+										? 'fixed inset-x-4 top-17 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto md:inset-x-0 md:top-14 md:mx-auto md:max-w-md md:max-h-[calc(100dvh-5rem)]'
 										: 'absolute top-full right-0 left-0 mt-2 w-full',
 									isMobileSearchActive &&
 										'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:animate-in max-md:fade-in max-md:slide-in-from-top-1 max-md:duration-200',

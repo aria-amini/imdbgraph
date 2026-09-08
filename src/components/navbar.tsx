@@ -18,7 +18,7 @@ export function Navbar({ center }: NavbarProps) {
 	return (
 		<nav
 			className={cn(
-				'flex items-center gap-2 border-b px-4 py-3 md:px-6 lg:px-8',
+				'relative flex items-center gap-2 border-b px-4 py-3 md:px-6 lg:px-8',
 			)}
 		>
 			{!isHome && (
@@ -27,7 +27,7 @@ export function Navbar({ center }: NavbarProps) {
 					aria-label="Home"
 					className={cn(
 						buttonVariants({ variant: 'outline', size: 'icon' }),
-						'size-11 justify-self-start md:size-8',
+						'size-11 justify-self-start md:absolute md:left-6 md:top-1/2 md:z-10 md:size-8 md:-mt-4 lg:left-8',
 					)}
 				>
 					<House weight="bold" />

@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import type { SetupWorker } from 'msw/browser'
 import type { ComponentType } from 'react'
 import { expect, vi } from 'vite-plus/test'
-import { userEvent } from 'vite-plus/test/browser'
+import { page, userEvent } from 'vite-plus/test/browser'
 import type { Locator } from 'vite-plus/test/browser'
 import type { RenderResult } from 'vitest-browser-react'
 
@@ -11,6 +11,7 @@ import { shows } from '@/lib/imdb/__fixtures__/shows'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { Route as HomeRoute } from '@/routes/index'
 import { Route as RatingsRoute } from '@/routes/ratings/$id'
+import { Route as SearchRoute } from '@/routes/search/$query'
 
 import {
 	expectPageScreenshot,
@@ -112,6 +113,17 @@ function mockSuggestions(worker: SetupWorker) {
 	)
 }
 
+function searchResultsFixture() {
+	return searchResultIds.map((imdbId) => {
+		const show = shows.find((fixture) => fixture.imdbId === imdbId)
+		if (!show) {
+			throw new Error(`Search result fixture not found: ${imdbId}`)
+		}
+
+		return show
+	})
+}
+
 test('home page search interaction matches desktop screenshots', async ({
 	worker,
 }) => {
@@ -161,4 +173,143 @@ test('home page search interaction matches mobile screenshots', async ({
 	await visualPage.expectScreenshot('home-search-avatar-mobile', {
 		soft: true,
 	})
+})
+
+test('home page searchbar focused matches desktop screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/',
+		component: routeComponent(HomeRoute),
+		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
+		prepare: async (screen) => {
+			await userEvent.click(screen.getByRole('combobox'))
+		},
+	})
+
+	await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+	await visualPage.expectScreenshot('home-focused', { soft: true })
+})
+
+test('home page searchbar focused matches mobile screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/',
+		component: routeComponent(HomeRoute),
+		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
+		viewport: { width: 375, height: 812 },
+		prepare: async (screen) => {
+			await userEvent.click(screen.getByRole('combobox'))
+		},
+	})
+
+	await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+	await visualPage.expectScreenshot('home-focused-mobile', { soft: true })
+})
+
+test('home page keyboard navigation matches desktop screenshot', async ({
+	worker,
+}) => {
+	mockSuggestions(worker)
+
+	const visualPage = await renderVisualPage({
+		path: '/',
+		component: routeComponent(HomeRoute),
+		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
+		prepare: async (screen) => {
+			await userEvent.fill(screen.getByRole('combobox'), 'Ava')
+			await expect
+				.element(screen.getByText(/Avatar: The Last Airbender/i))
+				.toBeVisible()
+			await userEvent.keyboard('{ArrowDown}')
+		},
+	})
+
+	await expect
+		.element(
+			visualPage.screen
+				.getByRole('option', { name: /Avatar: The Last Airbender/i })
+				.first(),
+		)
+		.toHaveAttribute('aria-selected', 'true')
+	await visualPage.expectScreenshot('home-keyboard-selection', { soft: true })
+})
+
+test('search results page matches desktop screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/search/$query',
+		component: routeComponent(SearchRoute),
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /search results/i }),
+		setup: () => {
+			stubLoaderData(SearchRoute, {
+				query: 'avatar',
+				results: searchResultsFixture(),
+			})
+		},
+	})
+
+	await expect
+		.element(visualPage.screen.getByText(/Avatar: The Last Airbender/i))
+		.toBeVisible()
+	await visualPage.expectScreenshot('search-avatar', { soft: true })
+})
+
+test('search results page matches mobile screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/search/$query',
+		component: routeComponent(SearchRoute),
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /search results/i }),
+		viewport: { width: 375, height: 812 },
+		setup: () => {
+			stubLoaderData(SearchRoute, {
+				query: 'avatar',
+				results: searchResultsFixture(),
+			})
+		},
+	})
+
+	await expect
+		.element(visualPage.screen.getByText(/Avatar: The Last Airbender/i))
+		.toBeVisible()
+	await visualPage.expectScreenshot('search-avatar-mobile', { soft: true })
+})
+
+test('ratings page searchbar focused matches desktop screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/ratings/$id',
+		component: routeComponent(RatingsRoute),
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /game of thrones/i }),
+		setup: () => {
+			stubLoaderData(RatingsRoute, {
+				ratings: gameOfThronesRatings,
+			})
+		},
+		prepare: async (screen) => {
+			await userEvent.click(screen.getByRole('combobox'))
+		},
+	})
+
+	await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+	await visualPage.expectScreenshot('ratings-focused', { soft: true })
+})
+
+test('ratings page searchbar focused matches mobile screenshot', async () => {
+	const visualPage = await renderVisualPage({
+		path: '/ratings/$id',
+		component: routeComponent(RatingsRoute),
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /game of thrones/i }),
+		viewport: { width: 375, height: 812 },
+		setup: () => {
+			stubLoaderData(RatingsRoute, {
+				ratings: gameOfThronesRatings,
+			})
+		},
+		prepare: async (screen) => {
+			await userEvent.click(screen.getByRole('combobox'))
+		},
+	})
+
+	await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+	await visualPage.expectScreenshot('ratings-focused-mobile', { soft: true })
 })
