@@ -11,6 +11,7 @@ import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import { themeInitScript } from '@/lib/theme'
 
 import appCss from '../styles.css?url'
 
@@ -62,8 +63,9 @@ function DocumentShell({ children }: { children: ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
+				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
-			<body className="dark flex min-h-dvh min-w-80 flex-col font-sans">
+			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
 				{children}
 				<Scripts />
 			</body>

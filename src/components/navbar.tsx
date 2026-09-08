@@ -1,5 +1,5 @@
+import { House } from '@phosphor-icons/react/dist/ssr'
 import { cn } from 'cn'
-import { Home } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { buttonVariants } from './ui/button'
@@ -19,7 +19,7 @@ export function Navbar({ center }: NavbarProps) {
 					'size-11 justify-self-start md:size-8',
 				)}
 			>
-				<Home />
+				<House weight="bold" />
 			</a>
 			{center && <div className="col-start-2 w-full">{center}</div>}
 		</nav>
