@@ -29,6 +29,13 @@
       "when": 1788900260690,
       "tag": "0003_first_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788900813240,
+      "tag": "0004_misty_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
