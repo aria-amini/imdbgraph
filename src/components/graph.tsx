@@ -25,7 +25,7 @@ import {
 import { transformRatingsData } from '@/lib/imdb/chart-data'
 import type { Episode, Ratings } from '@/lib/imdb/types'
 
-const episodeSchema: z.ZodType<Episode> = z.object({
+const episodeSchema: z.ZodType<Omit<Episode, 'episodeId'>> = z.object({
 	title: z.string(),
 	seasonNum: z.number(),
 	episodeNum: z.number(),
