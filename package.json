@@ -29,7 +29,6 @@
 		"db:generate": "varlock run -- drizzle-kit generate",
 		"db:migrate": "varlock run -- tsx scripts/migrate.ts",
 		"db:populate": "varlock run -- tsx scripts/populate-db.ts",
-		"db:seed-if-empty": "varlock run -- tsx scripts/seed-if-empty.ts",
 		"prepare": "vp config --hooks-only",
 		"update-pnpm": "corepack use pnpm@11",
 		"dead-code": "fallow dead-code"
