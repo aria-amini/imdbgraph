@@ -315,7 +315,9 @@ async function copyFromImdbStream(
 		await finished(ingestStream)
 		console.log(`Successfully transferred ${file}`)
 	} catch (error) {
-		ingestStream.destroy(error as Error)
+		ingestStream.destroy(
+			error instanceof Error ? error : new Error(String(error)),
+		)
 		throw error
 	} finally {
 		reader.close()
