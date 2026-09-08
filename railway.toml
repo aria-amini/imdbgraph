@@ -3,7 +3,7 @@ builder = "RAILPACK"
 buildCommand = "vp build"
 
 [deploy]
-preDeployCommand = "pnpm run db:migrate"
+preDeployCommand = "pnpm run db:migrate && pnpm run db:populate --if-empty"
 runtime = "V2"
 numReplicas = 1
 startCommand = "pnpm start"
