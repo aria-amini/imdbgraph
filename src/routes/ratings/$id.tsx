@@ -3,7 +3,10 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
-import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
+import { showImageQuery } from '@/lib/images/image-query'
+import { imdbIdSchema } from '@/lib/imdb/ratings'
+import { ratingsQuery } from '@/lib/imdb/ratings-query'
+import { scrapeVersion } from '@/lib/imdb/scrape-run-query'
 import { type Ratings } from '@/lib/imdb/types'
 
 function hasRatings(ratings: Ratings): boolean {
@@ -19,24 +22,28 @@ function hasRatings(ratings: Ratings): boolean {
 
 export const Route = createFileRoute('/ratings/$id')({
 	component: Ratings,
-	loader: async ({ params }) => {
+	loader: async ({ params, context: { queryClient } }) => {
 		const showId = imdbIdSchema.safeParse(params.id)
 		if (!showId.success) {
 			throw notFound()
 		}
 
-		const ratings = await getRatings({ data: { showId: showId.data } })
+		// The poster streams in through Suspense; only ratings block the page.
+		void queryClient.prefetchQuery(showImageQuery(showId.data))
 
+		const ratings = await queryClient.ensureQueryData(
+			ratingsQuery(scrapeVersion(queryClient), showId.data),
+		)
 		if (!ratings) {
 			throw notFound()
 		}
 
-		return ratings
+		return { ratings }
 	},
 })
 
 function Ratings() {
-	const ratings = Route.useLoaderData()
+	const { ratings } = Route.useLoaderData()
 
 	return (
 		<>

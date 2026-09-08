@@ -10,7 +10,10 @@ import {
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
-import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import {
+	latestScrapeRunQuery,
+	scrapeRunStaleTime,
+} from '@/lib/imdb/scrape-run-query'
 import { themeInitScript } from '@/lib/theme'
 
 import appCss from '../styles.css?url'
@@ -34,8 +37,15 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
-	loader: async () => {
-		return { latestScrapeRun: await getLatestScrapeRun() }
+	loader: async ({ context: { queryClient } }) => {
+		const { queryKey } = latestScrapeRunQuery(0)
+		return {
+			latestScrapeRun: await queryClient.fetchQuery(
+				latestScrapeRunQuery(
+					scrapeRunStaleTime(queryClient.getQueryData<string>(queryKey)),
+				),
+			),
+		}
 	},
 	head: () => ({
 		meta: [
