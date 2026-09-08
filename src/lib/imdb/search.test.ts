@@ -20,6 +20,8 @@ describe('search tests', () => {
 			endYear: '2019',
 			rating: 9.2,
 			numVotes: 2453952,
+			genres: null,
+			runtimeMinutes: null,
 		})
 	})
 
@@ -32,6 +34,8 @@ describe('search tests', () => {
 			endYear: '2013',
 			rating: 9.5,
 			numVotes: 2358716,
+			genres: null,
+			runtimeMinutes: null,
 		})
 	})
 
@@ -58,41 +62,51 @@ describe('search tests', () => {
 			[
 			  {
 			    "endYear": "2022",
+			    "genres": null,
 			    "imdbId": "tt1520211",
 			    "numVotes": 1150592,
 			    "rating": 8.1,
+			    "runtimeMinutes": null,
 			    "startYear": "2010",
 			    "title": "The Walking Dead",
 			  },
 			  {
 			    "endYear": "2019",
+			    "genres": null,
 			    "imdbId": "tt0898266",
 			    "numVotes": 912870,
 			    "rating": 8.1,
+			    "runtimeMinutes": null,
 			    "startYear": "2007",
 			    "title": "The Big Bang Theory",
 			  },
 			  {
 			    "endYear": null,
+			    "genres": null,
 			    "imdbId": "tt1190634",
 			    "numVotes": 788118,
 			    "rating": 8.6,
+			    "runtimeMinutes": null,
 			    "startYear": "2019",
 			    "title": "The Boys",
 			  },
 			  {
 			    "endYear": "2013",
+			    "genres": null,
 			    "imdbId": "tt0386676",
 			    "numVotes": 783172,
 			    "rating": 9,
+			    "runtimeMinutes": null,
 			    "startYear": "2005",
 			    "title": "The Office",
 			  },
 			  {
 			    "endYear": null,
+			    "genres": null,
 			    "imdbId": "tt3581920",
 			    "numVotes": 682762,
 			    "rating": 8.6,
+			    "runtimeMinutes": null,
 			    "startYear": "2023",
 			    "title": "The Last of Us",
 			  },
