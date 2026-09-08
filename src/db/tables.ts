@@ -40,6 +40,8 @@ export const show = pgTable(
 		title: text().notNull(),
 		startYear: char('start_year', { length: 4 }).notNull(),
 		endYear: char('end_year', { length: 4 }),
+		genres: text().array(),
+		runtimeMinutes: integer('runtime_minutes'),
 		rating: doublePrecision().default(0).notNull(),
 		numVotes: integer('num_votes').default(0).notNull(),
 	},
