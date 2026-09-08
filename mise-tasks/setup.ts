@@ -96,6 +96,14 @@ function run(command: string, args: string[]): string {
 	}).trim()
 }
 
+function tailscaleIp(): string | null {
+	try {
+		return run('tailscale', ['ip', '-4']) || null
+	} catch {
+		return null
+	}
+}
+
 function detectWorkspace(): { branch: string; worktree: string } {
 	try {
 		const root = realpathSync(run('jj', ['workspace', 'root']))
@@ -336,12 +344,14 @@ function main(): void {
 	const proxySlug = registerProxySlug(mainRoot)
 	const proxyHost = `${proxySlug}.${tld}`
 	const proxyUp = pitchforkAvailable()
+	const tailscaleIP = tailscaleIp()
 
 	updateEnvFile(
 		'.env.development.local',
 		[
 			{
 				APP_PORT: String(appPort),
+				...(tailscaleIP ? { TAILSCALE_IP: tailscaleIP } : {}),
 				BASE_URL: proxyUp
 					? `https://${proxyHost}`
 					: `http://localhost:${appPort}`,
@@ -380,6 +390,9 @@ function main(): void {
 	console.log(`  minio:    http://localhost:${minioPort}`)
 	if (proxyUp) {
 		console.log(`  proxy:    https://${proxyHost}`)
+	}
+	if (tailscaleIP) {
+		console.log(`  tailscale: ${tailscaleIP}`)
 	}
 }
 

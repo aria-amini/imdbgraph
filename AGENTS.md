@@ -14,13 +14,23 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 Pitchfork maps the default workspace to `https://<app>.lvh.ariaamini.com` and
 each additional workspace to `https://<workspace>-<app>.lvh.ariaamini.com`.
 Slugs derive from directory names (`mise-tasks/setup.ts`), which also writes
-`BASE_URL`.
+`BASE_URL`. Never assemble or guess a URL. Copy it verbatim from
+`pitchfork list`; `pitchfork proxy status` lists every registered slug. A
+registered slug with a stopped daemon does not serve; start it with
+`pitchfork start <name>`.
+
+`.env.development.local` records `TAILSCALE_IP` (the zshrc exports it too). The
+pitchfork proxy and compose ports answer at that address. The app port binds
+loopback only, so a raw-IP app URL fails unless the daemon listens on the
+tailnet interface.
 
 ## Commands
 
-- `vp dev` — start development (usually managed by pitchfork instead); in a
-  fresh workspace, run `mise run setup` first, or the server binds default port
-  3000 and the proxy URL routes nowhere
+- `mise run bootstrap` — run this first in a fresh workspace. It installs
+  dependencies, writes per-workspace ports, starts compose, and migrates. The
+  dev daemon fails with `ERR_MODULE_NOT_FOUND` until it completes
+- `vp dev` — start development (usually managed by pitchfork instead); without
+  setup it binds default port 3000 and the proxy URL routes nowhere
 - `pitchfork list` / `pitchfork logs dev` / `pitchfork tui` — inspect the dev
   daemon
 - `vp check` — format, lint, and type-check

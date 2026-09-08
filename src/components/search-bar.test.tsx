@@ -102,13 +102,19 @@ describe('searchbar tests', () => {
 			})
 
 			await userEvent.click(screen.getByRole('combobox'))
+			await expect
+				.element(page.getByRole('button', { name: 'Close search' }))
+				.toBeVisible()
 			await userEvent.fill(screen.getByRole('combobox'), 'avatar')
 			await expect
 				.element(screen.getByText(/Avatar: The Last Airbender/).first())
 				.toBeVisible()
-			await expect
-				.element(page.getByRole('button', { name: 'Close search' }))
-				.toBeVisible()
+			expect(
+				page.getByRole('button', { name: 'Close search' }),
+			).not.toBeInTheDocument()
+			expect(
+				page.getByRole('button', { name: 'Clear search' }),
+			).toBeInTheDocument()
 			expect(document.querySelector('[cmdk-root]')?.className).toContain(
 				'max-md:fixed',
 			)
@@ -120,6 +126,64 @@ describe('searchbar tests', () => {
 			expect(list?.className).toContain('bg-popover')
 			expect(list?.className).toContain('border')
 			expect(list?.className).toContain('p-2')
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
+	})
+
+	test('close button dismisses the mobile search overlay', async () => {
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			const screen = await render(<SearchBar mobileSearchOverlay />, {
+				wrapper: MockRouter,
+			})
+
+			const searchBar = screen.getByRole('combobox')
+			await userEvent.click(searchBar)
+			await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+
+			await userEvent.click(page.getByRole('button', { name: 'Close search' }))
+
+			await expect
+				.element(page.getByText('Breaking Bad'))
+				.not.toBeInTheDocument()
+			expect(
+				page.getByRole('button', { name: 'Close search' }),
+			).not.toBeInTheDocument()
+			expect(searchBar).toHaveValue('')
+		} finally {
+			await page.viewport(originalWidth, originalHeight)
+		}
+	})
+
+	test('tapping the empty area below the results dismisses the mobile overlay', async () => {
+		const originalWidth = window.innerWidth
+		const originalHeight = window.innerHeight
+		try {
+			await page.viewport(375, 667)
+			const screen = await render(<SearchBar mobileSearchOverlay />, {
+				wrapper: MockRouter,
+			})
+
+			const searchBar = screen.getByRole('combobox')
+			await userEvent.click(searchBar)
+			await userEvent.fill(searchBar, 'avatar')
+			await expect
+				.element(screen.getByText(/Avatar: The Last Airbender/).first())
+				.toBeVisible()
+
+			const commandRoot = document.querySelector('[cmdk-root]')
+			if (!commandRoot) throw new Error('cmdk root not found')
+			commandRoot.dispatchEvent(
+				new PointerEvent('pointerdown', { bubbles: true }),
+			)
+
+			await expect
+				.element(page.getByText(/Avatar: The Last Airbender/).first())
+				.not.toBeInTheDocument()
+			expect(searchBar).toHaveValue('')
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
 		}

@@ -119,7 +119,6 @@ export function SearchBar({
 	const [isMobileSearchActive, setIsMobileSearchActive] = useState(false)
 	const hasNavigatedSuggestionsRef = useRef(false)
 	const containerRef = useRef<HTMLDivElement>(null)
-	const sheetRef = useRef<HTMLDivElement>(null)
 	const inputRowRef = useRef<HTMLDivElement>(null)
 	const preOverlayRectRef = useRef<DOMRect | null>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
@@ -320,14 +319,15 @@ export function SearchBar({
 							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:duration-200',
 					)}
 					onPointerDown={(event) => {
-						const sheet = sheetRef.current
-						if (
-							isMobileSearchActive &&
-							sheet &&
-							!(event.target instanceof Node && sheet.contains(event.target))
-						) {
-							closeMobileSearch()
-						}
+						if (!isMobileSearchActive) return
+						const target = event.target
+						if (!(target instanceof Element)) return
+						const inInputRow = inputRowRef.current?.contains(target) ?? false
+						const inResults = target.closest('[cmdk-list]') !== null
+						const inError =
+							target.closest('[data-slot="search-error"]') !== null
+						if (inInputRow || inResults || inError) return
+						closeMobileSearch()
 					}}
 					style={
 						isMobileSearchActive && overlayViewport
@@ -346,17 +346,13 @@ export function SearchBar({
 					}}
 				>
 					<div
-						ref={sheetRef}
 						className={cn(
 							'relative',
 							isMobileSearchActive &&
 								'max-md:flex max-md:min-h-0 max-md:flex-1 max-md:flex-col',
 						)}
 					>
-						<div
-							ref={inputRowRef}
-							className={cn('flex', isMobileSearchActive && 'max-md:gap-3')}
-						>
+						<div ref={inputRowRef} className="flex">
 							<InputGroup
 								className={cn(
 									'h-11 flex-1 border-input bg-input/10 shadow-none transition-opacity md:h-8',
@@ -417,24 +413,23 @@ export function SearchBar({
 											<XCircle aria-hidden className="size-4" weight="bold" />
 										</InputGroupButton>
 									)}
+									{isMobileSearchActive && !search && (
+										<InputGroupButton
+											size="icon-sm"
+											onClick={closeMobileSearch}
+											aria-label="Close search"
+											className="text-muted-foreground hover:text-foreground"
+										>
+											<X aria-hidden className="size-4" weight="bold" />
+										</InputGroupButton>
+									)}
 								</InputGroupAddon>
 							</InputGroup>
-							{isMobileSearchActive && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									onClick={closeMobileSearch}
-									className="hidden size-11 shrink-0 max-md:flex"
-									aria-label="Close search"
-								>
-									<X aria-hidden className="size-5" weight="bold" />
-								</Button>
-							)}
 						</div>
 
 						{error && (
 							<div
+								data-slot="search-error"
 								aria-live="polite"
 								className="flex items-center justify-center gap-2 px-2 py-1.5"
 							>
