@@ -83,3 +83,12 @@ export const scrapeRun = pgTable('scrape_run', {
 		.defaultNow()
 		.notNull(),
 })
+
+export const feedback = pgTable('feedback', {
+	id: serial().primaryKey().notNull(),
+	message: text().notNull(),
+	email: varchar('email', { length: 254 }),
+	createdAt: timestamp('created_at', { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+})
