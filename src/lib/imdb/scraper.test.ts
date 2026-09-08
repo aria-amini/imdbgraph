@@ -100,7 +100,7 @@ describe('scraper tests', () => {
 
 		const latestScrapeRun = await getLatestScrapeRunDb(db)
 		expect(latestScrapeRun).toEqual(expect.any(String))
-		expect(Number.isNaN(Date.parse(latestScrapeRun as string))).toBe(false)
+		expect(Number.isNaN(Date.parse(latestScrapeRun ?? ''))).toBe(false)
 		expect(await db.select().from(scrapeRun)).toHaveLength(1)
 	})
 
