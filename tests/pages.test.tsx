@@ -21,6 +21,11 @@ vi.mock('@/lib/imdb/ratings', async (importOriginal) => ({
 	getRatings: async () => gameOfThronesRatings,
 }))
 
+vi.mock('@/lib/images/thumbnail', async (importOriginal) => ({
+	...(await importOriginal<typeof import('@/lib/images/thumbnail')>()),
+	getShowImage: async () => null,
+}))
+
 interface PageScreenshotCase {
 	name: string
 	path: string
