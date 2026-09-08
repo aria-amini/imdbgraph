@@ -57,7 +57,7 @@ const pages = [
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
+			stubLoaderData(RatingsRoute, { ratings: gameOfThronesRatings })
 		},
 	},
 	{
@@ -68,7 +68,7 @@ const pages = [
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		viewport: { width: 375, height: 812 },
 		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
+			stubLoaderData(RatingsRoute, { ratings: gameOfThronesRatings })
 		},
 	},
 ] satisfies PageScreenshotCase[]
