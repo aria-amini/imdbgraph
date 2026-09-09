@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ApiFeedbackRouteImport } from './routes/api/feedback'
 import { Route as ApiSuggestionsRouteImport } from './routes/api/suggestions'
 import { Route as RatingsIdRouteImport } from './routes/ratings/$id'
 import { Route as ApiIngestSplatRouteImport } from './routes/api/ingest/$'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFeedbackRoute = ApiFeedbackRouteImport.update({
+  id: '/api/feedback',
+  path: '/api/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSuggestionsRoute = ApiSuggestionsRouteImport.update({
@@ -50,6 +56,7 @@ const ApiThumbnailsIdRoute = ApiThumbnailsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
   '/ratings/$id': typeof RatingsIdRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
   '/ratings/$id': typeof RatingsIdRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/suggestions': typeof ApiSuggestionsRoute
   '/ratings/$id': typeof RatingsIdRoute
   '/api/ingest/$': typeof ApiIngestSplatRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/search'
+    | '/api/feedback'
     | '/api/suggestions'
     | '/ratings/$id'
     | '/api/ingest/$'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/search'
+    | '/api/feedback'
     | '/api/suggestions'
     | '/ratings/$id'
     | '/api/ingest/$'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/search'
+    | '/api/feedback'
     | '/api/suggestions'
     | '/ratings/$id'
     | '/api/ingest/$'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SearchRoute: typeof SearchRoute
+  ApiFeedbackRoute: typeof ApiFeedbackRoute
   ApiSuggestionsRoute: typeof ApiSuggestionsRoute
   RatingsIdRoute: typeof RatingsIdRoute
   ApiIngestSplatRoute: typeof ApiIngestSplatRoute
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/feedback': {
+      id: '/api/feedback'
+      path: '/api/feedback'
+      fullPath: '/api/feedback'
+      preLoaderRoute: typeof ApiFeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/suggestions': {
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SearchRoute: SearchRoute,
+  ApiFeedbackRoute: ApiFeedbackRoute,
   ApiSuggestionsRoute: ApiSuggestionsRoute,
   RatingsIdRoute: RatingsIdRoute,
   ApiIngestSplatRoute: ApiIngestSplatRoute,
