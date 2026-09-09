@@ -1,8 +1,8 @@
+import { MagnifyingGlass, Star } from '@phosphor-icons/react/dist/ssr'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Command } from 'cmdk'
 import { cn } from 'cn'
-import { Search as SearchIcon, Star } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import {
@@ -92,7 +92,7 @@ export function SearchBar({ className }: { className?: string }) {
 						)}
 					>
 						<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
-							<SearchIcon />
+							<MagnifyingGlass weight="bold" />
 						</InputGroupAddon>
 						<Command.Input
 							value={search}
@@ -169,7 +169,10 @@ export function SearchBar({ className }: { className?: string }) {
 										</div>
 										<div className="text-muted-foreground group-aria-selected:text-accent-foreground flex items-center gap-1 text-sm">
 											<span>{`${show.rating.toFixed(1)} / 10.0`}</span>
-											<Star className="text-primary group-aria-selected:text-accent-foreground size-4" />
+											<Star
+												className="text-primary group-aria-selected:text-accent-foreground size-4"
+												weight="bold"
+											/>
 										</div>
 									</Link>
 								</Command.Item>
