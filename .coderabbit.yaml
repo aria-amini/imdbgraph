@@ -2,3 +2,4 @@
 reviews:
   auto_review:
     enabled: false
+  request_changes_workflow: true
