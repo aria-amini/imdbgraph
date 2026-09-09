@@ -357,12 +357,15 @@ function main(): void {
 	detachSymlink('.env.development.local')
 
 	// All worktrees share one database and object store so scraped data is
-	// seeded once. The ports derive from fixed strings, so every workspace
-	// computes the same stack without coordination. Only APP_PORT stays
-	// per-worktree: each pitchfork daemon needs its own listening socket.
-	const postgresPort = hashPort('imdbgraph-shared-postgres')
-	const minioPort = hashPort('imdbgraph-shared-minio')
-	const minioConsolePort = hashPort('imdbgraph-shared-minio-console')
+	// seeded once. The ports derive from the checkout directory name plus
+	// fixed suffixes, so every workspace in the same checkout computes the
+	// same stack without coordination, while two checkouts cannot collide.
+	// Only APP_PORT stays per-worktree: each pitchfork daemon needs its own
+	// listening socket.
+	const stackPrefix = `${basename(mainRoot)}-shared`
+	const postgresPort = hashPort(`${stackPrefix}-postgres`)
+	const minioPort = hashPort(`${stackPrefix}-minio`)
+	const minioConsolePort = hashPort(`${stackPrefix}-minio-console`)
 	const database = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
 	const compose = sanitizeDatabaseName(`shared-${basename(mainRoot)}`)
 
@@ -386,8 +389,14 @@ function main(): void {
 		[
 			{
 				APP_PORT: String(appPort),
-				...(tailscaleIP ? { TAILSCALE_IP: tailscaleIP } : {}),
-				...(tailscaleHostSuffix ? { TAILSCALE_HOST: tailscaleHostSuffix } : {}),
+				// Writing an empty value clears a stale entry when detection
+				// fails; consumers treat empty as unset.
+				...(tailscaleIP || existing['TAILSCALE_IP']
+					? { TAILSCALE_IP: tailscaleIP ?? '' }
+					: {}),
+				...(tailscaleHostSuffix || existing['TAILSCALE_HOST']
+					? { TAILSCALE_HOST: tailscaleHostSuffix ?? '' }
+					: {}),
 				BASE_URL: proxyUp
 					? `https://${proxyHost}`
 					: `http://localhost:${appPort}`,

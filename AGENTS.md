@@ -19,11 +19,11 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 
 ## Local URLs
 
-Pitchfork maps the default workspace to `https://<app>.lvh.ariaamini.com` and
-each additional workspace to `https://<workspace>-<app>.lvh.ariaamini.com`.
-Slugs derive from directory names (`mise-tasks/setup.ts`), which also writes
-`BASE_URL`. Never assemble or guess a URL. Copy it verbatim from
-`pitchfork list`; `pitchfork proxy status` lists every registered slug. A
+Pitchfork maps the default workspace to `https://<app>.<tld>` and each
+additional workspace to `https://<workspace>-<app>.<tld>`, where `<tld>` is the
+configured proxy TLD. Slugs derive from directory names (`mise-tasks/setup.ts`),
+which also writes `BASE_URL`. Never assemble or guess a URL. Copy it verbatim
+from `pitchfork list`; `pitchfork proxy status` lists every registered slug. A
 registered slug with a stopped daemon does not serve; start it with
 `pitchfork start <name>`.
 
