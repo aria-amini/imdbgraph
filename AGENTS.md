@@ -28,9 +28,10 @@ registered slug with a stopped daemon does not serve; start it with
 `pitchfork start <name>`.
 
 `.env.development.local` records `TAILSCALE_IP` (the zshrc exports it too). The
-dev server binds every interface, so the app answers at
-`http://$TAILSCALE_IP:$APP_PORT` as well as on localhost. Tools that cannot load
-workspace proxy hostnames take the raw-IP URL.
+dev server binds every interface, so the app also answers at
+`http://$TAILSCALE_IP:$APP_PORT`; the node's `TAILSCALE_HOST` suffix is in
+`server.allowedHosts`, so `http://<node-dns-name>:$APP_PORT` works too. Tools
+that cannot load workspace proxy hostnames take the raw-IP URL.
 
 ## Commands
 

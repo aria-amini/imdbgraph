@@ -98,7 +98,26 @@ function run(command: string, args: string[]): string {
 
 function tailscaleIp(): string | null {
 	try {
-		return run('tailscale', ['ip', '-4']) || null
+		// `tailscale ip -4` prints one address per line; raw multi-line output
+		// would corrupt the env value and the daemon args.
+		return run('tailscale', ['ip', '-4']).split('\n')[0]!.trim() || null
+	} catch {
+		return null
+	}
+}
+
+function tailscaleHost(): string | null {
+	try {
+		const dnsName =
+			(
+				JSON.parse(run('tailscale', ['status', '--json'])) as {
+					Self?: { DNSName?: string }
+				}
+			).Self?.DNSName?.replace(/\.$/, '') ?? ''
+		// Leading dot: allow this node and its subdomains in Vite's
+		// server.allowedHosts; the tailnet DNS is user-controlled, so the
+		// suffix is safe to trust.
+		return (dnsName && `.${dnsName}`) || null
 	} catch {
 		return null
 	}
@@ -192,20 +211,27 @@ function updateEnvFile(
 	writeFileSync(path, `${lines.join('\n')}\n`)
 }
 
-// Pins the daemon port in pitchfork.local.toml (gitignored) so the pitchfork
-// proxy never has to guess which listening socket is the app (vite+/nitro
-// opens more than one). The port lives in the untracked file because it
-// differs per workspace — a tracked port line conflicts on every rebase.
-// pitchfork treats the local file as the project config, so it must carry
-// the full daemon definition, not just the override.
+// Pins the app port in pitchfork.local.toml so the proxy does not guess which
+// listening socket is the app — vite+/nitro opens several. The file merges at
+// the config level, but a daemon table in it REPLACES the tracked daemon
+// whole (`run` is required there), so the dev definition must be copied in
+// full with the port added inside its table. The port stays out of the
+// tracked file because it differs per workspace.
 function setDaemonPort(appPort: number): void {
 	const base = 'pitchfork.toml'
 	if (!existsSync(base)) return
-	const contents = readFileSync(base, 'utf8').replace(/^port = \d+\n/m, '')
-	writeFileSync(
-		'pitchfork.local.toml',
-		`${contents.trimEnd()}\nport = ${appPort}\n`,
-	)
+	const lines = readFileSync(base, 'utf8').split('\n')
+	const devIndex = lines.findIndex((line) => line.trim() === '[daemons.dev]')
+	if (devIndex === -1) return
+	let tableEnd = lines.length
+	for (let index = devIndex + 1; index < lines.length; index++) {
+		if (lines[index]!.startsWith('[')) {
+			tableEnd = index
+			break
+		}
+	}
+	lines.splice(tableEnd, 0, `port = ${appPort}`, '')
+	writeFileSync('pitchfork.local.toml', `${lines.join('\n').trimEnd()}\n`)
 }
 
 function readEnvFile(path: string): Record<string, string> {
@@ -353,6 +379,7 @@ function main(): void {
 	const proxyHost = `${proxySlug}.${tld}`
 	const proxyUp = pitchforkAvailable()
 	const tailscaleIP = tailscaleIp()
+	const tailscaleHostSuffix = tailscaleHost()
 
 	updateEnvFile(
 		'.env.development.local',
@@ -360,6 +387,7 @@ function main(): void {
 			{
 				APP_PORT: String(appPort),
 				...(tailscaleIP ? { TAILSCALE_IP: tailscaleIP } : {}),
+				...(tailscaleHostSuffix ? { TAILSCALE_HOST: tailscaleHostSuffix } : {}),
 				BASE_URL: proxyUp
 					? `https://${proxyHost}`
 					: `http://localhost:${appPort}`,

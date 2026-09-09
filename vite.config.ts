@@ -108,9 +108,15 @@ export default defineConfig({
 	},
 	root,
 	server: {
-		// Loopback only: the pitchfork proxy serves clients and dials the daemon
-		// locally. Widen the bind with `vp dev --host <addr>` when needed.
-		host: '127.0.0.1',
+		// All interfaces: the tailnet IP must answer on the same pinned port as
+		// localhost. Accepted trade-off: local containers can reach the server.
+		host: true,
+		// The proxy dials this exact port; hopping breaks it, so fail loudly.
+		strictPort: true,
+		// Tailnet DNS is user-controlled, so its suffix is safe to trust.
+		allowedHosts: process.env.TAILSCALE_HOST
+			? [process.env.TAILSCALE_HOST]
+			: [],
 		port: Number(process.env.APP_PORT ?? 3000),
 	},
 	resolve: {
