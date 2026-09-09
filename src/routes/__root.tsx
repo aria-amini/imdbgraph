@@ -11,6 +11,8 @@ import {
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
+import { FeedbackDialog } from '@/components/feedback-dialog'
+import { ReportBug } from '@/components/report-bug'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
@@ -144,6 +146,8 @@ function SiteFooter({ completedAt }: { completedAt: string | null }) {
 						<LinkedinLogo aria-hidden className="size-3.5" weight="bold" />
 						LinkedIn
 					</a>
+					<FeedbackDialog />
+					<ReportBug />
 					<ThemeToggle className="ml-1" />
 				</div>
 			</div>
