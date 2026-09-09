@@ -14,16 +14,23 @@ on:
         type: string
 
 concurrency:
-  group: e2e-${{ github.event.deployment.environment || inputs.base_url }}
-  cancel-in-progress: true
+  # Railway posts several deployment statuses per push; queue instead of
+  # cancelling, so the last matching run always finishes and reports.
+  group:
+    e2e-${{ github.event.deployment.environment || inputs.base_url ||
+    github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   e2e:
-    # Railway PR environments are named like "<branch>-pr-<n>"
+    # Railway PR environments are named like "<service> / <env>" (spaces
+    # included), and the app environment is "imdbgraph / imdbgraph-pr-<n>";
+    # the database-updater service also posts statuses and must not trigger
+    # this suite.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.deployment_status.state == 'success' &&
-      contains(github.event.deployment.environment, 'pr-'))
+      contains(github.event.deployment.environment, 'imdbgraph-pr-'))
     runs-on: ubuntu-24.04
     steps:
       # Railway reports dashboard URLs in deployment_status URL fields. The
