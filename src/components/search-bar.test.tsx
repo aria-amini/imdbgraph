@@ -7,12 +7,14 @@ import {
 	RouterContextProvider,
 	type AnyRouter,
 } from '@tanstack/react-router'
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, delay } from 'msw'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { beforeEach, describe, expect, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { page, userEvent } from 'vitest/browser'
+
+import suggestions from '@/mocks/data/suggestions.json' with { type: 'json' }
 
 import { SearchBar } from './search-bar'
 
@@ -233,5 +235,41 @@ describe('searchbar tests', () => {
 		await expect
 			.element(screen.getByText(/Something went wrong. Please try again./i))
 			.toBeVisible()
+	})
+
+	test('skips the spinner when suggestions resolve quickly', async () => {
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+
+		expect(document.querySelector('[data-testid="loading-spinner"]')).toBeNull()
+	})
+
+	test('shows the spinner while a slow request is in flight', async ({
+		worker,
+	}) => {
+		worker.use(
+			http.get('/api/suggestions', async () => {
+				await delay(600)
+				return HttpResponse.json(suggestions)
+			}),
+		)
+
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+
+		await expect.element(page.getByTestId('loading-spinner')).toBeVisible()
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+		expect(document.querySelector('[data-testid="loading-spinner"]')).toBeNull()
 	})
 })

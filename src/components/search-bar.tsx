@@ -17,11 +17,15 @@ import {
 } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
 
+// Fast suggestion responses would flash the spinner on every keystroke.
+const SPINNER_DELAY_MS = 300
+
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({ className }: { className?: string }) {
 	const [search, setSearch] = useState('')
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isFocused, setIsFocused] = useState(false)
+	const [showSpinner, setShowSpinner] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
@@ -74,6 +78,15 @@ export function SearchBar({ className }: { className?: string }) {
 		placeholderData: keepPreviousData,
 	})
 
+	useEffect(() => {
+		if (!isFetching) {
+			setShowSpinner(false)
+			return
+		}
+		const timer = setTimeout(() => setShowSpinner(true), SPINNER_DELAY_MS)
+		return () => clearTimeout(timer)
+	}, [isFetching])
+
 	return (
 		<div
 			ref={containerRef}
@@ -110,7 +123,7 @@ export function SearchBar({ className }: { className?: string }) {
 						</Command.Input>
 
 						<InputGroupAddon align="inline-end">
-							{isFetching && (
+							{showSpinner && (
 								<Spinner aria-hidden data-testid="loading-spinner" />
 							)}
 						</InputGroupAddon>
