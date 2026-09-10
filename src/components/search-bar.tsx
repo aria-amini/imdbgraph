@@ -85,6 +85,38 @@ export function SearchBar({ className }: { className?: string }) {
 		placeholderData: keepPreviousData,
 	})
 	const isSearching = searchDebouncer.state.isPending || isFetching
+	const hasSuggestions = (searchResults?.length ?? 0) > 0
+
+	// cmdk re-selects the first row on every keystroke and keeps whichever id
+	// survives into a new result set, so the highlight is reset to the first
+	// suggestion on every new result set to keep it deterministic.
+	const [selectedId, setSelectedId] = useState<string>()
+
+	// Enter stays reserved for submitting the query to the search page; it
+	// activates a suggestion only after the user deliberately navigates the
+	// list. cmdk runs this handler before its own Enter handling, so
+	// preventing the default here suppresses its activation.
+	const navigatedRef = useRef(false)
+
+	useEffect(() => {
+		setSelectedId(searchResults?.[0]?.imdbId)
+		navigatedRef.current = false
+	}, [searchResults])
+
+	const handleCommandKeyDown = (event: React.KeyboardEvent) => {
+		if (event.key === 'Enter' && !navigatedRef.current) {
+			event.preventDefault()
+			return
+		}
+		if (
+			event.key === 'ArrowDown' ||
+			event.key === 'ArrowUp' ||
+			event.key === 'Home' ||
+			event.key === 'End'
+		) {
+			navigatedRef.current = true
+		}
+	}
 
 	useEffect(() => {
 		if (!isFetching) {
@@ -102,7 +134,13 @@ export function SearchBar({ className }: { className?: string }) {
 			onFocus={() => setIsFocused(true)}
 			onBlur={handleBlur}
 		>
-			<Command className={cn('flex flex-col', className)} shouldFilter={false}>
+			<Command
+				className={cn('flex flex-col', className)}
+				shouldFilter={false}
+				value={selectedId ?? ''}
+				onValueChange={setSelectedId}
+				onKeyDown={handleCommandKeyDown}
+			>
 				<div className="relative">
 					<InputGroup
 						className={cn(
@@ -148,7 +186,9 @@ export function SearchBar({ className }: { className?: string }) {
 
 					{isFocused && search && !error && (isSearching || searchResults) && (
 						<Command.List className="bg-popover absolute top-full right-0 left-0 z-50 mt-2 border p-2 shadow-md">
-							{isSearching && (
+							{/* The searching state replaces a stale empty list rather
+								than stacking on visible suggestions. */}
+							{isSearching && !hasSuggestions && (
 								<Command.Loading
 									label="Searching for TV shows"
 									className="text-muted-foreground px-2 py-1.5 text-center"

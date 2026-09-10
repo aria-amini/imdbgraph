@@ -181,6 +181,31 @@ describe('searchbar tests', () => {
 		)
 	})
 
+	test('reserves Enter for search until the user navigates the list', async () => {
+		const router = createMockRouter()
+		const navigateSpy = vi.spyOn(router, 'navigate')
+		const screen = await render(<SearchBar />, {
+			wrapper: (props) => <MockRouter router={router} {...props} />,
+		})
+
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+
+		await userEvent.keyboard('{Enter}')
+		expect(navigateSpy).not.toHaveBeenCalled()
+		expect(searchBar).toHaveValue('avatar')
+
+		// Navigating the list makes Enter activate the highlighted row.
+		await userEvent.keyboard('{ArrowUp}{Enter}')
+		expect(navigateSpy).toHaveBeenCalledWith({
+			params: { id: 'tt0417299' },
+			to: '/ratings/$id',
+		})
+	})
+
 	test('click navigates once and closes the results', async () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
@@ -267,6 +292,109 @@ describe('searchbar tests', () => {
 		await expect.element(searchBar).toHaveAttribute('aria-busy', 'true')
 		await expect.element(screen.getByText('Searching...')).toBeVisible()
 		await expect.element(emptyState).toBeVisible()
+	})
+
+	test('keeps previous suggestions visible without a searching state', async ({
+		worker,
+	}) => {
+		worker.use(
+			http.get('/api/suggestions', async ({ request }) => {
+				if (new URL(request.url).searchParams.get('q') === 'avatarx') {
+					await delay(800)
+					return HttpResponse.json([])
+				}
+				return HttpResponse.json(suggestions)
+			}),
+		)
+
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avatar')
+		const suggestion = page
+			.getByRole('option', { name: /Avatar: The Last Airbender/ })
+			.first()
+		await expect.element(suggestion).toBeVisible()
+
+		await userEvent.fill(searchBar, 'avatarx')
+		await expect.element(searchBar).toHaveAttribute('aria-busy', 'true')
+		expect(document.body.textContent).not.toContain('Searching...')
+		await expect.element(suggestion).toBeVisible()
+
+		await expect.element(screen.getByText(/No TV Shows Found./i)).toBeVisible()
+		expect(document.body.textContent).not.toContain(
+			'Avatar: The Last Airbender',
+		)
+	})
+
+	test('selects the first suggestion of every new result set', async ({
+		worker,
+	}) => {
+		const overlappingResults = [
+			{
+				imdbId: 'tt0417299',
+				title: 'Avatar: The Last Airbender',
+				startYear: '2005',
+				endYear: '2008',
+				rating: 9.3,
+				numVotes: 410746,
+			},
+		]
+		worker.use(
+			http.get('/api/suggestions', async ({ request }) => {
+				const query = new URL(request.url).searchParams.get('q')
+				await delay(query === 'avatar' ? 400 : 0)
+				if (query === 'avatar') {
+					// The 2005 show survives into the refined set at index 1, which
+					// tempts cmdk into keeping it highlighted instead of row one.
+					return HttpResponse.json([
+						{
+							imdbId: 'tt0000001',
+							title: 'Avatar Studios Documentary',
+							startYear: '2026',
+							endYear: null,
+							rating: 8.0,
+							numVotes: 100,
+						},
+						...overlappingResults,
+					])
+				}
+				return HttpResponse.json([
+					{
+						imdbId: 'tt9018736',
+						title: 'Avatar: The Last Airbender (2024)',
+						startYear: '2024',
+						endYear: null,
+						rating: 7.2,
+						numVotes: 80299,
+					},
+					...overlappingResults,
+				])
+			}),
+		)
+
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'avat')
+		const initialFirst = page
+			.getByRole('option', { name: /Avatar: The Last Airbender \(2024\)/ })
+			.first()
+		await expect.element(initialFirst).toBeVisible()
+		await expect.element(initialFirst).toHaveAttribute('aria-selected', 'true')
+
+		// Highlight the overlapping result before refining the query.
+		await userEvent.keyboard('{ArrowDown}')
+		const overlapping = page.getByRole('option', { name: /2005/ })
+		await expect.element(overlapping).toHaveAttribute('aria-selected', 'true')
+
+		await userEvent.fill(searchBar, 'avatar')
+		const refinedFirst = page.getByRole('option', { name: /Studios/ })
+		await expect.element(refinedFirst).toBeVisible()
+		await expect.element(refinedFirst).toHaveAttribute('aria-selected', 'true')
+		await expect.element(overlapping).toHaveAttribute('aria-selected', 'false')
 	})
 
 	test('error message', async ({ worker }) => {
