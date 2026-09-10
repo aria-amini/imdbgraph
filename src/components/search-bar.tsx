@@ -1,4 +1,5 @@
 import { MagnifyingGlass, Star } from '@phosphor-icons/react/dist/ssr'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Command } from 'cmdk'
@@ -19,6 +20,7 @@ import { formatYears } from '@/lib/imdb/types'
 
 // Fast suggestion responses would flash the spinner on every keystroke.
 const SPINNER_DELAY_MS = 300
+const SEARCH_DEBOUNCE_MS = 200
 
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({ className }: { className?: string }) {
@@ -26,6 +28,11 @@ export function SearchBar({ className }: { className?: string }) {
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isFocused, setIsFocused] = useState(false)
 	const [showSpinner, setShowSpinner] = useState(false)
+	const [debouncedSearch, searchDebouncer] = useDebouncedValue(
+		search,
+		{ wait: SEARCH_DEBOUNCE_MS },
+		(state) => ({ isPending: state.isPending }),
+	)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
@@ -72,11 +79,12 @@ export function SearchBar({ className }: { className?: string }) {
 		data: searchResults,
 		error,
 	} = useQuery({
-		queryKey: ['suggestions', search],
-		queryFn: () => fetchSuggestionsFromApi(search),
-		enabled: isHydrated && Boolean(search),
+		queryKey: ['suggestions', debouncedSearch],
+		queryFn: () => fetchSuggestionsFromApi(debouncedSearch),
+		enabled: isHydrated && Boolean(debouncedSearch),
 		placeholderData: keepPreviousData,
 	})
+	const isSearching = searchDebouncer.state.isPending || isFetching
 
 	useEffect(() => {
 		if (!isFetching) {
@@ -116,7 +124,7 @@ export function SearchBar({ className }: { className?: string }) {
 							className="h-full flex-1 py-0 placeholder:text-xs"
 							disabled={!isHydrated}
 							aria-label="Search TV shows"
-							aria-busy={!isHydrated || isFetching}
+							aria-busy={!isHydrated || isSearching}
 							asChild={true}
 						>
 							<InputGroupInput />
@@ -138,14 +146,22 @@ export function SearchBar({ className }: { className?: string }) {
 						</div>
 					)}
 
-					{isFocused && search && !error && searchResults && (
+					{isFocused && search && !error && (isSearching || searchResults) && (
 						<Command.List className="bg-popover absolute top-full right-0 left-0 z-50 mt-2 border p-2 shadow-md">
-							{searchResults.length === 0 && !isFetching && (
+							{isSearching && (
+								<Command.Loading
+									label="Searching for TV shows"
+									className="text-muted-foreground px-2 py-1.5 text-center"
+								>
+									Searching...
+								</Command.Loading>
+							)}
+							{!isSearching && searchResults?.length === 0 && (
 								<Command.Empty className="text-muted-foreground px-2 py-1.5 text-center">
 									No TV Shows Found.
 								</Command.Empty>
 							)}
-							{searchResults.map((show: Suggestion) => (
+							{searchResults?.map((show: Suggestion) => (
 								<Command.Item
 									key={show.imdbId}
 									value={show.imdbId}

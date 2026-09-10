@@ -104,6 +104,28 @@ describe('searchbar tests', () => {
 			.toBeVisible()
 	})
 
+	test('debounces suggestion requests while typing', async ({ worker }) => {
+		const requestedQueries: string[] = []
+		worker.use(
+			http.get('/api/suggestions', ({ request }) => {
+				requestedQueries.push(new URL(request.url).searchParams.get('q') ?? '')
+				return HttpResponse.json(suggestions)
+			}),
+		)
+
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.fill(searchBar, 'ava')
+		await userEvent.fill(searchBar, 'avatar')
+
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
+		expect(requestedQueries).toEqual(['avatar'])
+	})
+
 	test('is disabled until hydration completes', async () => {
 		const rootElement = document.createElement('div')
 		document.body.append(rootElement)
@@ -220,6 +242,33 @@ describe('searchbar tests', () => {
 		await expect.element(screen.getByText(/No TV Shows Found./i)).toBeVisible()
 	})
 
+	test('shows a loading state while refreshing empty suggestions', async ({
+		worker,
+	}) => {
+		worker.use(
+			http.get('/api/suggestions', async ({ request }) => {
+				if (new URL(request.url).searchParams.get('q') === 'blahx') {
+					await delay(600)
+				}
+				return HttpResponse.json([])
+			}),
+		)
+
+		const screen = await render(<SearchBar />, {
+			wrapper: MockRouter,
+		})
+		const searchBar = screen.getByRole('combobox')
+		const emptyState = screen.getByText(/No TV Shows Found./i)
+		await userEvent.fill(searchBar, 'blah')
+		await expect.element(emptyState).toBeVisible()
+
+		await userEvent.fill(searchBar, 'blahx')
+		await expect.element(screen.getByText('Searching...')).toBeVisible()
+		await expect.element(searchBar).toHaveAttribute('aria-busy', 'true')
+		await expect.element(screen.getByText('Searching...')).toBeVisible()
+		await expect.element(emptyState).toBeVisible()
+	})
+
 	test('error message', async ({ worker }) => {
 		worker.use(
 			http.get('/api/suggestions', () => {
@@ -237,17 +286,29 @@ describe('searchbar tests', () => {
 			.toBeVisible()
 	})
 
-	test('skips the spinner when suggestions resolve quickly', async () => {
+	test('skips the spinner when suggestions resolve quickly', async ({
+		worker,
+	}) => {
+		let requestStarted = false
+		worker.use(
+			http.get('/api/suggestions', async () => {
+				requestStarted = true
+				await delay(250)
+				return HttpResponse.json(suggestions)
+			}),
+		)
+
 		const screen = await render(<SearchBar />, {
 			wrapper: MockRouter,
 		})
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
+		await expect.poll(() => requestStarted).toBe(true)
+		expect(document.querySelector('[data-testid="loading-spinner"]')).toBeNull()
+
 		await expect
 			.element(page.getByText(/Avatar: The Last Airbender/).first())
 			.toBeVisible()
-
-		expect(document.querySelector('[data-testid="loading-spinner"]')).toBeNull()
 	})
 
 	test('shows the spinner while a slow request is in flight', async ({

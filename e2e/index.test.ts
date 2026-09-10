@@ -41,6 +41,9 @@ test('Search bar keyboard navigation works', async ({ page }) => {
 	await expect(searchBar).not.toBeDisabled({ timeout: 15_000 })
 	await searchBar.click()
 	await searchBar.fill('Avatar')
+	await expect(
+		page.getByRole('option', { name: /Avatar: The Last Airbender/ }),
+	).toBeVisible()
 	await searchBar.press('ArrowDown')
 	await searchBar.press('Enter')
 	await expect(page).toHaveURL(/\/ratings\/tt0417299$/)
