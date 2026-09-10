@@ -1,10 +1,11 @@
 import { GithubLogo, LinkedinLogo } from '@phosphor-icons/react/dist/ssr'
-import type { QueryClient } from '@tanstack/react-query'
+import { useQuery, type QueryClient } from '@tanstack/react-query'
 import {
 	ClientOnly,
 	ErrorComponentProps,
 	HeadContent,
 	Outlet,
+	ScriptOnce,
 	Scripts,
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -17,9 +18,10 @@ import {
 	scrapeRunStaleTime,
 } from '@/lib/imdb/scrape-run-query'
 import { SITE_LINKS } from '@/lib/site'
-import { themeInitScript } from '@/lib/theme'
+import { createThemeBootstrapScript } from '@/lib/theme'
+import { getStoredTheme } from '@/lib/theme.functions'
 
-import appCss from '../styles.css?url'
+import '../styles.css'
 
 function Analytics() {
 	useEffect(() => {
@@ -40,6 +42,7 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
+	beforeLoad: async () => ({ theme: await getStoredTheme() }),
 	loader: async ({ context: { queryClient } }) => {
 		const { queryKey } = latestScrapeRunQuery(0)
 		return {
@@ -63,7 +66,6 @@ export const Route = createRootRouteWithContext<{
 				title: 'IMDB Graph',
 			},
 		],
-		links: [{ rel: 'stylesheet', href: appCss }],
 	}),
 	component: RootComponent,
 	shellComponent: DocumentShell,
@@ -72,13 +74,20 @@ export const Route = createRootRouteWithContext<{
 })
 
 function DocumentShell({ children }: { children: ReactNode }) {
+	const { theme } = Route.useRouteContext()
+
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={theme ?? undefined}
+			style={{ colorScheme: theme ?? 'light dark' }}
+		>
 			<head>
 				<HeadContent />
-				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
 			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
+				<ScriptOnce>{createThemeBootstrapScript(theme)}</ScriptOnce>
 				{children}
 				<Scripts />
 			</body>
@@ -112,13 +121,17 @@ function RootNotFoundComponent() {
 
 function RootComponent() {
 	const { latestScrapeRun } = Route.useLoaderData()
+	const { data: refreshedLatestScrapeRun = latestScrapeRun } = useQuery({
+		...latestScrapeRunQuery(scrapeRunStaleTime(latestScrapeRun)),
+		refetchInterval: ({ state: { data } }) => scrapeRunStaleTime(data),
+	})
 
 	return (
 		<>
 			<div className="flex-1">
 				<Outlet />
 			</div>
-			<SiteFooter completedAt={latestScrapeRun} />
+			<SiteFooter completedAt={refreshedLatestScrapeRun} />
 			<ClientOnly fallback={null}>
 				<Analytics />
 			</ClientOnly>

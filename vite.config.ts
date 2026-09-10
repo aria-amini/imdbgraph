@@ -125,6 +125,11 @@ export default defineConfig({
 	plugins: [
 		tanstackStart({
 			router: { routeFileIgnorePattern: '(\\.test\\.tsx$|__screenshots__)' },
+			server: {
+				build: {
+					inlineCss: true,
+				},
+			},
 		}),
 		...(process.env.VITEST === 'true'
 			? []
