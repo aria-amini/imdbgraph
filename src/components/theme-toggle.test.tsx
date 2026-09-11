@@ -1,13 +1,14 @@
 import { test } from '@config/test/browser'
-import { beforeEach, describe, expect } from 'vitest'
+import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
+import { createThemeBootstrapScript } from '@/lib/theme'
+
 import { ThemeProvider } from './theme-provider'
+import { ThemeToggle } from './theme-toggle'
 
 const THEME_COOKIE_NAME = 'theme'
 const THEME_STORAGE_KEY = 'theme'
-
-import { ThemeToggle } from './theme-toggle'
 
 function storedCookieValue() {
 	const match = document.cookie
@@ -17,6 +18,7 @@ function storedCookieValue() {
 }
 
 describe('theme toggle', () => {
+	afterEach(() => vi.unstubAllGlobals())
 	beforeEach(() => {
 		localStorage.removeItem(THEME_STORAGE_KEY)
 		document.cookie = `${THEME_COOKIE_NAME}=; Max-Age=0; Path=/`
@@ -51,6 +53,31 @@ describe('theme toggle', () => {
 		expect(control).toHaveAttribute('aria-checked', 'false')
 	})
 
+	test('the first toggle on an OS-dark visit selects light', async () => {
+		vi.stubGlobal('matchMedia', () => ({ matches: true }))
+		const script = document.createElement('script')
+		script.textContent = createThemeBootstrapScript(null)
+		document.head.append(script)
+		script.remove()
+
+		const screen = await render(
+			<ThemeProvider preference={null}>
+				<ThemeToggle />
+			</ThemeProvider>,
+		)
+		const control = screen.getByRole('switch', { name: 'Dark mode' })
+		expect(control).toHaveAttribute('aria-checked', 'true')
+		expect(document.documentElement.style.colorScheme).toBe('dark')
+		expect(storedCookieValue()).toBeUndefined()
+
+		await control.click()
+
+		expect(control).toHaveAttribute('aria-checked', 'false')
+		expect(document.documentElement.classList.contains('light')).toBe(true)
+		expect(document.documentElement.style.colorScheme).toBe('light')
+		expect(storedCookieValue()).toBe('light')
+	})
+
 	test('keeps multiple consumers synchronized with the bootstrap theme', async () => {
 		document.documentElement.classList.add('dark')
 		const screen = await render(
@@ -66,6 +93,8 @@ describe('theme toggle', () => {
 		await expect
 			.element(switches.nth(1))
 			.toHaveAttribute('aria-checked', 'true')
+		expect(storedCookieValue()).toBeUndefined()
+		expect(document.documentElement.classList.contains('dark')).toBe(true)
 		await switches.nth(0).click()
 		await expect
 			.element(switches.nth(0))

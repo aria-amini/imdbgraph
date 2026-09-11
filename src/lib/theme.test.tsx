@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import {
 	type Theme,
 	createThemeBootstrapScript,
-	setThemePreference,
+	applyThemeToDocument,
+	writeThemeCookie,
 	getThemePreference,
 } from '@/lib/theme'
 
@@ -47,16 +48,16 @@ describe('theme helpers', () => {
 		expect(getThemePreference()).toBeNull()
 	})
 
-	describe('setThemePreference', () => {
+	describe('theme document and persistence utilities', () => {
 		test('applies the class and color-scheme for both themes', () => {
 			const root = document.documentElement
 
-			setThemePreference('dark')
+			applyThemeToDocument('dark')
 			expect(root.classList.contains('dark')).toBe(true)
 			expect(root.classList.contains('light')).toBe(false)
 			expect(root.style.colorScheme).toBe('dark')
 
-			setThemePreference('light')
+			applyThemeToDocument('light')
 			expect(root.classList.contains('dark')).toBe(false)
 			expect(root.classList.contains('light')).toBe(true)
 			expect(root.style.colorScheme).toBe('light')
@@ -66,21 +67,21 @@ describe('theme helpers', () => {
 			const root = document.documentElement
 			root.classList.add('dark', 'light')
 
-			setThemePreference('dark')
+			applyThemeToDocument('dark')
 
 			expect(root.classList.contains('light')).toBe(false)
 			expect(root.classList.contains('dark')).toBe(true)
 		})
 
 		test('saves the choice only in the cookie', () => {
-			setThemePreference('dark')
+			writeThemeCookie('dark')
 
 			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 			expect(storedCookieValue()).toBe('dark')
 		})
 
 		test('persists light the same way', () => {
-			setThemePreference('light')
+			writeThemeCookie('light')
 
 			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 			expect(storedCookieValue()).toBe('light')

@@ -2,14 +2,16 @@ import {
 	createContext,
 	useContext,
 	useEffect,
+	useLayoutEffect,
 	useState,
 	type ReactNode,
 } from 'react'
 
-import {
-	setThemePreference as updateThemePreference,
-	type Theme,
-} from '@/lib/theme'
+import { applyThemeToDocument, writeThemeCookie, type Theme } from '@/lib/theme'
+
+// Avoid layout-effect warnings during SSR; synchronize before paint in the browser.
+const useBrowserLayoutEffect =
+	typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 const ThemeContext = createContext<{
 	theme: Theme
@@ -23,18 +25,25 @@ export function ThemeProvider({
 	preference: Theme | null
 	children: ReactNode
 }) {
-	const [theme, setTheme] = useState<Theme>(preference ?? 'light')
+	const [theme, setThemeState] = useState<Theme>(preference ?? 'light')
+	const [mounted, setMounted] = useState(false)
 
-	useEffect(() => {
+	useBrowserLayoutEffect(() => {
 		// Adopt the bootstrap result, including OS detection and legacy migration.
-		setTheme(
+		setThemeState(
 			document.documentElement.classList.contains('dark') ? 'dark' : 'light',
 		)
+		setMounted(true)
 	}, [])
 
+	useBrowserLayoutEffect(() => {
+		if (!mounted) return
+		applyThemeToDocument(theme)
+	}, [theme, mounted])
+
 	function setThemePreference(next: Theme) {
-		updateThemePreference(next)
-		setTheme(next)
+		writeThemeCookie(next)
+		setThemeState(next)
 	}
 
 	return (

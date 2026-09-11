@@ -23,12 +23,16 @@ export const getThemePreference = createIsomorphicFn()
 	.server(() => parseTheme(getCookie(THEME_COOKIE_NAME)))
 	.client(() => parseTheme(readBrowserCookie()))
 
-/** Called by the theme provider; consumers change themes through useTheme. */
-export function setThemePreference(theme: Theme): void {
+/** Synchronize the document with the provider state. */
+export function applyThemeToDocument(theme: Theme): void {
 	const root = document.documentElement
 	root.classList.remove('light', 'dark')
 	root.classList.add(theme)
 	root.style.colorScheme = theme
+}
+
+/** Save an explicit user choice without changing the active document. */
+export function writeThemeCookie(theme: Theme): void {
 	const secure = location.protocol === 'https:' ? '; Secure' : ''
 	document.cookie = `${THEME_COOKIE_NAME}=${theme}; Path=/; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE_SECONDS}${secure}`
 }
