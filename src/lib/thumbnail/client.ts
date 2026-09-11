@@ -1,6 +1,19 @@
 import { queryOptions } from '@tanstack/react-query'
+import { createServerFn } from '@tanstack/react-start'
 
-import { getShowImage } from '@/lib/thumbnail/server'
+import { imdbIdSchema } from '@/lib/imdb/imdb-id'
+
+/**
+ * Loads a show's image through the server-function boundary. The handler
+ * imports the implementation lazily so the server-only module graph
+ * (postgres, AWS SDK) never reaches the client bundle.
+ */
+export const getShowImage = createServerFn({ method: 'GET' })
+	.validator(imdbIdSchema)
+	.handler(async ({ data: imdbId }) => {
+		const { loadShowImage } = await import('./server')
+		return loadShowImage(imdbId)
+	})
 
 /** URL of the thumbnail endpoint for one show. */
 export function getPosterImageUrl(imdbId: string): string {

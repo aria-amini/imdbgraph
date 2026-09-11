@@ -5,9 +5,10 @@ import { z } from 'zod'
 
 import { createDb } from '@/db/connection'
 import { episode, show } from '@/db/tables'
+import { imdbIdSchema } from '@/lib/imdb/imdb-id'
 import type { Episode, Ratings } from '@/lib/imdb/types'
 
-export const imdbIdSchema = z.string().regex(/^tt\d+$/)
+export { imdbIdSchema }
 
 /** Loads ratings for a show through the server-function boundary. */
 export const getRatings = createServerFn()
@@ -33,6 +34,7 @@ export async function getRatingsDb(
 
 	const episodes = await db
 		.select({
+			episodeId: episode.episodeId,
 			title: episode.title,
 			seasonNum: episode.seasonNum,
 			episodeNum: episode.episodeNum,

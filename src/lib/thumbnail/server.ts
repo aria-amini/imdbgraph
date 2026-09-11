@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto'
 
-import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { createDb } from '@/db/connection'
 import { show, showImage } from '@/db/tables'
-import { imdbIdSchema } from '@/lib/imdb/ratings'
 import {
 	deleteImageObject,
 	getStorage,
@@ -23,18 +21,20 @@ export interface ShowImage extends ShowAiring {
 	url: string
 }
 
-/** Loads a show's image through the server-function boundary. */
-export const getShowImage = createServerFn({ method: 'GET' })
-	.validator(imdbIdSchema)
-	.handler(async ({ data: imdbId }) => {
-		try {
-			const record = await resolveShowImage(createDb(), imdbId, getStorage())
-			return record ? toShowImage(imdbId, record) : null
-		} catch (error) {
-			console.warn(`Failed to load image for ${imdbId}`, error)
-			return null
-		}
-	})
+/**
+ * Server-function implementation behind the client boundary in client.ts.
+ * Loads a show's image, returning null instead of throwing so a broken
+ * upstream degrades to a missing poster rather than a failed page.
+ */
+export async function loadShowImage(imdbId: string): Promise<ShowImage | null> {
+	try {
+		const record = await resolveShowImage(createDb(), imdbId, getStorage())
+		return record ? toShowImage(imdbId, record) : null
+	} catch (error) {
+		console.warn(`Failed to load image for ${imdbId}`, error)
+		return null
+	}
+}
 
 /**
  * Returns the stored poster bytes, fetching and persisting the poster on
