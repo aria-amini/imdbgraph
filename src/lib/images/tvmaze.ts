@@ -21,16 +21,20 @@ const showLookupSchema = z.object({
 		.nullish(),
 })
 
-/**
- * Poster and airing metadata for one show. TVMaze's API response carries no
- * image dimensions, so width and height stay unknown until render.
- */
-export interface ShowEnrichment {
-	url: string
+/** Airing metadata TVMaze carries alongside the poster. */
+export interface ShowAiring {
 	status: string | null
 	network: string | null
 	airsDays: string[]
 	airsTime: string | null
+}
+
+/**
+ * Poster and airing metadata for one show. TVMaze's API response carries no
+ * image dimensions, so width and height stay unknown until render.
+ */
+export interface ShowEnrichment extends ShowAiring {
+	posterUrl: string
 }
 
 /**
@@ -63,7 +67,7 @@ export async function fetchShowEnrichment(
 	}
 	const time = parsed.data.schedule?.time?.trim()
 	return {
-		url,
+		posterUrl: url,
 		status: parsed.data.status ?? null,
 		network: parsed.data.network?.name ?? parsed.data.webChannel?.name ?? null,
 		airsDays: parsed.data.schedule?.days ?? [],

@@ -9,10 +9,10 @@ import {
 } from 'testcontainers'
 import { afterAll, afterEach, beforeAll, describe, expect, vi } from 'vitest'
 
-import { show, thumbnail } from '@/db/tables'
+import { show, showImage } from '@/db/tables'
 import { createStorage, type Storage } from '@/lib/images/s3'
-import { getShowImageDb } from '@/lib/images/thumbnail.server'
-import { fetchShowEnrichment } from '@/lib/images/tvmaze'
+import { getShowImageDb } from '@/lib/images/show-image'
+import { fetchShowEnrichment, type ShowAiring } from '@/lib/images/tvmaze'
 
 vi.mock('@/lib/images/tvmaze', () => ({
 	fetchShowEnrichment: vi.fn(),
@@ -27,6 +27,19 @@ const FETCHED_ID = 'tt0417299'
 const MISSING_ID = 'tt11111111'
 const FAILING_ID = 'tt22222222'
 const CONCURRENT_ID = 'tt33333333'
+
+const HBO_AIRING: ShowAiring = {
+	status: 'Ended',
+	network: 'HBO',
+	airsDays: ['Monday'],
+	airsTime: '21:00',
+}
+
+const enrichmentFor = (url: string) => ({ posterUrl: url, ...HBO_AIRING })
+const showImageFor = (imdbId: string) => ({
+	url: `/api/thumbnails/${imdbId}`,
+	...HBO_AIRING,
+})
 
 const counts = { download: 0 }
 let imageBytes: Uint8Array | undefined
@@ -96,32 +109,22 @@ const test = initDb(async (db) => {
 	)
 })
 
-describe('thumbnail pipeline', () => {
+describe('show image pipeline', () => {
 	test('fetches and stores an image on first view', async ({ db }) => {
-		vi.mocked(fetchShowEnrichment).mockResolvedValue({
-			url: imageServerUrl,
-			status: 'Ended',
-			network: 'HBO',
-			airsDays: ['Monday'],
-			airsTime: '21:00',
-		})
+		vi.mocked(fetchShowEnrichment).mockResolvedValue(
+			enrichmentFor(imageServerUrl),
+		)
 		imageBytes = PNG_BYTES
 
 		const result = await getShowImageDb(db, FETCHED_ID, storage)
 
-		expect(result).toEqual({
-			url: `/api/thumbnails/${FETCHED_ID}`,
-			status: 'Ended',
-			network: 'HBO',
-			airsDays: ['Monday'],
-			airsTime: '21:00',
-		})
+		expect(result).toEqual(showImageFor(FETCHED_ID))
 		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 
 		const [row] = await db
 			.select()
-			.from(thumbnail)
-			.where(eq(thumbnail.imdbId, FETCHED_ID))
+			.from(showImage)
+			.where(eq(showImage.imdbId, FETCHED_ID))
 		expect(row?.objectKey).toBe(`thumbnails/${FETCHED_ID}.png`)
 		expect(row?.contentType).toBe('image/png')
 		expect(row?.status).toBe('Ended')
@@ -146,8 +149,8 @@ describe('thumbnail pipeline', () => {
 
 		const [row] = await db
 			.select()
-			.from(thumbnail)
-			.where(eq(thumbnail.imdbId, MISSING_ID))
+			.from(showImage)
+			.where(eq(showImage.imdbId, MISSING_ID))
 		expect(row?.objectKey).toBeNull()
 
 		await getShowImageDb(db, MISSING_ID, storage)
@@ -155,13 +158,9 @@ describe('thumbnail pipeline', () => {
 	})
 
 	test('transient failures leave no row and back off', async ({ db }) => {
-		vi.mocked(fetchShowEnrichment).mockResolvedValue({
-			url: imageServerUrl,
-			status: 'Ended',
-			network: 'HBO',
-			airsDays: ['Monday'],
-			airsTime: '21:00',
-		})
+		vi.mocked(fetchShowEnrichment).mockResolvedValue(
+			enrichmentFor(imageServerUrl),
+		)
 
 		await expect(getShowImageDb(db, FAILING_ID, storage)).rejects.toThrow(
 			'thumbnail download failed with status 500',
@@ -169,8 +168,8 @@ describe('thumbnail pipeline', () => {
 
 		const rows = await db
 			.select()
-			.from(thumbnail)
-			.where(eq(thumbnail.imdbId, FAILING_ID))
+			.from(showImage)
+			.where(eq(showImage.imdbId, FAILING_ID))
 		expect(rows).toHaveLength(0)
 
 		await getShowImageDb(db, FAILING_ID, storage)
@@ -180,13 +179,9 @@ describe('thumbnail pipeline', () => {
 	test('concurrent views of one show converge on a single row', async ({
 		db,
 	}) => {
-		vi.mocked(fetchShowEnrichment).mockResolvedValue({
-			url: imageServerUrl,
-			status: 'Ended',
-			network: 'HBO',
-			airsDays: ['Monday'],
-			airsTime: '21:00',
-		})
+		vi.mocked(fetchShowEnrichment).mockResolvedValue(
+			enrichmentFor(imageServerUrl),
+		)
 		imageBytes = PNG_BYTES
 
 		const results = await Promise.all([
@@ -194,19 +189,13 @@ describe('thumbnail pipeline', () => {
 			getShowImageDb(db, CONCURRENT_ID, storage),
 		])
 
-		const expected = {
-			url: `/api/thumbnails/${CONCURRENT_ID}`,
-			status: 'Ended',
-			network: 'HBO',
-			airsDays: ['Monday'],
-			airsTime: '21:00',
-		}
+		const expected = showImageFor(CONCURRENT_ID)
 		expect(results).toEqual([expected, expected])
 
 		const rows = await db
 			.select()
-			.from(thumbnail)
-			.where(eq(thumbnail.imdbId, CONCURRENT_ID))
+			.from(showImage)
+			.where(eq(showImage.imdbId, CONCURRENT_ID))
 		expect(rows).toHaveLength(1)
 		expect(rows[0]?.objectKey).toBe(`thumbnails/${CONCURRENT_ID}.png`)
 

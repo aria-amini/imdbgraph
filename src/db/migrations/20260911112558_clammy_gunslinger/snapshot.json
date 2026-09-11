@@ -1,0 +1,502 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "832991a6-0ae9-4cfb-9c46-60123a140a80",
+  "prevIds": [
+    "24c3402d-5155-4076-837c-20521201513a"
+  ],
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "episode",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "scrape_run",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "show",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "show_image",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "show_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "episode_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "season_num",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "episode_num",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "double precision",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "rating",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "num_votes",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "scrape_run"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "completed_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "scrape_run"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "imdb_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "char(4)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "start_year",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "char(4)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "end_year",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "double precision",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "name": "rating",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "name": "num_votes",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "imdb_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "object_key",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "content_type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "width",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "height",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "network",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 1,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "airs_days",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "airs_time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "fetched_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "show_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "episode_show_id_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "title gin_trgm_ops",
+          "isExpression": true,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "gin",
+      "concurrently": false,
+      "name": "show_title_trigram_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        {
+          "value": "rating",
+          "isExpression": false,
+          "asc": false,
+          "nullsFirst": false,
+          "opclass": {
+            "name": "float8_ops",
+            "default": false
+          }
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "show_rating_index",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "show"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "show_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "show",
+      "columnsTo": [
+        "imdb_id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "episode_show_imdb_id_fk",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "episode"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        "imdb_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "show",
+      "columnsTo": [
+        "imdb_id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "show_image_show_imdb_id_fk",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "show_image"
+    },
+    {
+      "columns": [
+        "episode_id"
+      ],
+      "nameExplicit": false,
+      "name": "episode_pkey",
+      "schema": "public",
+      "table": "episode",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "scrape_run_pkey",
+      "schema": "public",
+      "table": "scrape_run",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "imdb_id"
+      ],
+      "nameExplicit": false,
+      "name": "show_pkey",
+      "schema": "public",
+      "table": "show",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "imdb_id"
+      ],
+      "nameExplicit": false,
+      "name": "thumbnail_pkey",
+      "schema": "public",
+      "table": "show_image",
+      "entityType": "pks"
+    }
+  ],
+  "renames": [
+    "public.thumbnail->public.show_image"
+  ]
+}

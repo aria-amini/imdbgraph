@@ -1,27 +1,28 @@
+import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { thumbnail } from '@/db/tables'
-import { getStorage, type Storage } from '@/lib/images/s3'
-import type { ShowImage } from '@/lib/images/thumbnail'
-import { fetchShowEnrichment } from '@/lib/images/tvmaze'
+import { createDb } from '@/db/connection'
+import { showImage } from '@/db/tables'
+import { getStorage, type Storage, type StoredImage } from '@/lib/images/s3'
+import { fetchShowEnrichment, type ShowAiring } from '@/lib/images/tvmaze'
+import { imdbIdSchema } from '@/lib/imdb/ratings'
 
-interface ThumbnailRecord {
-	objectKey: string | null
-	status: string | null
-	network: string | null
-	airsDays: string[] | null
-	airsTime: string | null
+export interface ShowImage extends ShowAiring {
+	url: string
 }
 
-const DOWNLOAD_TIMEOUT_MS = 10_000
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024
-const RETRY_DELAY_MS = 60_000
-const EXTENSIONS: Record<string, string> = {
-	'image/jpeg': 'jpg',
-	'image/png': 'png',
-	'image/webp': 'webp',
-}
+/** Loads a show's image through the server-function boundary. */
+export const getShowImage = createServerFn({ method: 'GET' })
+	.validator(imdbIdSchema)
+	.handler(async ({ data: imdbId }) => {
+		try {
+			return await getShowImageDb(createDb(), imdbId)
+		} catch (error) {
+			console.warn(`Failed to load image for ${imdbId}`, error)
+			return null
+		}
+	})
 
 /** Returns the image and airing metadata for a show, fetching on first view. */
 export async function getShowImageDb(
@@ -29,7 +30,7 @@ export async function getShowImageDb(
 	imdbId: string,
 	storage: Storage = getStorage(),
 ): Promise<ShowImage | null> {
-	const cached = await loadThumbnail(db, imdbId)
+	const cached = await loadShowImageRecord(db, imdbId)
 	if (cached !== undefined) {
 		return toShowImage(imdbId, cached)
 	}
@@ -41,24 +42,59 @@ export async function getShowImageDb(
 	return fetchAndStore(db, imdbId, storage)
 }
 
+/**
+ * Loads the stored poster bytes and self-heals rows whose object was lost in
+ * storage: dropping the stale row lets the next view re-fetch the poster
+ * instead of 404ing forever.
+ */
+export async function getStoredImage(
+	db: NodePgDatabase,
+	imdbId: string,
+	storage: Storage = getStorage(),
+): Promise<StoredImage | null> {
+	const [row] = await db
+		.select({
+			objectKey: showImage.objectKey,
+			contentType: showImage.contentType,
+		})
+		.from(showImage)
+		.where(eq(showImage.imdbId, imdbId))
+		.limit(1)
+	if (!row?.objectKey) {
+		return null
+	}
+
+	const stored = await storage.get(row.objectKey)
+	if (!stored) {
+		await db.delete(showImage).where(eq(showImage.imdbId, imdbId))
+		return null
+	}
+	return { data: stored.data, contentType: stored.contentType }
+}
+
 // =============================================================================
 // Helpers
 // =============================================================================
 
-async function loadThumbnail(
+type ShowImageRecord = Pick<
+	typeof showImage.$inferSelect,
+	'objectKey' | 'status' | 'network' | 'airsDays' | 'airsTime'
+>
+
+async function loadShowImageRecord(
 	db: NodePgDatabase,
 	imdbId: string,
-): Promise<ThumbnailRecord | undefined> {
+): Promise<ShowImageRecord | undefined> {
 	const [row] = await db
 		.select({
-			objectKey: thumbnail.objectKey,
-			status: thumbnail.status,
-			network: thumbnail.network,
-			airsDays: thumbnail.airsDays,
-			airsTime: thumbnail.airsTime,
+			objectKey: showImage.objectKey,
+			status: showImage.status,
+			network: showImage.network,
+			airsDays: showImage.airsDays,
+			airsTime: showImage.airsTime,
 		})
-		.from(thumbnail)
-		.where(eq(thumbnail.imdbId, imdbId))
+		.from(showImage)
+		.where(eq(showImage.imdbId, imdbId))
 		.limit(1)
 	return row
 }
@@ -77,33 +113,27 @@ async function fetchAndStore(
 		const enrichment = await fetchShowEnrichment(imdbId)
 		if (!enrichment) {
 			// Definitively missing upstream; remember it so later views skip the API.
-			await insertThumbnail(db, {
-				imdbId,
-				objectKey: null,
-				contentType: null,
-				status: null,
-				network: null,
-				airsDays: null,
-				airsTime: null,
-			})
+			await db
+				.insert(showImage)
+				.values({ imdbId, objectKey: null })
+				.onConflictDoNothing()
 			return null
 		}
 
-		const downloaded = await downloadImage(enrichment.url)
+		const downloaded = await downloadImage(enrichment.posterUrl)
 		const objectKey = `thumbnails/${imdbId}.${downloaded.extension}`
-		await storage.put(objectKey, downloaded.body, downloaded.contentType)
-		const record = {
+		const record: ShowImageRecord = {
 			objectKey,
 			status: enrichment.status,
 			network: enrichment.network,
 			airsDays: enrichment.airsDays.length > 0 ? enrichment.airsDays : null,
 			airsTime: enrichment.airsTime,
 		}
-		await insertThumbnail(db, {
-			imdbId,
-			contentType: downloaded.contentType,
-			...record,
-		})
+		await storage.put(objectKey, downloaded.body, downloaded.contentType)
+		await db
+			.insert(showImage)
+			.values({ imdbId, contentType: downloaded.contentType, ...record })
+			.onConflictDoNothing()
 		return toShowImage(imdbId, record)
 	} catch (error) {
 		noteFailure(imdbId)
@@ -111,21 +141,20 @@ async function fetchAndStore(
 	}
 }
 
-interface NewThumbnail {
-	imdbId: string
-	objectKey: string | null
-	contentType: string | null
-	status: string | null
-	network: string | null
-	airsDays: string[] | null
-	airsTime: string | null
-}
-
-async function insertThumbnail(
-	db: NodePgDatabase,
-	thumbnailData: NewThumbnail,
-): Promise<void> {
-	await db.insert(thumbnail).values(thumbnailData).onConflictDoNothing()
+function toShowImage(
+	imdbId: string,
+	record: ShowImageRecord,
+): ShowImage | null {
+	if (!record.objectKey) {
+		return null
+	}
+	return {
+		url: `/api/thumbnails/${imdbId}`,
+		status: record.status,
+		network: record.network,
+		airsDays: record.airsDays ?? [],
+		airsTime: record.airsTime,
+	}
 }
 
 async function downloadImage(url: string): Promise<DownloadedImage> {
@@ -170,20 +199,13 @@ interface DownloadedImage {
 	extension: string
 }
 
-function toShowImage(
-	imdbId: string,
-	record: ThumbnailRecord,
-): ShowImage | null {
-	if (!record.objectKey) {
-		return null
-	}
-	return {
-		url: `/api/thumbnails/${imdbId}`,
-		status: record.status,
-		network: record.network,
-		airsDays: record.airsDays ?? [],
-		airsTime: record.airsTime,
-	}
+const DOWNLOAD_TIMEOUT_MS = 10_000
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+const RETRY_DELAY_MS = 60_000
+const EXTENSIONS: Record<string, string> = {
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/webp': 'webp',
 }
 
 const cooldowns = new Map<string, number>()

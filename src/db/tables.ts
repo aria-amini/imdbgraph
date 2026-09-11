@@ -49,8 +49,8 @@ export const show = pgTable(
 	],
 )
 
-export const thumbnail = pgTable(
-	'thumbnail',
+export const showImage = pgTable(
+	'show_image',
 	{
 		imdbId: varchar('imdb_id', { length: 10 }).primaryKey().notNull(),
 		// Null marks a known-missing image, so the upstream API is not re-queried.
@@ -70,7 +70,7 @@ export const thumbnail = pgTable(
 		foreignKey({
 			columns: [table.imdbId],
 			foreignColumns: [show.imdbId],
-			name: 'thumbnail_show_imdb_id_fk',
+			name: 'show_image_show_imdb_id_fk',
 		}),
 	],
 )
