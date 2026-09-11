@@ -2,15 +2,26 @@ import { test } from '@config/test/browser'
 import { beforeEach, describe, expect } from 'vitest'
 import { render } from 'vitest-browser-react'
 
+import { THEME_COOKIE_NAME, THEME_STORAGE_KEY } from '@/lib/theme'
+
 import { ThemeToggle } from './theme-toggle'
+
+function storedCookieValue() {
+	const match = document.cookie
+		.split('; ')
+		.find((entry) => entry.startsWith(`${THEME_COOKIE_NAME}=`))
+	return match?.split('=')[1]
+}
 
 describe('theme toggle', () => {
 	beforeEach(() => {
-		localStorage.removeItem('theme')
+		localStorage.removeItem(THEME_STORAGE_KEY)
+		document.cookie = `${THEME_COOKIE_NAME}=; Max-Age=0; Path=/`
 		document.documentElement.classList.remove('dark')
+		document.documentElement.style.colorScheme = ''
 	})
 
-	test('toggles the dark class, stores the choice, and syncs aria state', async () => {
+	test('toggles dark: class, color-scheme, local storage, cookie, aria state', async () => {
 		const screen = await render(<ThemeToggle />)
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 
@@ -19,13 +30,17 @@ describe('theme toggle', () => {
 		await control.click()
 
 		expect(document.documentElement.classList.contains('dark')).toBe(true)
-		expect(localStorage.getItem('theme')).toBe('dark')
+		expect(document.documentElement.style.colorScheme).toBe('dark')
+		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+		expect(storedCookieValue()).toBe('dark')
 		expect(control).toHaveAttribute('aria-checked', 'true')
 
 		await control.click()
 
 		expect(document.documentElement.classList.contains('dark')).toBe(false)
-		expect(localStorage.getItem('theme')).toBe('light')
+		expect(document.documentElement.style.colorScheme).toBe('light')
+		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+		expect(storedCookieValue()).toBe('light')
 		expect(control).toHaveAttribute('aria-checked', 'false')
 	})
 

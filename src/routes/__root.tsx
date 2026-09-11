@@ -5,6 +5,7 @@ import {
 	ErrorComponentProps,
 	HeadContent,
 	Outlet,
+	ScriptOnce,
 	Scripts,
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -14,9 +15,10 @@ import { useEffect, type ReactNode } from 'react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
-import { themeInitScript } from '@/lib/theme'
+import { createThemeBootstrapScript } from '@/lib/theme'
+import { loadStoredTheme } from '@/lib/theme.functions'
 
-import appCss from '../styles.css?url'
+import '../styles.css'
 
 function Analytics() {
 	useEffect(() => {
@@ -37,6 +39,7 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
+	beforeLoad: async () => ({ theme: await loadStoredTheme() }),
 	loader: async () => {
 		return { latestScrapeRun: await getLatestScrapeRun() }
 	},
@@ -47,13 +50,12 @@ export const Route = createRootRouteWithContext<{
 			},
 			{
 				name: 'viewport',
-				content: 'width=device-width, initial-scale=1',
+				content: 'width=device-width, initial-scale=1, viewport-fit=cover',
 			},
 			{
 				title: 'IMDB Graph',
 			},
 		],
-		links: [{ rel: 'stylesheet', href: appCss }],
 	}),
 	component: RootComponent,
 	shellComponent: DocumentShell,
@@ -62,13 +64,20 @@ export const Route = createRootRouteWithContext<{
 })
 
 function DocumentShell({ children }: { children: ReactNode }) {
+	const { theme } = Route.useRouteContext()
+
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={theme ?? undefined}
+			style={{ colorScheme: theme ?? 'light dark' }}
+		>
 			<head>
 				<HeadContent />
-				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
 			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
+				<ScriptOnce>{createThemeBootstrapScript(theme)}</ScriptOnce>
 				{children}
 				<Scripts />
 			</body>
