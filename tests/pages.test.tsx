@@ -21,6 +21,18 @@ vi.mock('@/lib/imdb/ratings', async (importOriginal) => ({
 	getRatings: async () => gameOfThronesRatings,
 }))
 
+vi.mock('@/lib/thumbnail/client', async (importOriginal) => {
+	const { queryOptions } = await import('@tanstack/react-query')
+	return {
+		...(await importOriginal<typeof import('@/lib/thumbnail/client')>()),
+		showImageQuery: (imdbId: string) =>
+			queryOptions({
+				queryKey: ['show-image', imdbId],
+				queryFn: () => null,
+			}),
+	}
+})
+
 interface PageScreenshotCase {
 	name: string
 	path: string
@@ -57,7 +69,7 @@ const pages = [
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
+			stubLoaderData(RatingsRoute, { ratings: gameOfThronesRatings })
 		},
 	},
 	{
@@ -68,7 +80,7 @@ const pages = [
 			screen.getByRole('heading', { name: /game of thrones/i }),
 		viewport: { width: 375, height: 812 },
 		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
+			stubLoaderData(RatingsRoute, { ratings: gameOfThronesRatings })
 		},
 	},
 ] satisfies PageScreenshotCase[]

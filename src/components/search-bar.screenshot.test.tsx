@@ -108,14 +108,6 @@ async function focusSearch() {
 }
 
 describe('searchbar screenshots', () => {
-	test('focused with an empty query shows default suggestions', async () => {
-		await page.viewport(1280, 720)
-		const container = await renderSearchBar({})
-		await focusSearch()
-		await expect.element(page.getByText('Breaking Bad')).toBeVisible()
-		await expectSearchBarScreenshot(container, 'search-bar-focused-empty')
-	})
-
 	test('typed query shows results', async () => {
 		await page.viewport(1280, 720)
 		const container = await renderSearchBar({})
@@ -163,7 +155,6 @@ describe('searchbar screenshots', () => {
 		await page.viewport(375, 812)
 		const container = await renderSearchBar({ mobileSearchOverlay: true })
 		await focusSearch()
-		await expect.element(page.getByText('Breaking Bad')).toBeVisible()
 		await expectSearchBarScreenshot(
 			container,
 			'search-bar-mobile-overlay-empty',
@@ -187,16 +178,20 @@ describe('searchbar screenshots', () => {
 	test('full-width dropdown matches the searchbar column', async () => {
 		await page.viewport(1280, 720)
 		const container = await renderSearchBar({ fullWidthDropdown: true })
-		await focusSearch()
-		await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+		await userEvent.fill(page.getByRole('combobox'), 'avatar')
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
 		await expectSearchBarScreenshot(container, 'search-bar-full-width-open')
 	})
 
 	test('full-width dropdown on mobile', async () => {
 		await page.viewport(375, 812)
 		const container = await renderSearchBar({ fullWidthDropdown: true })
-		await focusSearch()
-		await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+		await userEvent.fill(page.getByRole('combobox'), 'avatar')
+		await expect
+			.element(page.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
 		await expectSearchBarScreenshot(
 			container,
 			'search-bar-full-width-open-mobile',

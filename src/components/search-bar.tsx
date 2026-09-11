@@ -11,6 +11,7 @@ import { Command } from 'cmdk'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import {
 	InputGroup,
@@ -60,50 +61,6 @@ function SuggestionPoster({
 		</span>
 	)
 }
-
-// Placeholder until a real top-rated query backs it.
-const DEFAULT_SUGGESTIONS: Suggestion[] = [
-	{
-		imdbId: 'tt7366338',
-		title: 'Chernobyl',
-		startYear: '2019',
-		endYear: '2019',
-		rating: 9.6,
-		numVotes: 1_400_000,
-	},
-	{
-		imdbId: 'tt0903747',
-		title: 'Breaking Bad',
-		startYear: '2008',
-		endYear: '2013',
-		rating: 9.5,
-		numVotes: 2_400_000,
-	},
-	{
-		imdbId: 'tt0185906',
-		title: 'Band of Brothers',
-		startYear: '2001',
-		endYear: '2001',
-		rating: 9.4,
-		numVotes: 750_000,
-	},
-	{
-		imdbId: 'tt0944947',
-		title: 'Game of Thrones',
-		startYear: '2011',
-		endYear: '2019',
-		rating: 9.2,
-		numVotes: 2_300_000,
-	},
-	{
-		imdbId: 'tt0141842',
-		title: 'The Sopranos',
-		startYear: '1999',
-		endYear: '2007',
-		rating: 9.2,
-		numVotes: 1_200_000,
-	},
-]
 
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({
@@ -240,7 +197,7 @@ export function SearchBar({
 		containerRef.current?.querySelector<HTMLInputElement>('input')?.focus()
 	}
 
-	const selectShow = (showId: string) => {
+	const dismissAndNavigate = (navigate: () => void) => {
 		const linkClick = linkClickRef.current
 		linkClickRef.current = null
 
@@ -256,12 +213,18 @@ export function SearchBar({
 		containerRef.current?.querySelector<HTMLInputElement>('input')?.blur()
 
 		if (linkClick !== 'plain') {
-			void router.navigate({
-				to: '/ratings/$id',
-				params: { id: showId },
-			})
+			navigate()
 		}
 	}
+
+	const selectShow = (showId: string) =>
+		dismissAndNavigate(
+			() =>
+				void router.navigate({
+					to: '/ratings/$id',
+					params: { id: showId },
+				}),
+		)
 
 	const openSearchPage = () => {
 		const query = search.trim()
@@ -299,10 +262,8 @@ export function SearchBar({
 		return () => clearTimeout(timer)
 	}, [isFetching])
 
-	const suggestions = search
-		? (searchResults ?? DEFAULT_SUGGESTIONS)
-		: DEFAULT_SUGGESTIONS
-	const hasSuggestions = (suggestions?.length ?? 0) > 0
+	const suggestions = search ? (searchResults ?? []) : []
+	const hasSuggestions = suggestions.length > 0
 
 	// cmdk keeps whichever id survives into a swapped-in result set, so the
 	// highlight is reset to the first suggestion on every new result set.
@@ -337,6 +298,9 @@ export function SearchBar({
 				onBlur={handleBlur}
 			>
 				<Command
+					role={isMobileSearchActive ? 'dialog' : undefined}
+					aria-modal={isMobileSearchActive || undefined}
+					aria-label={isMobileSearchActive ? 'Search TV shows' : undefined}
 					className={cn(
 						'flex w-full flex-col',
 						className,
@@ -385,7 +349,12 @@ export function SearchBar({
 								</InputGroupAddon>
 								<Command.Input
 									value={search}
-									onValueChange={setSearch}
+									onValueChange={(value) => {
+										setSearch(value)
+										// Escape closes the list while the input keeps
+										// focus; typing must bring it back.
+										if (value) setIsFocused(true)
+									}}
 									placeholder={
 										isHydrated
 											? 'Search for any TV show...'
@@ -449,7 +418,7 @@ export function SearchBar({
 							</div>
 						)}
 
-						{isFocused && !error && (suggestions || isSearching) && (
+						{isFocused && !error && search && (
 							<Command.List
 								className={cn(
 									'bg-popover z-50 border p-2 shadow-md',
@@ -569,5 +538,19 @@ export function SearchBar({
 				</Command>
 			</div>
 		</>
+	)
+}
+
+/** Navbar shell with the full-width search bar for content pages. */
+export function SearchNavbar() {
+	return (
+		<Navbar
+			center={
+				<SearchBar
+					className="w-full md:mx-auto md:max-w-md"
+					fullWidthDropdown
+				/>
+			}
+		/>
 	)
 }

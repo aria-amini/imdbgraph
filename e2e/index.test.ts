@@ -41,7 +41,11 @@ test('Search bar keyboard navigation works', async ({ page }) => {
 	await expect(searchBar).not.toBeDisabled({ timeout: 15_000 })
 	await searchBar.click()
 	await searchBar.fill('Avatar')
-	await searchBar.press('ArrowDown')
+	// The first suggestion is auto-selected while typing; wait for the
+	// selection to render, then Enter follows it.
+	await expect(
+		page.getByRole('option', { name: /Avatar: The Last Airbender/ }).first(),
+	).toHaveAttribute('aria-selected', 'true')
 	await searchBar.press('Enter')
 	await expect(page).toHaveURL(/\/ratings\/tt0417299$/)
 })

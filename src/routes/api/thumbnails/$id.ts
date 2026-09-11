@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { imdbIdSchema } from '@/lib/imdb/ratings'
+import { imdbIdSchema } from '@/lib/imdb/imdb-id'
 import { getPosterImageBytes } from '@/lib/thumbnail/server'
 
 export const Route = createFileRoute('/api/thumbnails/$id')({

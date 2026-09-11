@@ -3,8 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 
-import { Navbar } from '@/components/navbar'
-import { SearchBar } from '@/components/search-bar'
+import { SearchNavbar } from '@/components/search-bar'
 import { scrapeVersion } from '@/lib/imdb/scrape-run-query'
 import { searchResultsQuery } from '@/lib/imdb/search-query'
 import type { Suggestion } from '@/lib/imdb/suggestions'
@@ -14,14 +13,7 @@ import { usePreloadRatingsChunk } from '@/lib/preload-ratings-chunk'
 function SearchSkeleton() {
 	return (
 		<>
-			<Navbar
-				center={
-					<SearchBar
-						className="w-full md:mx-auto md:max-w-md"
-						fullWidthDropdown
-					/>
-				}
-			/>
+			<SearchNavbar />
 			<main
 				aria-busy="true"
 				className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6"
@@ -69,14 +61,7 @@ function SearchResults() {
 
 	return (
 		<>
-			<Navbar
-				center={
-					<SearchBar
-						className={cn('w-full md:mx-auto md:max-w-md')}
-						fullWidthDropdown
-					/>
-				}
-			/>
+			<SearchNavbar />
 			<main className={cn('mx-auto w-full max-w-3xl px-4 py-10 sm:px-6')}>
 				<h1 className={cn('text-3xl font-black tracking-tight sm:text-4xl')}>
 					Search results

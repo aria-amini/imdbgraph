@@ -3,10 +3,9 @@ import { desc, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { z } from 'zod'
 
-import { createDb } from '@/db/connection'
 import { show } from '@/db/tables'
 
-/** Finds up to five shows matching a fuzzy title query. */
+/** Fuzzy-matches show titles, best-voted first. */
 export async function fetchSuggestions(
 	db: NodePgDatabase,
 	q: string,
@@ -26,4 +25,8 @@ export async function fetchSuggestions(
 
 export const getSearchResults = createServerFn()
 	.validator(z.object({ query: z.string() }))
-	.handler(async ({ data }) => fetchSuggestions(createDb(), data.query, 50))
+	.handler(async ({ data }) => {
+		// Lazy import keeps postgres out of the client bundle.
+		const { createDb } = await import('@/db/connection')
+		return fetchSuggestions(createDb(), data.query, 50)
+	})

@@ -143,16 +143,15 @@ describe('searchbar tests', () => {
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.click(searchBar)
-			await expect.element(page.getByText('Breaking Bad')).toBeVisible()
+			await expect
+				.element(page.getByRole('button', { name: 'Close search' }))
+				.toBeVisible()
 
 			await userEvent.click(page.getByRole('button', { name: 'Close search' }))
 
 			await expect
-				.element(page.getByText('Breaking Bad'))
+				.element(page.getByRole('button', { name: 'Close search' }))
 				.not.toBeInTheDocument()
-			expect(
-				page.getByRole('button', { name: 'Close search' }),
-			).not.toBeInTheDocument()
 			expect(searchBar).toHaveValue('')
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
@@ -292,6 +291,13 @@ describe('searchbar tests', () => {
 		await userEvent.fill(searchBar, 'avatar')
 		await expect
 			.element(screen.getByText(/Search all results for “avatar”/i))
+			.toBeVisible()
+		await expect
+			.element(
+				screen
+					.getByRole('option', { name: /Avatar: The Last Airbender/ })
+					.first(),
+			)
 			.toBeVisible()
 
 		await userEvent.keyboard('{ArrowUp}')
@@ -442,8 +448,12 @@ describe('searchbar tests', () => {
 
 		expect(document.querySelector('[data-slot="search-backdrop"]')).toBeNull()
 
-		await userEvent.click(screen.getByRole('combobox'))
-		await expect.element(screen.getByText(/Breaking Bad/)).toBeVisible()
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.click(searchBar)
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
 		const backdrop = document.querySelector('[data-slot="search-backdrop"]')
 		expect(backdrop?.className).toContain('fixed')
 		expect(backdrop?.className).toContain('backdrop-blur-sm')
@@ -455,8 +465,12 @@ describe('searchbar tests', () => {
 			wrapper: MockRouter,
 		})
 
-		await userEvent.click(screen.getByRole('combobox'))
-		await expect.element(screen.getByText(/Breaking Bad/)).toBeVisible()
+		const searchBar = screen.getByRole('combobox')
+		await userEvent.click(searchBar)
+		await userEvent.fill(searchBar, 'avatar')
+		await expect
+			.element(screen.getByText(/Avatar: The Last Airbender/).first())
+			.toBeVisible()
 		expect(document.querySelector('[data-slot="search-backdrop"]')).toBeNull()
 	})
 
@@ -482,16 +496,14 @@ describe('searchbar tests', () => {
 		).not.toBeInTheDocument()
 	})
 
-	test('shows default top shows when focused with an empty query', async () => {
+	test('shows no dropdown when focused with an empty query', async () => {
 		const screen = await render(<SearchBar />, {
 			wrapper: MockRouter,
 		})
 
 		await userEvent.click(screen.getByRole('combobox'))
 
-		await expect.element(screen.getByText('Breaking Bad')).toBeVisible()
-		await expect.element(screen.getByText('The Sopranos')).toBeVisible()
-		expect(screen.container.querySelectorAll('[cmdk-item]').length).toBe(5)
+		expect(screen.container.querySelector('[cmdk-list]')).toBeNull()
 	})
 
 	test('clicking outside closes the dropdown and keeps the query', async () => {
