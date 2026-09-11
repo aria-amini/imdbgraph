@@ -23,13 +23,20 @@ function createDbTest(seed: Seed) {
 				const { drizzle } = await import('drizzle-orm/node-postgres')
 				const { migrate } = await import('drizzle-orm/node-postgres/migrator')
 				const { reset } = await import('drizzle-seed')
+				const { sql } = await import('drizzle-orm')
 				const { Pool } = await import('pg')
+				const { REQUIRED_EXTENSIONS } = await import('../../src/db/extensions')
 				const container = await new PostgreSqlContainer('postgres:17').start()
 				const client = new Pool({
 					connectionString: container.getConnectionUri(),
 				})
 				const db = Object.assign(drizzle({ client }), { $client: client })
 				try {
+					for (const extension of REQUIRED_EXTENSIONS) {
+						await db.execute(
+							sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)}`,
+						)
+					}
 					const schemaPath = resolve(process.cwd(), 'src/db/tables.ts')
 					await migrate(db, {
 						migrationsFolder: resolve(process.cwd(), 'src/db/migrations'),
