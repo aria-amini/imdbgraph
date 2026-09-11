@@ -130,6 +130,8 @@ async function transfer(client: PoolClient) {
       tt.primary_title as title,
       tt.start_year,
       tt.end_year,
+      string_to_array(tt.genres, ',') AS genres,
+      tt.runtime_minutes,
       COALESCE(tr.imdb_rating, 0.0) AS rating,
       COALESCE(tr.num_votes, 0) AS num_votes
     FROM temp_title tt JOIN temp_ratings tr ON tt.imdb_id = tr.imdb_id
