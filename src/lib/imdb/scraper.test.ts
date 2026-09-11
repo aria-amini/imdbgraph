@@ -30,6 +30,7 @@ const expectedGameOfThronesRatings: Ratings = {
 	allEpisodeRatings: {
 		1: {
 			1: {
+				episodeId: 'tt1480055',
 				episodeNum: 1,
 				numVotes: 36939,
 				rating: 9.1,
@@ -37,6 +38,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'Winter Is Coming',
 			},
 			2: {
+				episodeId: 'tt1668746',
 				episodeNum: 2,
 				numVotes: 27976,
 				rating: 8.8,
@@ -44,6 +46,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'The Kingsroad',
 			},
 			3: {
+				episodeId: 'tt1829962',
 				episodeNum: 3,
 				numVotes: 26458,
 				rating: 8.7,
@@ -53,6 +56,7 @@ const expectedGameOfThronesRatings: Ratings = {
 		},
 		2: {
 			1: {
+				episodeId: 'tt1971833',
 				episodeNum: 1,
 				numVotes: 23735,
 				rating: 8.9,
@@ -60,6 +64,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'The North Remembers',
 			},
 			2: {
+				episodeId: 'tt2069318',
 				episodeNum: 2,
 				numVotes: 22413,
 				rating: 8.6,
@@ -70,9 +75,11 @@ const expectedGameOfThronesRatings: Ratings = {
 	},
 	show: {
 		endYear: '2019',
+		genres: ['Action', 'Adventure', 'Drama'],
 		imdbId: 'tt0944947',
 		numVotes: 1563413,
 		rating: 9.4,
+		runtimeMinutes: 57,
 		startYear: '2011',
 		title: 'Game of Thrones',
 	},
