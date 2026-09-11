@@ -2,7 +2,10 @@ import { test } from '@config/test/browser'
 import { beforeEach, describe, expect } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { THEME_COOKIE_NAME, THEME_STORAGE_KEY } from '@/lib/theme'
+import { ThemeProvider } from './theme-provider'
+
+const THEME_COOKIE_NAME = 'theme'
+const THEME_STORAGE_KEY = 'theme'
 
 import { ThemeToggle } from './theme-toggle'
 
@@ -17,12 +20,16 @@ describe('theme toggle', () => {
 	beforeEach(() => {
 		localStorage.removeItem(THEME_STORAGE_KEY)
 		document.cookie = `${THEME_COOKIE_NAME}=; Max-Age=0; Path=/`
-		document.documentElement.classList.remove('dark')
+		document.documentElement.classList.remove('light', 'dark')
 		document.documentElement.style.colorScheme = ''
 	})
 
-	test('toggles dark: class, color-scheme, local storage, cookie, aria state', async () => {
-		const screen = await render(<ThemeToggle />)
+	test('toggles dark: class, color-scheme, cookie, aria state', async () => {
+		const screen = await render(
+			<ThemeProvider preference={null}>
+				<ThemeToggle />
+			</ThemeProvider>,
+		)
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 
 		expect(control).toHaveAttribute('aria-checked', 'false')
@@ -31,7 +38,7 @@ describe('theme toggle', () => {
 
 		expect(document.documentElement.classList.contains('dark')).toBe(true)
 		expect(document.documentElement.style.colorScheme).toBe('dark')
-		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 		expect(storedCookieValue()).toBe('dark')
 		expect(control).toHaveAttribute('aria-checked', 'true')
 
@@ -39,13 +46,42 @@ describe('theme toggle', () => {
 
 		expect(document.documentElement.classList.contains('dark')).toBe(false)
 		expect(document.documentElement.style.colorScheme).toBe('light')
-		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+		expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 		expect(storedCookieValue()).toBe('light')
 		expect(control).toHaveAttribute('aria-checked', 'false')
 	})
 
+	test('keeps multiple consumers synchronized with the bootstrap theme', async () => {
+		document.documentElement.classList.add('dark')
+		const screen = await render(
+			<ThemeProvider preference={null}>
+				<ThemeToggle />
+				<ThemeToggle />
+			</ThemeProvider>,
+		)
+		const switches = screen.getByRole('switch', { name: 'Dark mode' })
+		await expect
+			.element(switches.nth(0))
+			.toHaveAttribute('aria-checked', 'true')
+		await expect
+			.element(switches.nth(1))
+			.toHaveAttribute('aria-checked', 'true')
+		await switches.nth(0).click()
+		await expect
+			.element(switches.nth(0))
+			.toHaveAttribute('aria-checked', 'false')
+		await expect
+			.element(switches.nth(1))
+			.toHaveAttribute('aria-checked', 'false')
+		expect(storedCookieValue()).toBe('light')
+	})
+
 	test('renders both mode icons and a sliding knob', async () => {
-		const screen = await render(<ThemeToggle />)
+		const screen = await render(
+			<ThemeProvider preference={null}>
+				<ThemeToggle />
+			</ThemeProvider>,
+		)
 
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 		await expect.element(control).toBeVisible()
@@ -55,13 +91,13 @@ describe('theme toggle', () => {
 	test('theme class drives the browser color-scheme', () => {
 		const root = document.documentElement
 
-		root.classList.remove('dark')
+		root.classList.remove('light', 'dark')
 		expect(getComputedStyle(root).colorScheme).toBe('light')
 
 		root.classList.add('dark')
 		expect(getComputedStyle(root).colorScheme).toBe('dark')
 
-		root.classList.remove('dark')
+		root.classList.remove('light', 'dark')
 		expect(getComputedStyle(root).colorScheme).toBe('light')
 	})
 })

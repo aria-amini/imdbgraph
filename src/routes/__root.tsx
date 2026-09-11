@@ -12,11 +12,11 @@ import {
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
+import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
-import { createThemeBootstrapScript } from '@/lib/theme'
-import { loadStoredTheme } from '@/lib/theme.functions'
+import { createThemeBootstrapScript, getThemePreference } from '@/lib/theme'
 
 import '../styles.css'
 
@@ -39,7 +39,7 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
-	beforeLoad: async () => ({ theme: await loadStoredTheme() }),
+	beforeLoad: () => ({ theme: getThemePreference() }),
 	loader: async () => {
 		return { latestScrapeRun: await getLatestScrapeRun() }
 	},
@@ -78,7 +78,7 @@ function DocumentShell({ children }: { children: ReactNode }) {
 			</head>
 			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
 				<ScriptOnce>{createThemeBootstrapScript(theme)}</ScriptOnce>
-				{children}
+				<ThemeProvider preference={theme}>{children}</ThemeProvider>
 				<Scripts />
 			</body>
 		</html>

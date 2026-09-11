@@ -2,13 +2,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import {
 	type Theme,
-	THEME_COOKIE_NAME,
-	THEME_STORAGE_KEY,
-	applyTheme,
 	createThemeBootstrapScript,
-	parseTheme,
-	persistTheme,
+	setThemePreference,
+	getThemePreference,
 } from '@/lib/theme'
+
+const THEME_COOKIE_NAME = 'theme'
+const THEME_STORAGE_KEY = 'theme'
 
 function clearStoredTheme() {
 	localStorage.removeItem(THEME_STORAGE_KEY)
@@ -34,35 +34,29 @@ function runBootstrapScript(serverTheme: Theme | null) {
 describe('theme helpers', () => {
 	beforeEach(clearStoredTheme)
 	afterEach(() => {
+		vi.restoreAllMocks()
 		clearStoredTheme()
 		vi.unstubAllGlobals()
 	})
 
-	describe('parseTheme', () => {
-		test('accepts only light and dark', () => {
-			expect(parseTheme('light')).toBe('light')
-			expect(parseTheme('dark')).toBe('dark')
-		})
-
-		test('treats every other value as absent', () => {
-			expect(parseTheme('system')).toBeNull()
-			expect(parseTheme('DARK')).toBeNull()
-			expect(parseTheme('')).toBeNull()
-			expect(parseTheme(undefined)).toBeNull()
-			expect(parseTheme(null)).toBeNull()
-		})
+	test('reads valid cookies and ignores malformed preferences', () => {
+		expect(getThemePreference()).toBeNull()
+		document.cookie = 'theme=dark; Path=/'
+		expect(getThemePreference()).toBe('dark')
+		document.cookie = 'theme=invalid; Path=/'
+		expect(getThemePreference()).toBeNull()
 	})
 
-	describe('applyTheme', () => {
+	describe('setThemePreference', () => {
 		test('applies the class and color-scheme for both themes', () => {
 			const root = document.documentElement
 
-			applyTheme('dark')
+			setThemePreference('dark')
 			expect(root.classList.contains('dark')).toBe(true)
 			expect(root.classList.contains('light')).toBe(false)
 			expect(root.style.colorScheme).toBe('dark')
 
-			applyTheme('light')
+			setThemePreference('light')
 			expect(root.classList.contains('dark')).toBe(false)
 			expect(root.classList.contains('light')).toBe(true)
 			expect(root.style.colorScheme).toBe('light')
@@ -72,37 +66,70 @@ describe('theme helpers', () => {
 			const root = document.documentElement
 			root.classList.add('dark', 'light')
 
-			applyTheme('dark')
+			setThemePreference('dark')
 
 			expect(root.classList.contains('light')).toBe(false)
 			expect(root.classList.contains('dark')).toBe(true)
 		})
-	})
 
-	describe('persistTheme', () => {
-		test('writes the choice to local storage and the cookie', () => {
-			persistTheme('dark')
+		test('saves the choice only in the cookie', () => {
+			setThemePreference('dark')
 
-			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
+			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 			expect(storedCookieValue()).toBe('dark')
 		})
 
 		test('persists light the same way', () => {
-			persistTheme('light')
+			setThemePreference('light')
 
-			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+			expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
 			expect(storedCookieValue()).toBe('light')
 		})
 	})
 
 	describe('bootstrap script', () => {
-		test('prefers a valid local-storage value over the server theme', () => {
+		test('keeps the server preference over a conflicting legacy value', () => {
 			localStorage.setItem(THEME_STORAGE_KEY, 'light')
 
 			runBootstrapScript('dark')
 
+			expect(document.documentElement.classList.contains('dark')).toBe(true)
+			expect(document.documentElement.style.colorScheme).toBe('dark')
+		})
+
+		test('migrates a legacy preference and removes it after the cookie is saved', () => {
+			localStorage.setItem('theme', 'dark')
+			runBootstrapScript(null)
+			expect(storedCookieValue()).toBe('dark')
+			expect(localStorage.getItem('theme')).toBeNull()
+			expect(document.documentElement.classList.contains('dark')).toBe(true)
+		})
+
+		test('retains the legacy preference if the browser rejects the cookie', () => {
+			localStorage.setItem('theme', 'dark')
+			vi.spyOn(document, 'cookie', 'set').mockImplementation(() => {})
+			runBootstrapScript(null)
+			expect(storedCookieValue()).toBeUndefined()
+			expect(localStorage.getItem('theme')).toBe('dark')
+			expect(document.documentElement.classList.contains('dark')).toBe(true)
+		})
+
+		test('uses the cookie even when localStorage is unavailable', () => {
+			document.cookie = 'theme=dark; Path=/'
+			vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+				throw new Error('Storage unavailable')
+			})
+			runBootstrapScript('dark')
+			expect(document.documentElement.classList.contains('dark')).toBe(true)
+		})
+
+		test('keeps the cookie authoritative and clears obsolete localStorage', () => {
+			document.cookie = 'theme=light; Path=/'
+			localStorage.setItem('theme', 'dark')
+			runBootstrapScript('light')
+			expect(storedCookieValue()).toBe('light')
+			expect(localStorage.getItem('theme')).toBeNull()
 			expect(document.documentElement.classList.contains('light')).toBe(true)
-			expect(document.documentElement.style.colorScheme).toBe('light')
 		})
 
 		test('falls back to the server theme without local storage', () => {
@@ -130,6 +157,7 @@ describe('theme helpers', () => {
 
 			expect(document.documentElement.classList.contains('dark')).toBe(true)
 			expect(document.documentElement.style.colorScheme).toBe('dark')
+			expect(storedCookieValue()).toBeUndefined()
 		})
 	})
 })

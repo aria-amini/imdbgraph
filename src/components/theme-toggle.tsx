@@ -1,33 +1,21 @@
 import { Moon, Sun } from '@phosphor-icons/react/dist/ssr'
 import { cn } from 'cn'
-import { useEffect, useState } from 'react'
 
-import { applyTheme, persistTheme, type Theme } from '@/lib/theme'
+import { useTheme } from '@/components/theme-provider'
 
 /** Segmented sun/moon switch; the knob rides the `.dark` class applied by the
  * pre-hydration theme bootstrap, so the visual state is correct before
  * hydration. */
 export function ThemeToggle({ className }: { className?: string }) {
-	const [isDark, setIsDark] = useState(false)
+	const { theme, setThemePreference } = useTheme()
 
-	useEffect(() => {
-		setIsDark(document.documentElement.classList.contains('dark'))
-	}, [])
-
-	const toggle = () => {
-		const next: Theme = document.documentElement.classList.contains('dark')
-			? 'light'
-			: 'dark'
-		applyTheme(next)
-		persistTheme(next)
-		setIsDark(next === 'dark')
-	}
+	const toggle = () => setThemePreference(theme === 'dark' ? 'light' : 'dark')
 
 	return (
 		<button
 			type="button"
 			role="switch"
-			aria-checked={isDark}
+			aria-checked={theme === 'dark'}
 			aria-label="Dark mode"
 			onClick={toggle}
 			className={cn(
