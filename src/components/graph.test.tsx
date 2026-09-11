@@ -12,12 +12,15 @@ const ratings: Ratings = {
 		title: 'Test Show',
 		startYear: '2020',
 		endYear: null,
+		genres: null,
+		runtimeMinutes: null,
 		rating: 8,
 		numVotes: 100,
 	},
 	allEpisodeRatings: {
 		1: {
 			1: {
+				episodeId: 'tt0000001',
 				title: 'Episode One',
 				seasonNum: 1,
 				episodeNum: 1,
@@ -25,6 +28,7 @@ const ratings: Ratings = {
 				numVotes: 10,
 			},
 			2: {
+				episodeId: 'tt0000002',
 				title: 'Episode Two',
 				seasonNum: 1,
 				episodeNum: 2,
@@ -32,6 +36,7 @@ const ratings: Ratings = {
 				numVotes: 11,
 			},
 			3: {
+				episodeId: 'tt0000003',
 				title: 'Episode Three',
 				seasonNum: 1,
 				episodeNum: 3,

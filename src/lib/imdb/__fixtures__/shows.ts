@@ -8,6 +8,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 9.2,
 		numVotes: 2453952,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0903747',
@@ -16,6 +18,8 @@ export const shows: Show[] = [
 		endYear: '2013',
 		rating: 9.5,
 		numVotes: 2358716,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt4574334',
@@ -24,6 +28,8 @@ export const shows: Show[] = [
 		endYear: '2025',
 		rating: 8.6,
 		numVotes: 1462384,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0108778',
@@ -32,6 +38,8 @@ export const shows: Show[] = [
 		endYear: '2004',
 		rating: 8.9,
 		numVotes: 1151745,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1520211',
@@ -40,6 +48,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 8.1,
 		numVotes: 1150592,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1475582',
@@ -48,6 +58,8 @@ export const shows: Show[] = [
 		endYear: '2017',
 		rating: 9,
 		numVotes: 1054252,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt7366338',
@@ -56,6 +68,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 9.3,
 		numVotes: 960950,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0898266',
@@ -64,6 +78,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.1,
 		numVotes: 912870,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0773262',
@@ -72,6 +88,8 @@ export const shows: Show[] = [
 		endYear: '2013',
 		rating: 8.6,
 		numVotes: 854914,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1190634',
@@ -80,6 +98,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.6,
 		numVotes: 788118,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0386676',
@@ -88,6 +108,8 @@ export const shows: Show[] = [
 		endYear: '2013',
 		rating: 9,
 		numVotes: 783172,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0460649',
@@ -96,6 +118,8 @@ export const shows: Show[] = [
 		endYear: '2014',
 		rating: 8.3,
 		numVotes: 762638,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt3032476',
@@ -104,6 +128,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 9,
 		numVotes: 744335,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2442560',
@@ -112,6 +138,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 8.7,
 		numVotes: 720572,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2356777',
@@ -120,6 +148,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.9,
 		numVotes: 710687,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2085059',
@@ -128,6 +158,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.7,
 		numVotes: 701892,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt10919420',
@@ -136,6 +168,8 @@ export const shows: Show[] = [
 		endYear: '2025',
 		rating: 8,
 		numVotes: 695742,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt3581920',
@@ -144,6 +178,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.6,
 		numVotes: 682762,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2861424',
@@ -152,6 +188,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 9.1,
 		numVotes: 659057,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0411008',
@@ -160,6 +198,8 @@ export const shows: Show[] = [
 		endYear: '2010',
 		rating: 8.3,
 		numVotes: 647394,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0455275',
@@ -168,6 +208,8 @@ export const shows: Show[] = [
 		endYear: '2017',
 		rating: 8.3,
 		numVotes: 634164,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt8111088',
@@ -176,6 +218,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.6,
 		numVotes: 630839,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2560140',
@@ -184,6 +228,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 9.1,
 		numVotes: 625219,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt10048342',
@@ -192,6 +238,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.5,
 		numVotes: 624777,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2306299',
@@ -200,6 +248,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.5,
 		numVotes: 620985,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5180504',
@@ -208,6 +258,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 7.9,
 		numVotes: 597967,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt6468322',
@@ -216,6 +268,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 8.2,
 		numVotes: 576412,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0185906',
@@ -224,6 +278,8 @@ export const shows: Show[] = [
 		endYear: '2001',
 		rating: 9.4,
 		numVotes: 566836,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0412142',
@@ -232,6 +288,8 @@ export const shows: Show[] = [
 		endYear: '2012',
 		rating: 8.7,
 		numVotes: 565352,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0475784',
@@ -240,6 +298,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 8.4,
 		numVotes: 549620,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1856010',
@@ -248,6 +308,8 @@ export const shows: Show[] = [
 		endYear: '2018',
 		rating: 8.6,
 		numVotes: 548795,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0141842',
@@ -256,6 +318,8 @@ export const shows: Show[] = [
 		endYear: '2007',
 		rating: 9.2,
 		numVotes: 532849,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1442437',
@@ -264,6 +328,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.5,
 		numVotes: 520229,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1632701',
@@ -272,6 +338,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.4,
 		numVotes: 518387,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0460681',
@@ -280,6 +348,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.4,
 		numVotes: 516050,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt3322312',
@@ -288,6 +358,8 @@ export const shows: Show[] = [
 		endYear: '2018',
 		rating: 8.6,
 		numVotes: 509618,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2707408',
@@ -296,6 +368,8 @@ export const shows: Show[] = [
 		endYear: '2017',
 		rating: 8.7,
 		numVotes: 505229,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5753856',
@@ -304,6 +378,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.7,
 		numVotes: 498284,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt11198330',
@@ -312,6 +388,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.3,
 		numVotes: 481790,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0096697',
@@ -320,6 +398,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.6,
 		numVotes: 456169,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2193021',
@@ -328,6 +408,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 7.5,
 		numVotes: 455313,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt9140554',
@@ -336,6 +418,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 8.2,
 		numVotes: 449823,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2802850',
@@ -344,6 +428,8 @@ export const shows: Show[] = [
 		endYear: '2024',
 		rating: 8.8,
 		numVotes: 447587,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt4158110',
@@ -352,6 +438,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.5,
 		numVotes: 445307,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0877057',
@@ -360,6 +448,8 @@ export const shows: Show[] = [
 		endYear: '2007',
 		rating: 8.9,
 		numVotes: 433107,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt7631058',
@@ -368,6 +458,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 6.9,
 		numVotes: 427397,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt13443470',
@@ -376,6 +468,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8,
 		numVotes: 425018,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0121955',
@@ -384,6 +478,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.7,
 		numVotes: 424967,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0417299',
@@ -392,6 +488,8 @@ export const shows: Show[] = [
 		endYear: '2008',
 		rating: 9.3,
 		numVotes: 410746,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt10986410',
@@ -400,6 +498,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.8,
 		numVotes: 407762,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0306414',
@@ -408,6 +508,8 @@ export const shows: Show[] = [
 		endYear: '2008',
 		rating: 9.3,
 		numVotes: 407230,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt11126994',
@@ -416,6 +518,8 @@ export const shows: Show[] = [
 		endYear: '2024',
 		rating: 9,
 		numVotes: 403026,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt9140560',
@@ -424,6 +528,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 7.9,
 		numVotes: 399994,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2467372',
@@ -432,6 +538,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 8.4,
 		numVotes: 397523,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt7767422',
@@ -440,6 +548,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 8.2,
 		numVotes: 381619,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0182576',
@@ -448,6 +558,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.1,
 		numVotes: 379377,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt3107288',
@@ -456,6 +568,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 7.5,
 		numVotes: 378279,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt4052886',
@@ -464,6 +578,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 8,
 		numVotes: 378046,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5071412',
@@ -472,6 +588,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 8.4,
 		numVotes: 373190,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5290382',
@@ -480,6 +598,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.6,
 		numVotes: 372347,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0098904',
@@ -488,6 +608,8 @@ export const shows: Show[] = [
 		endYear: '1998',
 		rating: 8.9,
 		numVotes: 371235,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1796960',
@@ -496,6 +618,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 8.3,
 		numVotes: 370627,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1405406',
@@ -504,6 +628,8 @@ export const shows: Show[] = [
 		endYear: '2017',
 		rating: 7.7,
 		numVotes: 369177,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0413573',
@@ -512,6 +638,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 7.6,
 		numVotes: 362414,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1844624',
@@ -520,6 +648,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 7.9,
 		numVotes: 355696,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt7335184',
@@ -528,6 +658,8 @@ export const shows: Show[] = [
 		endYear: '2025',
 		rating: 7.6,
 		numVotes: 345023,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1124373',
@@ -536,6 +668,8 @@ export const shows: Show[] = [
 		endYear: '2014',
 		rating: 8.5,
 		numVotes: 342384,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0367279',
@@ -544,6 +678,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.6,
 		numVotes: 336094,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1837492',
@@ -552,6 +688,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 7.4,
 		numVotes: 330398,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2372162',
@@ -560,6 +698,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8,
 		numVotes: 330123,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt11280740',
@@ -568,6 +708,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.7,
 		numVotes: 329928,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt12637874',
@@ -576,6 +718,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.3,
 		numVotes: 324419,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt7660850',
@@ -584,6 +728,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 8.8,
 		numVotes: 322897,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt14392248',
@@ -592,6 +738,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 9.2,
 		numVotes: 316151,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1586680',
@@ -600,6 +748,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 8.5,
 		numVotes: 314535,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt6763664',
@@ -608,6 +758,8 @@ export const shows: Show[] = [
 		endYear: '2018',
 		rating: 8.5,
 		numVotes: 312458,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1312171',
@@ -616,6 +768,8 @@ export const shows: Show[] = [
 		endYear: '2024',
 		rating: 7.8,
 		numVotes: 305727,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1266020',
@@ -624,6 +778,8 @@ export const shows: Show[] = [
 		endYear: '2015',
 		rating: 8.6,
 		numVotes: 304705,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt1439629',
@@ -632,6 +788,8 @@ export const shows: Show[] = [
 		endYear: '2015',
 		rating: 8.5,
 		numVotes: 304564,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0388629',
@@ -640,6 +798,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 9,
 		numVotes: 303290,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt10234724',
@@ -648,6 +808,8 @@ export const shows: Show[] = [
 		endYear: '2022',
 		rating: 7.3,
 		numVotes: 295724,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2243973',
@@ -656,6 +818,8 @@ export const shows: Show[] = [
 		endYear: '2015',
 		rating: 8.5,
 		numVotes: 294771,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2661044',
@@ -664,6 +828,8 @@ export const shows: Show[] = [
 		endYear: '2020',
 		rating: 7.5,
 		numVotes: 293419,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0303461',
@@ -672,6 +838,8 @@ export const shows: Show[] = [
 		endYear: '2003',
 		rating: 8.9,
 		numVotes: 292265,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt2741602',
@@ -680,6 +848,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 7.9,
 		numVotes: 291958,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0369179',
@@ -688,6 +858,8 @@ export const shows: Show[] = [
 		endYear: '2015',
 		rating: 7.1,
 		numVotes: 290955,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5675620',
@@ -696,6 +868,8 @@ export const shows: Show[] = [
 		endYear: '2019',
 		rating: 8.4,
 		numVotes: 287707,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt13406094',
@@ -704,6 +878,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8,
 		numVotes: 287394,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt5834204',
@@ -712,6 +888,8 @@ export const shows: Show[] = [
 		endYear: '2025',
 		rating: 8.3,
 		numVotes: 285218,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt6741278',
@@ -720,6 +898,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.7,
 		numVotes: 281433,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt4236770',
@@ -728,6 +908,8 @@ export const shows: Show[] = [
 		endYear: '2024',
 		rating: 8.6,
 		numVotes: 281416,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt14452776',
@@ -736,6 +918,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.5,
 		numVotes: 279920,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0285403',
@@ -744,6 +928,8 @@ export const shows: Show[] = [
 		endYear: '2010',
 		rating: 8.4,
 		numVotes: 278297,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0804503',
@@ -752,6 +938,8 @@ export const shows: Show[] = [
 		endYear: '2015',
 		rating: 8.7,
 		numVotes: 277241,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt8772296',
@@ -760,6 +948,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.3,
 		numVotes: 275400,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0149460',
@@ -768,6 +958,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.5,
 		numVotes: 272385,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt4786824',
@@ -776,6 +968,8 @@ export const shows: Show[] = [
 		endYear: '2023',
 		rating: 8.6,
 		numVotes: 271767,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt9288030',
@@ -784,6 +978,8 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8,
 		numVotes: 271003,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt9208876',
@@ -792,6 +988,8 @@ export const shows: Show[] = [
 		endYear: '2021',
 		rating: 7.1,
 		numVotes: 270371,
+		genres: null,
+		runtimeMinutes: null,
 	},
 	{
 		imdbId: 'tt0472954',
@@ -800,5 +998,7 @@ export const shows: Show[] = [
 		endYear: null,
 		rating: 8.8,
 		numVotes: 268416,
+		genres: null,
+		runtimeMinutes: null,
 	},
 ]
