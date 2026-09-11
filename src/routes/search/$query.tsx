@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 
-import { SearchNavbar } from '@/components/search-bar'
+import { SearchNavbar } from '@/components/search-navbar'
 import { scrapeVersion } from '@/lib/imdb/scrape-run-query'
 import { searchResultsQuery } from '@/lib/imdb/search-query'
 import type { Suggestion } from '@/lib/imdb/suggestions'

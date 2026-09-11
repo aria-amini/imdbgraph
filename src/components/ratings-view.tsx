@@ -8,7 +8,7 @@ import { Graph } from '@/components/graph'
 import { ShowHeader } from '@/components/show-header'
 import type { Ratings } from '@/lib/imdb/types'
 
-export type View = 'blocks' | 'graph'
+type View = 'blocks' | 'graph'
 
 function ViewToggle({
 	view,

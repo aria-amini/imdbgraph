@@ -11,7 +11,6 @@ import { Command } from 'cmdk'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import {
 	InputGroup,
@@ -25,6 +24,7 @@ import {
 	type Suggestion,
 } from '@/lib/imdb/suggestions'
 import { formatYears } from '@/lib/imdb/types'
+import { getPosterImageUrl } from '@/lib/thumbnail/client'
 
 // Fast suggestion responses would flash the spinner on every keystroke.
 const SPINNER_DELAY_MS = 300
@@ -51,7 +51,7 @@ function SuggestionPoster({
 			</span>
 			{!failed && (
 				<img
-					src={`/api/thumbnails/${imdbId}`}
+					src={getPosterImageUrl(imdbId)}
 					alt=""
 					loading="lazy"
 					onError={() => setFailed(true)}
@@ -264,17 +264,18 @@ export function SearchBar({
 
 	const suggestions = search ? (searchResults ?? []) : []
 	const hasSuggestions = suggestions.length > 0
+	const firstSuggestionId = suggestions[0]?.imdbId
 
 	// cmdk keeps whichever id survives into a swapped-in result set, so the
 	// highlight is reset to the first suggestion on every new result set.
 	// Layout timing keeps the highlight present in the first painted frame.
 	useIsomorphicLayoutEffect(() => {
-		setSelectedSuggestion(suggestions?.[0]?.imdbId ?? '')
-	}, [suggestions])
+		setSelectedSuggestion(firstSuggestionId ?? '')
+	}, [firstSuggestionId])
 
 	return (
 		<>
-			{fullWidthDropdown && isFocused && (
+			{fullWidthDropdown && isFocused && search && (
 				<div
 					aria-hidden="true"
 					data-slot="search-backdrop"
@@ -298,15 +299,27 @@ export function SearchBar({
 				onBlur={handleBlur}
 			>
 				<Command
-					role={isMobileSearchActive ? 'dialog' : undefined}
-					aria-modal={isMobileSearchActive || undefined}
-					aria-label={isMobileSearchActive ? 'Search TV shows' : undefined}
 					className={cn(
 						'flex w-full flex-col',
 						className,
 						isMobileSearchActive &&
 							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:duration-200',
 					)}
+					role={isMobileSearchActive ? 'dialog' : undefined}
+					aria-modal={isMobileSearchActive || undefined}
+					aria-label={isMobileSearchActive ? 'Search TV shows' : undefined}
+					onKeyDown={(event) => {
+						if (event.key !== 'Escape') return
+						event.stopPropagation()
+						// Desktop keeps input focus so typing reopens the list; the
+						// mobile overlay dismisses to the page, taking the keyboard
+						// with it.
+						if (isMobileSearchActive) {
+							closeMobileSearch()
+							return
+						}
+						setIsFocused(false)
+					}}
 					onPointerDown={(event) => {
 						if (!isMobileSearchActive) return
 						const target = event.target
@@ -498,20 +511,7 @@ export function SearchBar({
 									<Command.Item
 										value={`search-all:${search.trim()}`}
 										asChild
-										onSelect={() => {
-											const linkClick = linkClickRef.current
-											linkClickRef.current = null
-											if (linkClick === 'modified') return
-											setIsFocused(false)
-											setIsMobileSearchActive(false)
-											resetQueryState()
-											containerRef.current
-												?.querySelector<HTMLInputElement>('input')
-												?.blur()
-											if (linkClick !== 'plain') {
-												openSearchPage()
-											}
-										}}
+										onSelect={() => dismissAndNavigate(() => openSearchPage())}
 										className="border-border w-full cursor-pointer border-t text-sm outline-none select-none"
 									>
 										<Link
@@ -538,19 +538,5 @@ export function SearchBar({
 				</Command>
 			</div>
 		</>
-	)
-}
-
-/** Navbar shell with the full-width search bar for content pages. */
-export function SearchNavbar() {
-	return (
-		<Navbar
-			center={
-				<SearchBar
-					className="w-full md:mx-auto md:max-w-md"
-					fullWidthDropdown
-				/>
-			}
-		/>
 	)
 }

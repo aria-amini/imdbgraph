@@ -45,7 +45,7 @@ function MockRouter({
 
 test('home button navigates to the index route from a show page', async () => {
 	const router = createTestRouter('/ratings/tt0417299')
-	const screen = await render(<Navbar />, {
+	const screen = await render(<Navbar center={<div>search</div>} />, {
 		wrapper: (props) => <MockRouter router={router} {...props} />,
 	})
 

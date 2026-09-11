@@ -1,12 +1,11 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { RatingsView } from '@/components/ratings-view'
-import { SearchNavbar } from '@/components/search-bar'
+import { SearchNavbar } from '@/components/search-navbar'
 import { imdbIdSchema } from '@/lib/imdb/imdb-id'
 import { ratingsQuery } from '@/lib/imdb/ratings-query'
 import { scrapeVersion } from '@/lib/imdb/scrape-run-query'
 import { type Ratings } from '@/lib/imdb/types'
-import { showImageQuery } from '@/lib/thumbnail/client'
 
 function hasRatings(ratings: Ratings): boolean {
 	for (const seasonRatings of Object.values(ratings.allEpisodeRatings)) {
@@ -50,7 +49,6 @@ export const Route = createFileRoute('/ratings/$id')({
 		}
 
 		// The poster streams in through Suspense; only ratings block the page.
-		void queryClient.prefetchQuery(showImageQuery(showId.data))
 
 		const ratings = await queryClient.ensureQueryData(
 			ratingsQuery(scrapeVersion(queryClient), showId.data),

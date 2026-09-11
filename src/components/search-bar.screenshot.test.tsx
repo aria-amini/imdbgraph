@@ -9,7 +9,6 @@ import {
 } from '@tanstack/react-router'
 import { http, HttpResponse } from 'msw'
 import { page, userEvent } from 'vite-plus/test/browser'
-import { vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { SearchBar } from './search-bar'
@@ -48,18 +47,6 @@ function MockRouter({
 
 afterEach(() => {
 	testQueryClient.clear()
-})
-
-vi.mock('@/lib/thumbnail/client', async (importOriginal) => {
-	const { queryOptions } = await import('@tanstack/react-query')
-	return {
-		...(await importOriginal<typeof import('@/lib/thumbnail/client')>()),
-		showImageQuery: (imdbId: string) =>
-			queryOptions({
-				queryKey: ['show-image', imdbId],
-				queryFn: () => null,
-			}),
-	}
 })
 
 async function renderSearchBar(

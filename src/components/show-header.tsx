@@ -1,13 +1,12 @@
 'use client'
 
 import { ImageSquare, Star } from '@phosphor-icons/react/dist/ssr'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { cn } from 'cn'
 import { Suspense, useState } from 'react'
 
 import { ratingColor } from '@/lib/imdb/rating-color'
 import { formatYears, type Ratings } from '@/lib/imdb/types'
-import { showImageQuery } from '@/lib/thumbnail/client'
+import { getPosterImageUrl } from '@/lib/thumbnail/client'
 
 function PosterSkeleton() {
 	return (
@@ -27,10 +26,12 @@ function PosterUnavailable() {
 }
 
 function ShowPoster({ show }: { show: Ratings['show'] }) {
-	const { data: image } = useSuspenseQuery(showImageQuery(show.imdbId))
-	const [failedSrc, setFailedSrc] = useState<string | null>(null)
+	const [failed, setFailed] = useState(false)
+	const src = getPosterImageUrl(show.imdbId)
 
-	if (!image || failedSrc === image.url) {
+	// The route self-heals: a cache miss fetches and stores the poster, and a
+	// known-missing one 404s, so onError is the only signal the UI needs.
+	if (failed) {
 		return (
 			<div className="w-24 shrink-0 sm:w-36 lg:w-44">
 				<PosterUnavailable />
@@ -41,15 +42,15 @@ function ShowPoster({ show }: { show: Ratings['show'] }) {
 	return (
 		<div className="w-24 shrink-0 sm:w-36 lg:w-44">
 			<a
-				href={image.url}
+				href={src}
 				target="_blank"
 				rel="noreferrer"
 				className="focus-visible:ring-ring focus-visible:ring-offset-background block outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 			>
 				<PosterImage
-					src={image.url}
+					src={src}
 					alt={`${show.title} poster`}
-					onError={() => setFailedSrc(image.url)}
+					onError={() => setFailed(true)}
 				/>
 			</a>
 		</div>

@@ -11,30 +11,7 @@ import {
 	type Storage,
 	type StoredImage,
 } from '@/lib/s3'
-import {
-	fetchShowEnrichment,
-	parsePosterUrl,
-	type ShowAiring,
-} from '@/lib/thumbnail/tvmaze'
-
-export interface ShowImage extends ShowAiring {
-	url: string
-}
-
-/**
- * Server-function implementation behind the client boundary in client.ts.
- * Loads a show's image, returning null instead of throwing so a broken
- * upstream degrades to a missing poster rather than a failed page.
- */
-export async function loadShowImage(imdbId: string): Promise<ShowImage | null> {
-	try {
-		const record = await resolveShowImage(createDb(), imdbId, getStorage())
-		return record ? toShowImage(imdbId, record) : null
-	} catch (error) {
-		console.warn(`Failed to load image for ${imdbId}`, error)
-		return null
-	}
-}
+import { fetchShowEnrichment, parsePosterUrl } from '@/lib/thumbnail/tvmaze'
 
 /**
  * Returns the stored poster bytes, fetching and persisting the poster on
@@ -197,22 +174,6 @@ async function loadShowImageRecord(
 		.where(eq(showImage.imdbId, imdbId))
 		.limit(1)
 	return row
-}
-
-function toShowImage(
-	imdbId: string,
-	record: ShowImageRecord,
-): ShowImage | null {
-	if (!record.objectKey) {
-		return null
-	}
-	return {
-		url: `/api/thumbnails/${imdbId}`,
-		status: record.status,
-		network: record.network,
-		airsDays: record.airsDays ?? [],
-		airsTime: record.airsTime,
-	}
 }
 
 async function downloadImage(url: string): Promise<DownloadedImage> {
