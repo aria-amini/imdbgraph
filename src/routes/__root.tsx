@@ -5,18 +5,20 @@ import {
 	ErrorComponentProps,
 	HeadContent,
 	Outlet,
+	ScriptOnce,
 	Scripts,
 	createRootRouteWithContext,
 } from '@tanstack/react-router'
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
+import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
-import { themeInitScript } from '@/lib/theme'
+import { createThemeBootstrapScript, getThemePreference } from '@/lib/theme'
 
-import appCss from '../styles.css?url'
+import '../styles.css'
 
 function Analytics() {
 	useEffect(() => {
@@ -37,6 +39,7 @@ function Analytics() {
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
+	beforeLoad: () => ({ theme: getThemePreference() }),
 	loader: async () => {
 		return { latestScrapeRun: await getLatestScrapeRun() }
 	},
@@ -47,13 +50,12 @@ export const Route = createRootRouteWithContext<{
 			},
 			{
 				name: 'viewport',
-				content: 'width=device-width, initial-scale=1',
+				content: 'width=device-width, initial-scale=1, viewport-fit=cover',
 			},
 			{
 				title: 'IMDB Graph',
 			},
 		],
-		links: [{ rel: 'stylesheet', href: appCss }],
 	}),
 	component: RootComponent,
 	shellComponent: DocumentShell,
@@ -62,14 +64,21 @@ export const Route = createRootRouteWithContext<{
 })
 
 function DocumentShell({ children }: { children: ReactNode }) {
+	const { theme } = Route.useRouteContext()
+
 	return (
-		<html lang="en">
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className={theme ?? undefined}
+			style={{ colorScheme: theme ?? 'light dark' }}
+		>
 			<head>
 				<HeadContent />
-				<script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 			</head>
 			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
-				{children}
+				<ScriptOnce>{createThemeBootstrapScript(theme)}</ScriptOnce>
+				<ThemeProvider preference={theme}>{children}</ThemeProvider>
 				<Scripts />
 			</body>
 		</html>
