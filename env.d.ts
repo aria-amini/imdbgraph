@@ -46,6 +46,35 @@ export type CoercedEnvSchema = {
   DATABASE_URL: string;
   
   /**
+   * **AWS_ENDPOINT_URL**  
+   * S3-compatible object storage. Dev runs MinIO via docker-compose; production  
+   * points at the Railway image bucket. Standard AWS SDK variables, so client  
+   * code is identical across environments. Only required where the poster  
+   * pipeline runs (production web service); previews and the scraper build fine  
+   * without them.  
+   * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M24%2021V9h-2v14h8v-2zm-4-6v-4c0-1.103-.897-2-2-2h-6v14h2v-6h1.48l2.335%206h2.145l-2.333-6H18c1.103%200%202-.897%202-2m-6-4h4v4h-4zM8%2023H4c-1.103%200-2-.897-2-2V9h2v12h4V9h2v12c0%201.103-.897%202-2%202%22%2F%3E%3C%2Fsvg%3E)   
+   */
+  AWS_ENDPOINT_URL?: string;
+  
+  /**
+   * **AWS_ACCESS_KEY_ID** 🔐 _sensitive_  
+   * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M29%2022h-5a2.003%202.003%200%200%201-2-2v-6a2%202%200%200%201%202-2h5v2h-5v6h5ZM18%2012h-4V8h-2v14h6a2.003%202.003%200%200%200%202-2v-6a2%202%200%200%200-2-2m-4%208v-6h4v6Zm-6-8H3v2h5v2H4a2%202%200%200%200-2%202v2a2%202%200%200%200%202%202h6v-8a2%202%200%200%200-2-2m0%208H4v-2h4Z%22%2F%3E%3C%2Fsvg%3E)   
+   */
+  AWS_ACCESS_KEY_ID?: string;
+  
+  /**
+   * **AWS_SECRET_ACCESS_KEY** 🔐 _sensitive_  
+   * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M29%2022h-5a2.003%202.003%200%200%201-2-2v-6a2%202%200%200%201%202-2h5v2h-5v6h5ZM18%2012h-4V8h-2v14h6a2.003%202.003%200%200%200%202-2v-6a2%202%200%200%200-2-2m-4%208v-6h4v6Zm-6-8H3v2h5v2H4a2%202%200%200%200-2%202v2a2%202%200%200%200%202%202h6v-8a2%202%200%200%200-2-2m0%208H4v-2h4Z%22%2F%3E%3C%2Fsvg%3E)   
+   */
+  AWS_SECRET_ACCESS_KEY?: string;
+  
+  /**
+   * **AWS_S3_BUCKET_NAME**  
+   * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M29%2022h-5a2.003%202.003%200%200%201-2-2v-6a2%202%200%200%201%202-2h5v2h-5v6h5ZM18%2012h-4V8h-2v14h6a2.003%202.003%200%200%200%202-2v-6a2%202%200%200%200-2-2m-4%208v-6h4v6Zm-6-8H3v2h5v2H4a2%202%200%200%200-2%202v2a2%202%200%200%200%202%202h6v-8a2%202%200%200%200-2-2m0%208H4v-2h4Z%22%2F%3E%3C%2Fsvg%3E)   
+   */
+  AWS_S3_BUCKET_NAME?: string;
+  
+  /**
    * **VITE_PUBLIC_POSTHOG_KEY**  
    * ![icon](data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20fill%3D%22%23808080%22%20d%3D%22M29%2022h-5a2.003%202.003%200%200%201-2-2v-6a2%202%200%200%201%202-2h5v2h-5v6h5ZM18%2012h-4V8h-2v14h6a2.003%202.003%200%200%200%202-2v-6a2%202%200%200%200-2-2m-4%208v-6h4v6Zm-6-8H3v2h5v2H4a2%202%200%200%200-2%202v2a2%202%200%200%200%202%202h6v-8a2%202%200%200%200-2-2m0%208H4v-2h4Z%22%2F%3E%3C%2Fsvg%3E)   
    */
@@ -53,11 +82,11 @@ export type CoercedEnvSchema = {
   
 };
 
-type _CoercedEnvSchema_9d03bc94 = CoercedEnvSchema;
+type _CoercedEnvSchema_763bdb52 = CoercedEnvSchema;
 
 declare module 'varlock/env' {
-  export interface TypedEnvSchema extends Readonly<_CoercedEnvSchema_9d03bc94> {}
-  export interface PublicTypedEnvSchema extends Readonly<Pick<_CoercedEnvSchema_9d03bc94, 'RAILWAY_ENVIRONMENT_NAME' | 'APP_ENV' | 'APP_PORT' | 'BASE_URL' | 'VITE_PUBLIC_POSTHOG_KEY'>> {}
+  export interface TypedEnvSchema extends Readonly<_CoercedEnvSchema_763bdb52> {}
+  export interface PublicTypedEnvSchema extends Readonly<Pick<_CoercedEnvSchema_763bdb52, 'RAILWAY_ENVIRONMENT_NAME' | 'APP_ENV' | 'APP_PORT' | 'BASE_URL' | 'AWS_ENDPOINT_URL' | 'AWS_S3_BUCKET_NAME' | 'VITE_PUBLIC_POSTHOG_KEY'>> {}
 }
 
 
@@ -67,11 +96,11 @@ export type EnvSchemaAsStrings = {
       : (CoercedEnvSchema[Property] extends boolean ? ('true' | 'false') : string)
 };
 
-type _EnvSchemaAsStrings_9d03bc94 = EnvSchemaAsStrings;
+type _EnvSchemaAsStrings_763bdb52 = EnvSchemaAsStrings;
 declare global {
 
   // add types for global process.env
   namespace NodeJS {
-    interface ProcessEnv extends _EnvSchemaAsStrings_9d03bc94 {}
+    interface ProcessEnv extends _EnvSchemaAsStrings_763bdb52 {}
   }
 }

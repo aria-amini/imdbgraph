@@ -49,6 +49,32 @@ export const show = pgTable(
 	],
 )
 
+export const showImage = pgTable(
+	'show_image',
+	{
+		imdbId: varchar('imdb_id', { length: 10 }).primaryKey().notNull(),
+		// Null marks a known-missing image, so the upstream API is not re-queried.
+		objectKey: text('object_key'),
+		contentType: text('content_type'),
+		width: integer(),
+		height: integer(),
+		status: text(),
+		network: text(),
+		airsDays: text('airs_days').array(),
+		airsTime: text('airs_time'),
+		fetchedAt: timestamp('fetched_at', { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.imdbId],
+			foreignColumns: [show.imdbId],
+			name: 'show_image_show_imdb_id_fk',
+		}),
+	],
+)
+
 export const scrapeRun = pgTable('scrape_run', {
 	id: serial().primaryKey().notNull(),
 	completedAt: timestamp('completed_at', { withTimezone: true })

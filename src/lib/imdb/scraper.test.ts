@@ -4,14 +4,16 @@ import path from 'node:path'
 import { initDb } from '@config/test/db'
 import { afterAll, beforeAll, describe, expect, vi } from 'vitest'
 
-import { scrapeRun } from '@/db/tables'
+import { scrapeRun, show, showImage } from '@/db/tables'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import { getRatingsDb } from '@/lib/imdb/ratings'
 import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
 import { update } from '@/lib/imdb/scraper'
 import type { Ratings } from '@/lib/imdb/types'
+import { deletePosterImage } from '@/lib/s3'
 
 vi.mock(import('@/lib/imdb/file-downloader'))
+vi.mock(import('@/lib/s3'))
 
 beforeAll(() => {
 	vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -91,7 +93,46 @@ describe('scraper tests', () => {
 			'title.ratings.tsv.gz': './__fixtures__/ratings.tsv',
 		})
 
+		await db.insert(show).values([
+			{
+				imdbId: GAME_OF_THRONES_ID,
+				title: 'Game of Thrones',
+				startYear: '2011',
+			},
+			{ imdbId: SIMPSONS_ID, title: 'The Simpsons', startYear: '1989' },
+		])
+		await db.insert(showImage).values([
+			{
+				imdbId: GAME_OF_THRONES_ID,
+				objectKey: 'thumbnails/valid.png',
+				network: 'HBO',
+			},
+			{ imdbId: SIMPSONS_ID, objectKey: 'thumbnails/orphan.png' },
+		])
+		vi.mocked(deletePosterImage).mockResolvedValue(undefined)
 		await update(db)
+		expect(deletePosterImage).toHaveBeenCalledExactlyOnceWith(
+			'thumbnails/orphan.png',
+		)
+		expect(await db.select().from(showImage)).toEqual([
+			expect.objectContaining({
+				imdbId: GAME_OF_THRONES_ID,
+				objectKey: 'thumbnails/valid.png',
+				network: 'HBO',
+			}),
+		])
+		// The rebuilt catalog dropped The Simpsons, so the restored foreign
+		// key rejects its image row, while a null objectKey stays insertable
+		// under an existing parent.
+		await expect(
+			db.insert(showImage).values({ imdbId: SIMPSONS_ID }),
+		).rejects.toThrow()
+		await db.insert(show).values({
+			imdbId: 'tt0086789',
+			title: 'Fresh Parent',
+			startYear: '2020',
+		})
+		await db.insert(showImage).values({ imdbId: 'tt0086789' })
 
 		expect(await getRatingsDb(db, GAME_OF_THRONES_ID)).toEqual(
 			expectedGameOfThronesRatings,

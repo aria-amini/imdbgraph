@@ -12,6 +12,7 @@ import {
 	parseRatingsLine,
 	shouldCopyTitle,
 } from '@/lib/imdb/scraper-filter'
+import { deletePosterImage } from '@/lib/s3'
 
 /**
  * Main method that downloads the latest files from IMDB and updates our
@@ -25,9 +26,10 @@ export async function update(
 	const client = await db.$client.connect()
 	console.log('Connected to db. Starting database population...')
 	const startTime = Date.now()
+	let orphanedKeys: string[] = []
 	try {
 		await client.query('BEGIN')
-		await transfer(client)
+		orphanedKeys = await transfer(client)
 		await client.query('INSERT INTO scrape_run DEFAULT VALUES;')
 		await client.query('COMMIT')
 
@@ -45,6 +47,10 @@ export async function update(
 		throw error
 	} finally {
 		client.release()
+	}
+	// Only delete objects after commit; rollback must preserve existing posters.
+	for (const key of orphanedKeys) {
+		await deletePosterImage(key)
 	}
 }
 
@@ -155,14 +161,10 @@ async function transfer(client: PoolClient) {
       episode_num > 0
   `)
 
-	// Drop foreign key constraint from thumbnail table before dropping show table
-	await client.query(`
-		ALTER TABLE IF EXISTS thumbnail
-		DROP CONSTRAINT IF EXISTS thumbnail_show_imdb_id_fk;
-	`)
-
+	// show_image references show, so CASCADE drops its foreign key along with
+	// the old table; the constraint is re-added after the rebuild below.
 	await client.query('DROP TABLE IF EXISTS episode;')
-	await client.query('DROP TABLE IF EXISTS show;')
+	await client.query('DROP TABLE IF EXISTS show CASCADE;')
 
 	await client.query(`
 	    ALTER TABLE show_new RENAME TO show;
@@ -180,13 +182,20 @@ async function transfer(client: PoolClient) {
 	`)
 	console.log('Updated show table')
 
-	// Re-add foreign key constraint to thumbnail table
+	// Reconcile titles removed by the new dataset before restoring the FK.
+	const orphaned = await client.query<{ object_key: string | null }>(`
+		DELETE FROM show_image
+		WHERE NOT EXISTS (SELECT 1 FROM show WHERE show.imdb_id = show_image.imdb_id)
+		RETURNING object_key;
+	`)
+
+	// Re-add foreign key constraint to show_image table
 	await client.query(`
-		ALTER TABLE IF EXISTS thumbnail
-		ADD CONSTRAINT thumbnail_show_imdb_id_fk
+		ALTER TABLE IF EXISTS show_image
+		ADD CONSTRAINT show_image_show_imdb_id_fk
 		FOREIGN KEY (imdb_id) REFERENCES show(imdb_id);
 	`)
-	console.log('Re-added thumbnail foreign key constraint')
+	console.log('Re-added show_image foreign key constraint')
 
 	await client.query(`
     ALTER TABLE episode_new RENAME TO episode;
@@ -204,6 +213,9 @@ async function transfer(client: PoolClient) {
 	console.log('Updated episode table')
 
 	console.log('Database migration successfull')
+	return orphaned.rows.flatMap((row) =>
+		row.object_key ? [row.object_key] : [],
+	)
 }
 
 async function copyRatingsAndCollectRatedIds(
