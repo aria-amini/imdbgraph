@@ -6,6 +6,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { Pool, PoolClient } from 'pg'
 import { from as copyFrom } from 'pg-copy-streams'
 
+import { deleteStoredImage, type Storage } from '@/lib/images/s3'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import {
 	parseEpisodeLine,
@@ -21,13 +22,15 @@ export async function update(
 	db: NodePgDatabase & {
 		$client: Pool
 	},
+	storage?: Storage,
 ): Promise<void> {
 	const client = await db.$client.connect()
 	console.log('Connected to db. Starting database population...')
 	const startTime = Date.now()
+	let orphanedKeys: string[] = []
 	try {
 		await client.query('BEGIN')
-		await transfer(client)
+		orphanedKeys = await transfer(client)
 		await client.query('INSERT INTO scrape_run DEFAULT VALUES;')
 		await client.query('COMMIT')
 
@@ -45,6 +48,10 @@ export async function update(
 		throw error
 	} finally {
 		client.release()
+	}
+	// Only delete objects after commit; rollback must preserve existing posters.
+	for (const key of orphanedKeys) {
+		await deleteStoredImage(key, storage)
 	}
 }
 
@@ -176,6 +183,13 @@ async function transfer(client: PoolClient) {
 	`)
 	console.log('Updated show table')
 
+	// Reconcile titles removed by the new dataset before restoring the FK.
+	const orphaned = await client.query<{ object_key: string | null }>(`
+		DELETE FROM show_image
+		WHERE NOT EXISTS (SELECT 1 FROM show WHERE show.imdb_id = show_image.imdb_id)
+		RETURNING object_key;
+	`)
+
 	// Re-add foreign key constraint to show_image table
 	await client.query(`
 		ALTER TABLE IF EXISTS show_image
@@ -200,6 +214,9 @@ async function transfer(client: PoolClient) {
 	console.log('Updated episode table')
 
 	console.log('Database migration successfull')
+	return orphaned.rows.flatMap((row) =>
+		row.object_key ? [row.object_key] : [],
+	)
 }
 
 async function copyRatingsAndCollectRatedIds(

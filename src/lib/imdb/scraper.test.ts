@@ -4,7 +4,7 @@ import path from 'node:path'
 import { initDb } from '@config/test/db'
 import { afterAll, beforeAll, describe, expect, vi } from 'vitest'
 
-import { scrapeRun } from '@/db/tables'
+import { scrapeRun, show, showImage } from '@/db/tables'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import { getRatingsDb } from '@/lib/imdb/ratings'
 import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
@@ -91,7 +91,41 @@ describe('scraper tests', () => {
 			'title.ratings.tsv.gz': './__fixtures__/ratings.tsv',
 		})
 
-		await update(db)
+		await db.insert(show).values([
+			{
+				imdbId: GAME_OF_THRONES_ID,
+				title: 'Game of Thrones',
+				startYear: '2011',
+			},
+			{ imdbId: SIMPSONS_ID, title: 'The Simpsons', startYear: '1989' },
+		])
+		await db.insert(showImage).values([
+			{
+				imdbId: GAME_OF_THRONES_ID,
+				objectKey: 'thumbnails/valid.png',
+				network: 'HBO',
+			},
+			{ imdbId: SIMPSONS_ID, objectKey: 'thumbnails/orphan.png' },
+		])
+		const storage = {
+			get: vi.fn(),
+			put: vi.fn(),
+			delete: vi.fn().mockResolvedValue(undefined),
+		}
+		await update(db, storage)
+		expect(storage.delete).toHaveBeenCalledExactlyOnceWith(
+			'thumbnails/orphan.png',
+		)
+		expect(await db.select().from(showImage)).toEqual([
+			expect.objectContaining({
+				imdbId: GAME_OF_THRONES_ID,
+				objectKey: 'thumbnails/valid.png',
+				network: 'HBO',
+			}),
+		])
+		await expect(
+			db.insert(showImage).values({ imdbId: SIMPSONS_ID }),
+		).rejects.toThrow()
 
 		expect(await getRatingsDb(db, GAME_OF_THRONES_ID)).toEqual(
 			expectedGameOfThronesRatings,

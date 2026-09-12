@@ -1,11 +1,22 @@
+import { randomUUID } from 'node:crypto'
+
 import { createServerFn } from '@tanstack/react-start'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { createDb } from '@/db/connection'
 import { showImage } from '@/db/tables'
-import { getStorage, type Storage, type StoredImage } from '@/lib/images/s3'
-import { fetchShowEnrichment, type ShowAiring } from '@/lib/images/tvmaze'
+import {
+	deleteStoredImage,
+	getStorage,
+	type Storage,
+	type StoredImage,
+} from '@/lib/images/s3'
+import {
+	fetchShowEnrichment,
+	parsePosterUrl,
+	type ShowAiring,
+} from '@/lib/images/tvmaze'
 import { imdbIdSchema } from '@/lib/imdb/ratings'
 
 export interface ShowImage extends ShowAiring {
@@ -39,7 +50,44 @@ export async function getShowImageDb(
 	if (isCoolingDown(imdbId)) {
 		return null
 	}
-	return fetchAndStore(db, imdbId, storage)
+	// Upload immutable candidates without holding a database connection across I/O.
+	// The unique IMDb ID chooses one winner, including known-missing results.
+	try {
+		const enrichment = await fetchShowEnrichment(imdbId)
+		let record: typeof showImage.$inferInsert = { imdbId, objectKey: null }
+		if (enrichment) {
+			const downloaded = await downloadImage(enrichment.posterUrl)
+			const objectKey = `thumbnails/${imdbId}/${randomUUID()}.${downloaded.extension}`
+			record = {
+				imdbId,
+				objectKey,
+				contentType: downloaded.contentType,
+				status: enrichment.status,
+				network: enrichment.network,
+				airsDays: enrichment.airsDays.length > 0 ? enrichment.airsDays : null,
+				airsTime: enrichment.airsTime,
+			}
+			await storage.put(objectKey, downloaded.body, downloaded.contentType)
+		}
+		// On an ambiguous database error, retain the candidate: deleting it
+		// could remove an object whose insert actually committed.
+		const [inserted] = await db
+			.insert(showImage)
+			.values(record)
+			.onConflictDoNothing()
+			.returning()
+		if (inserted) {
+			return toShowImage(imdbId, inserted)
+		}
+		if (record.objectKey) {
+			await deleteStoredImage(record.objectKey, storage)
+		}
+		const winner = await loadShowImageRecord(db, imdbId)
+		return winner ? toShowImage(imdbId, winner) : null
+	} catch (error) {
+		noteFailure(imdbId)
+		throw error
+	}
 }
 
 /**
@@ -55,7 +103,6 @@ export async function getStoredImage(
 	const [row] = await db
 		.select({
 			objectKey: showImage.objectKey,
-			contentType: showImage.contentType,
 		})
 		.from(showImage)
 		.where(eq(showImage.imdbId, imdbId))
@@ -66,10 +113,17 @@ export async function getStoredImage(
 
 	const stored = await storage.get(row.objectKey)
 	if (!stored) {
-		await db.delete(showImage).where(eq(showImage.imdbId, imdbId))
+		await db
+			.delete(showImage)
+			.where(
+				and(
+					eq(showImage.imdbId, imdbId),
+					eq(showImage.objectKey, row.objectKey),
+				),
+			)
 		return null
 	}
-	return { data: stored.data, contentType: stored.contentType }
+	return stored
 }
 
 // =============================================================================
@@ -99,48 +153,6 @@ async function loadShowImageRecord(
 	return row
 }
 
-/**
- * No transaction here: the pooled connection must not be held across external
- * I/O. Concurrent first views may fetch redundantly; the stable object key and
- * the idempotent insert keep the stored state correct regardless.
- */
-async function fetchAndStore(
-	db: NodePgDatabase,
-	imdbId: string,
-	storage: Storage,
-): Promise<ShowImage | null> {
-	try {
-		const enrichment = await fetchShowEnrichment(imdbId)
-		if (!enrichment) {
-			// Definitively missing upstream; remember it so later views skip the API.
-			await db
-				.insert(showImage)
-				.values({ imdbId, objectKey: null })
-				.onConflictDoNothing()
-			return null
-		}
-
-		const downloaded = await downloadImage(enrichment.posterUrl)
-		const objectKey = `thumbnails/${imdbId}.${downloaded.extension}`
-		const record: ShowImageRecord = {
-			objectKey,
-			status: enrichment.status,
-			network: enrichment.network,
-			airsDays: enrichment.airsDays.length > 0 ? enrichment.airsDays : null,
-			airsTime: enrichment.airsTime,
-		}
-		await storage.put(objectKey, downloaded.body, downloaded.contentType)
-		await db
-			.insert(showImage)
-			.values({ imdbId, contentType: downloaded.contentType, ...record })
-			.onConflictDoNothing()
-		return toShowImage(imdbId, record)
-	} catch (error) {
-		noteFailure(imdbId)
-		throw error
-	}
-}
-
 function toShowImage(
 	imdbId: string,
 	record: ShowImageRecord,
@@ -158,7 +170,8 @@ function toShowImage(
 }
 
 async function downloadImage(url: string): Promise<DownloadedImage> {
-	const response = await fetch(url, {
+	const response = await fetch(parsePosterUrl(url), {
+		redirect: 'error',
 		signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
 	})
 	if (!response.ok || !response.body) {

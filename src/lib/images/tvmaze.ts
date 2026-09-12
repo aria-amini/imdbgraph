@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const API_BASE_URL = 'https://api.tvmaze.com'
 const METADATA_TIMEOUT_MS = 5_000
+const ALLOWED_POSTER_HOSTS = new Set(['static.tvmaze.com'])
 
 const imageSchema = z.object({
 	original: z.string().url().optional(),
@@ -46,10 +47,39 @@ export interface ShowEnrichment extends ShowAiring {
 export async function fetchShowEnrichment(
 	imdbId: string,
 ): Promise<ShowEnrichment | null> {
-	const response = await fetch(`${API_BASE_URL}/lookup/shows?imdb=${imdbId}`, {
-		headers: { accept: 'application/json' },
-		signal: AbortSignal.timeout(METADATA_TIMEOUT_MS),
-	})
+	const signal = AbortSignal.timeout(METADATA_TIMEOUT_MS)
+	let response = await fetch(
+		`${API_BASE_URL}/lookup/shows?imdb=${encodeURIComponent(imdbId)}`,
+		{
+			headers: { accept: 'application/json' },
+			redirect: 'manual',
+			signal,
+		},
+	)
+	// TVmaze resolves IMDb IDs with a documented 301 to /shows/:id.
+	// Validate that one hop ourselves; never follow arbitrary redirects.
+	if (response.status === 301) {
+		const location = response.headers.get('location')
+		await response.body?.cancel()
+		const target = location ? new URL(location, API_BASE_URL) : null
+		if (
+			!target ||
+			target.origin !== API_BASE_URL ||
+			target.username ||
+			target.password ||
+			!/^\/shows\/\d+$/.test(target.pathname) ||
+			target.search ||
+			target.hash
+		) {
+			throw new Error('unsupported tvmaze lookup redirect')
+		}
+		response = await fetch(target, {
+			headers: { accept: 'application/json' },
+			redirect: 'error',
+			signal,
+		})
+	}
+
 	if (!response.ok) {
 		if (response.status === 404) {
 			return null
@@ -67,10 +97,25 @@ export async function fetchShowEnrichment(
 	}
 	const time = parsed.data.schedule?.time?.trim()
 	return {
-		posterUrl: url,
+		posterUrl: parsePosterUrl(url).href,
 		status: parsed.data.status ?? null,
 		network: parsed.data.network?.name ?? parsed.data.webChannel?.name ?? null,
 		airsDays: parsed.data.schedule?.days ?? [],
 		airsTime: time ? time : null,
 	}
+}
+
+/** Validate upstream URLs again at the download boundary. */
+export function parsePosterUrl(value: string): URL {
+	const url = new URL(value)
+	if (
+		url.protocol !== 'https:' ||
+		!ALLOWED_POSTER_HOSTS.has(url.hostname) ||
+		url.username ||
+		url.password ||
+		url.port
+	) {
+		throw new Error('unsupported poster URL')
+	}
+	return url
 }

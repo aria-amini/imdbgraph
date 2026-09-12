@@ -1,6 +1,7 @@
 import {
 	BucketLocationConstraint,
 	CreateBucketCommand,
+	DeleteObjectCommand,
 	GetObjectCommand,
 	HeadBucketCommand,
 	PutObjectCommand,
@@ -12,6 +13,7 @@ import { serverEnv as env } from '@/env.server'
 
 export interface Storage {
 	put(key: string, body: Uint8Array, contentType: string): Promise<void>
+	delete(key: string): Promise<void>
 	get(key: string): Promise<StoredImage | null>
 }
 
@@ -43,6 +45,11 @@ export function createStorage(config: StorageConfig = {}): Storage {
 	const endpoint = config.endpointUrl ?? env.AWS_ENDPOINT_URL
 	const client = new S3Client({
 		forcePathStyle: true,
+		requestHandler: {
+			connectionTimeout: 3_000,
+			requestTimeout: 10_000,
+			throwOnRequestTimeout: true,
+		},
 		region,
 		...(endpoint ? { endpoint } : {}),
 		...(accessKeyId && secretAccessKey
@@ -74,6 +81,11 @@ export function createStorage(config: StorageConfig = {}): Storage {
 					Body: body,
 					ContentType: contentType,
 				}),
+			)
+		},
+		async delete(key) {
+			await client.send(
+				new DeleteObjectCommand({ Bucket: bucketName, Key: key }),
 			)
 		},
 		async get(key) {
@@ -170,4 +182,19 @@ function errorStatus(error: unknown): number | undefined {
 
 function errorName(error: unknown): string {
 	return error instanceof Error ? error.name : ''
+}
+
+/** Cleanup must not turn a successful database write into a failed request. */
+export async function deleteStoredImage(
+	key: string,
+	storage?: Storage,
+): Promise<void> {
+	try {
+		await (storage ?? getStorage()).delete(key)
+	} catch (error) {
+		console.warn(
+			`Failed to delete unused thumbnail object ${key}; retry cleanup separately`,
+			error,
+		)
+	}
 }
