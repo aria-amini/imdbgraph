@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { fetchShowEnrichment } from '@/lib/images/tvmaze'
+import { fetchShowEnrichment } from '@/lib/thumbnail/tvmaze'
 
 const posterUrl =
 	'https://static.tvmaze.com/uploads/images/original_untouched/1.jpg'

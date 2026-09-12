@@ -15,12 +15,23 @@ import {
 	vi,
 } from 'vitest'
 
+import { createDb } from '@/db/connection'
 import { show, showImage } from '@/db/tables'
-import { createStorage, type Storage } from '@/lib/images/s3'
-import { getShowImageDb, getStoredImage } from '@/lib/images/show-image'
-import { fetchShowEnrichment, type ShowAiring } from '@/lib/images/tvmaze'
+import { createStorage, getStorage, type Storage } from '@/lib/s3'
+import { getPosterImageBytes } from '@/lib/thumbnail/server'
+import { fetchShowEnrichment, type ShowAiring } from '@/lib/thumbnail/tvmaze'
 
-vi.mock(import('@/lib/images/tvmaze'), async (importOriginal) => ({
+vi.mock(import('@/db/connection'), async (importOriginal) => ({
+	...(await importOriginal()),
+	createDb: vi.fn(),
+}))
+
+vi.mock(import('@/lib/s3'), async (importOriginal) => ({
+	...(await importOriginal()),
+	getStorage: vi.fn(),
+}))
+
+vi.mock(import('@/lib/thumbnail/tvmaze'), async (importOriginal) => ({
 	...(await importOriginal()),
 	fetchShowEnrichment: vi.fn(),
 }))
@@ -45,20 +56,18 @@ const HBO_AIRING: ShowAiring = {
 }
 
 const enrichmentFor = (url: string) => ({ posterUrl: url, ...HBO_AIRING })
-const showImageFor = (imdbId: string) => ({
-	url: `/api/thumbnails/${imdbId}`,
-	...HBO_AIRING,
-})
 
 const counts = { download: 0 }
 let imageBytes: Uint8Array | undefined
 const imageServerUrl = 'https://static.tvmaze.com/uploads/images/poster.png'
 
 let storage: Storage
-let minio: StartedTestContainer
+let minio: StartedTestContainer | undefined
 
 beforeAll(async () => {
-	minio = await new GenericContainer('minio/minio:RELEASE.2025-09-07T16-13-09Z')
+	minio = await new GenericContainer(
+		'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z',
+	)
 		.withCommand(['server', '/data'])
 		.withEnvironment({
 			MINIO_ROOT_USER: 'testuser',
@@ -86,6 +95,7 @@ beforeEach(() => {
 				})
 			: new Response(null, { status: 500 })
 	})
+	vi.mocked(getStorage).mockReturnValue(storage)
 })
 
 afterEach(() => {
@@ -96,7 +106,7 @@ afterEach(() => {
 })
 
 afterAll(async () => {
-	await minio.stop()
+	await minio?.stop()
 })
 
 const test = initDb(async (db) => {
@@ -118,14 +128,16 @@ const test = initDb(async (db) => {
 
 describe('show image pipeline', () => {
 	test('fetches and stores an image on first view', async ({ db }) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		vi.mocked(fetchShowEnrichment).mockResolvedValue(
 			enrichmentFor(imageServerUrl),
 		)
 		imageBytes = PNG_BYTES
 
-		const result = await getShowImageDb(db, FETCHED_ID, storage)
+		const result = await getPosterImageBytes(FETCHED_ID)
 
-		expect(result).toEqual(showImageFor(FETCHED_ID))
+		expect(result?.contentType).toBe('image/png')
+		expect(Buffer.from(result!.data).equals(PNG_BYTES)).toBe(true)
 		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 
 		const [row] = await db
@@ -145,7 +157,7 @@ describe('show image pipeline', () => {
 		expect(Buffer.from(stored!.data).equals(PNG_BYTES)).toBe(true)
 		expect(stored?.contentType).toBe('image/png')
 
-		await getShowImageDb(db, FETCHED_ID, storage)
+		await getPosterImageBytes(FETCHED_ID)
 		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 		expect(counts.download).toBe(1)
 		expect(fetch).toHaveBeenCalledWith(
@@ -155,9 +167,10 @@ describe('show image pipeline', () => {
 	})
 
 	test('caches a known-missing image', async ({ db }) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		vi.mocked(fetchShowEnrichment).mockResolvedValue(null)
 
-		const result = await getShowImageDb(db, MISSING_ID, storage)
+		const result = await getPosterImageBytes(MISSING_ID)
 		expect(result).toBeNull()
 
 		const [row] = await db
@@ -166,16 +179,17 @@ describe('show image pipeline', () => {
 			.where(eq(showImage.imdbId, MISSING_ID))
 		expect(row?.objectKey).toBeNull()
 
-		await getShowImageDb(db, MISSING_ID, storage)
+		await getPosterImageBytes(MISSING_ID)
 		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 	})
 
 	test('transient failures leave no row and back off', async ({ db }) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		vi.mocked(fetchShowEnrichment).mockResolvedValue(
 			enrichmentFor(imageServerUrl),
 		)
 
-		await expect(getShowImageDb(db, FAILING_ID, storage)).rejects.toThrow(
+		await expect(getPosterImageBytes(FAILING_ID)).rejects.toThrow(
 			'thumbnail download failed with status 500',
 		)
 
@@ -185,13 +199,14 @@ describe('show image pipeline', () => {
 			.where(eq(showImage.imdbId, FAILING_ID))
 		expect(rows).toHaveLength(0)
 
-		await getShowImageDb(db, FAILING_ID, storage)
+		await getPosterImageBytes(FAILING_ID)
 		expect(fetchShowEnrichment).toHaveBeenCalledTimes(1)
 	})
 
 	test('concurrent differing posters return the persisted winner and clean up the loser', async ({
 		db,
 	}) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		vi.mocked(fetchShowEnrichment)
 			.mockResolvedValueOnce(enrichmentFor(imageServerUrl))
 			.mockResolvedValueOnce({
@@ -224,9 +239,10 @@ describe('show image pipeline', () => {
 				await ready
 			},
 		}
+		vi.mocked(getStorage).mockReturnValue(concurrentStorage)
 		const results = await Promise.all([
-			getShowImageDb(db, CONCURRENT_ID, concurrentStorage),
-			getShowImageDb(db, CONCURRENT_ID, concurrentStorage),
+			getPosterImageBytes(CONCURRENT_ID),
+			getPosterImageBytes(CONCURRENT_ID),
 		])
 		const rows = await db
 			.select()
@@ -234,42 +250,39 @@ describe('show image pipeline', () => {
 			.where(eq(showImage.imdbId, CONCURRENT_ID))
 		expect(rows).toHaveLength(1)
 		const row = rows[0]!
-		const expected = {
-			url: `/api/thumbnails/${CONCURRENT_ID}`,
-			status: row.status,
-			network: row.network,
-			airsDays: row.airsDays,
-			airsTime: row.airsTime,
-		}
-		expect(results).toEqual([expected, expected])
-		const stored = await storage.get(row.objectKey!)
 		const isPng = row.contentType === 'image/png'
 		expect(row.network).toBe(isPng ? 'HBO' : 'BBC')
 		expect(row.objectKey).toMatch(new RegExp(`\\.${isPng ? 'png' : 'jpg'}$`))
+		const stored = await storage.get(row.objectKey!)
 		expect(stored?.contentType).toBe(row.contentType)
 		expect(Buffer.from(stored!.data)).toEqual(isPng ? PNG_BYTES : jpegBytes)
+		expect(results[0]).toEqual(results[1])
+		expect(results[0]?.contentType).toBe(row.contentType)
 		const loserKey = uploadedKeys.find((key) => key !== row.objectKey)!
 		expect(await storage.get(loserKey)).toBeNull()
 	})
 
 	test('rejects unsafe poster URLs before downloading', async ({ db }) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		vi.mocked(fetchShowEnrichment).mockResolvedValue(
 			enrichmentFor('http://static.tvmaze.com/poster.png'),
 		)
-		await expect(getShowImageDb(db, 'tt44444444', storage)).rejects.toThrow(
+		await expect(getPosterImageBytes('tt44444444')).rejects.toThrow(
 			'poster URL',
 		)
 		expect(fetch).not.toHaveBeenCalled()
 	})
+
 	test('a stale object read cannot delete a replacement row', async ({
 		db,
 	}) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		const imdbId = STALE_ID
 		await db
 			.insert(showImage)
 			.values({ imdbId, objectKey: 'thumbnails/stale.jpg' })
 		const replacementKey = 'thumbnails/replacement.jpg'
-		const staleStorage = {
+		vi.mocked(getStorage).mockReturnValue({
 			...storage,
 			async get() {
 				await db
@@ -278,17 +291,19 @@ describe('show image pipeline', () => {
 					.where(eq(showImage.imdbId, imdbId))
 				return null
 			},
-		}
-		expect(await getStoredImage(db, imdbId, staleStorage)).toBeNull()
+		})
+		expect(await getPosterImageBytes(imdbId)).toBeNull()
 		const [row] = await db
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, imdbId))
 		expect(row?.objectKey).toBe(replacementKey)
 	})
+
 	test('a known-missing winner discards a concurrent poster upload', async ({
 		db,
 	}) => {
+		vi.mocked(createDb).mockReturnValue(db)
 		let releaseDownload = () => {}
 		const resumeDownload = new Promise<void>((resolve) => {
 			releaseDownload = resolve
@@ -306,9 +321,9 @@ describe('show image pipeline', () => {
 			.mockResolvedValueOnce(null)
 		imageBytes = PNG_BYTES
 		const put = vi.spyOn(storage, 'put')
-		const pending = getShowImageDb(db, MISSING_RACE_ID, storage)
+		const pending = getPosterImageBytes(MISSING_RACE_ID)
 		await started
-		expect(await getShowImageDb(db, MISSING_RACE_ID, storage)).toBeNull()
+		expect(await getPosterImageBytes(MISSING_RACE_ID)).toBeNull()
 		releaseDownload()
 		expect(await pending).toBeNull()
 		const [row] = await db

@@ -184,17 +184,26 @@ function errorName(error: unknown): string {
 	return error instanceof Error ? error.name : ''
 }
 
-/** Cleanup must not turn a successful database write into a failed request. */
-export async function deleteStoredImage(
+/**
+ * Cleanup must not turn a successful database write into a failed request.
+ * Callers holding a Storage instance pass it so the deletion targets the
+ * same storage that served the request.
+ */
+export async function deleteImageObject(
+	storage: Storage,
 	key: string,
-	storage?: Storage,
 ): Promise<void> {
 	try {
-		await (storage ?? getStorage()).delete(key)
+		await storage.delete(key)
 	} catch (error) {
 		console.warn(
 			`Failed to delete unused thumbnail object ${key}; retry cleanup separately`,
 			error,
 		)
 	}
+}
+
+/** Deletes one stored thumbnail object through the shared storage. */
+export async function deletePosterImage(key: string): Promise<void> {
+	await deleteImageObject(getStorage(), key)
 }

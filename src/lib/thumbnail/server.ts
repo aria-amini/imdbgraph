@@ -6,18 +6,18 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { createDb } from '@/db/connection'
 import { showImage } from '@/db/tables'
+import { imdbIdSchema } from '@/lib/imdb/ratings'
 import {
-	deleteStoredImage,
+	deleteImageObject,
 	getStorage,
 	type Storage,
 	type StoredImage,
-} from '@/lib/images/s3'
+} from '@/lib/s3'
 import {
 	fetchShowEnrichment,
 	parsePosterUrl,
 	type ShowAiring,
-} from '@/lib/images/tvmaze'
-import { imdbIdSchema } from '@/lib/imdb/ratings'
+} from '@/lib/thumbnail/tvmaze'
 
 export interface ShowImage extends ShowAiring {
 	url: string
@@ -28,22 +28,44 @@ export const getShowImage = createServerFn({ method: 'GET' })
 	.validator(imdbIdSchema)
 	.handler(async ({ data: imdbId }) => {
 		try {
-			return await getShowImageDb(createDb(), imdbId)
+			const record = await resolveShowImage(createDb(), imdbId, getStorage())
+			return record ? toShowImage(imdbId, record) : null
 		} catch (error) {
 			console.warn(`Failed to load image for ${imdbId}`, error)
 			return null
 		}
 	})
 
-/** Returns the image and airing metadata for a show, fetching on first view. */
-export async function getShowImageDb(
+/**
+ * Returns the stored poster bytes, fetching and persisting the poster on
+ * first view. Returns null when the show is known to have no poster or when
+ * the stored object was lost; the next view re-fetches in that case.
+ */
+export async function getPosterImageBytes(
+	imdbId: string,
+): Promise<StoredImage | null> {
+	const db = createDb()
+	const storage = getStorage()
+	const record = await resolveShowImage(db, imdbId, storage)
+	if (!record?.objectKey) {
+		return null
+	}
+	const stored = await storage.get(record.objectKey)
+	if (!stored) {
+		await dropStaleImageRow(db, imdbId, record.objectKey)
+	}
+	return stored
+}
+
+/** Returns the image row for a show, fetching and storing it on first view. */
+async function resolveShowImage(
 	db: NodePgDatabase,
 	imdbId: string,
-	storage: Storage = getStorage(),
-): Promise<ShowImage | null> {
+	storage: Storage,
+): Promise<ShowImageRecord | null> {
 	const cached = await loadShowImageRecord(db, imdbId)
 	if (cached !== undefined) {
-		return toShowImage(imdbId, cached)
+		return cached
 	}
 
 	// In-process cooldown so an unreachable TVmaze does not slow every view.
@@ -77,53 +99,17 @@ export async function getShowImageDb(
 			.onConflictDoNothing()
 			.returning()
 		if (inserted) {
-			return toShowImage(imdbId, inserted)
+			return inserted
 		}
 		if (record.objectKey) {
-			await deleteStoredImage(record.objectKey, storage)
+			await deleteImageObject(storage, record.objectKey)
 		}
 		const winner = await loadShowImageRecord(db, imdbId)
-		return winner ? toShowImage(imdbId, winner) : null
+		return winner ?? null
 	} catch (error) {
 		noteFailure(imdbId)
 		throw error
 	}
-}
-
-/**
- * Loads the stored poster bytes and self-heals rows whose object was lost in
- * storage: dropping the stale row lets the next view re-fetch the poster
- * instead of 404ing forever.
- */
-export async function getStoredImage(
-	db: NodePgDatabase,
-	imdbId: string,
-	storage: Storage = getStorage(),
-): Promise<StoredImage | null> {
-	const [row] = await db
-		.select({
-			objectKey: showImage.objectKey,
-		})
-		.from(showImage)
-		.where(eq(showImage.imdbId, imdbId))
-		.limit(1)
-	if (!row?.objectKey) {
-		return null
-	}
-
-	const stored = await storage.get(row.objectKey)
-	if (!stored) {
-		await db
-			.delete(showImage)
-			.where(
-				and(
-					eq(showImage.imdbId, imdbId),
-					eq(showImage.objectKey, row.objectKey),
-				),
-			)
-		return null
-	}
-	return stored
 }
 
 // =============================================================================
@@ -134,6 +120,23 @@ type ShowImageRecord = Pick<
 	typeof showImage.$inferSelect,
 	'objectKey' | 'status' | 'network' | 'airsDays' | 'airsTime'
 >
+
+/**
+ * Drops a row whose object was lost in storage so the next view re-fetches
+ * the poster instead of 404ing forever. Keyed by object to keep a stale read
+ * from deleting a replacement row.
+ */
+async function dropStaleImageRow(
+	db: NodePgDatabase,
+	imdbId: string,
+	objectKey: string,
+): Promise<void> {
+	await db
+		.delete(showImage)
+		.where(
+			and(eq(showImage.imdbId, imdbId), eq(showImage.objectKey, objectKey)),
+		)
+}
 
 async function loadShowImageRecord(
 	db: NodePgDatabase,

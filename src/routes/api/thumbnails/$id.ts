@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { createDb } from '@/db/connection'
-import { getStoredImage } from '@/lib/images/show-image'
 import { imdbIdSchema } from '@/lib/imdb/ratings'
+import { getPosterImageBytes } from '@/lib/thumbnail/server'
 
 export const Route = createFileRoute('/api/thumbnails/$id')({
 	server: {
@@ -13,7 +12,7 @@ export const Route = createFileRoute('/api/thumbnails/$id')({
 					return new Response(null, { status: 400 })
 				}
 
-				const stored = await getStoredImage(createDb(), parsed.data)
+				const stored = await getPosterImageBytes(parsed.data)
 				if (!stored) {
 					return new Response(null, { status: 404 })
 				}

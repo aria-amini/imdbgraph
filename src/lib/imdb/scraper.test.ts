@@ -10,8 +10,10 @@ import { getRatingsDb } from '@/lib/imdb/ratings'
 import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
 import { update } from '@/lib/imdb/scraper'
 import type { Ratings } from '@/lib/imdb/types'
+import { deletePosterImage } from '@/lib/s3'
 
 vi.mock(import('@/lib/imdb/file-downloader'))
+vi.mock(import('@/lib/s3'))
 
 beforeAll(() => {
 	vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -107,13 +109,9 @@ describe('scraper tests', () => {
 			},
 			{ imdbId: SIMPSONS_ID, objectKey: 'thumbnails/orphan.png' },
 		])
-		const storage = {
-			get: vi.fn(),
-			put: vi.fn(),
-			delete: vi.fn().mockResolvedValue(undefined),
-		}
-		await update(db, storage)
-		expect(storage.delete).toHaveBeenCalledExactlyOnceWith(
+		vi.mocked(deletePosterImage).mockResolvedValue(undefined)
+		await update(db)
+		expect(deletePosterImage).toHaveBeenCalledExactlyOnceWith(
 			'thumbnails/orphan.png',
 		)
 		expect(await db.select().from(showImage)).toEqual([

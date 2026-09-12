@@ -6,13 +6,13 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { Pool, PoolClient } from 'pg'
 import { from as copyFrom } from 'pg-copy-streams'
 
-import { deleteStoredImage, type Storage } from '@/lib/images/s3'
 import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
 import {
 	parseEpisodeLine,
 	parseRatingsLine,
 	shouldCopyTitle,
 } from '@/lib/imdb/scraper-filter'
+import { deletePosterImage } from '@/lib/s3'
 
 /**
  * Main method that downloads the latest files from IMDB and updates our
@@ -22,7 +22,6 @@ export async function update(
 	db: NodePgDatabase & {
 		$client: Pool
 	},
-	storage?: Storage,
 ): Promise<void> {
 	const client = await db.$client.connect()
 	console.log('Connected to db. Starting database population...')
@@ -51,7 +50,7 @@ export async function update(
 	}
 	// Only delete objects after commit; rollback must preserve existing posters.
 	for (const key of orphanedKeys) {
-		await deleteStoredImage(key, storage)
+		await deletePosterImage(key)
 	}
 }
 

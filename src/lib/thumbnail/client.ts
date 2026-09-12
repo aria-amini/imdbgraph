@@ -1,6 +1,11 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import { getShowImage } from '@/lib/images/show-image'
+import { getShowImage } from '@/lib/thumbnail/server'
+
+/** URL of the thumbnail endpoint for one show. */
+export function getPosterImageUrl(imdbId: string): string {
+	return `/api/thumbnails/${imdbId}`
+}
 
 /** Client-safe query definition for a show's poster metadata. */
 export const showImageQuery = (imdbId: string) =>
