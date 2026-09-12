@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { createDb } from '@/db/connection'
-import { showImage } from '@/db/tables'
+import { show, showImage } from '@/db/tables'
 import { imdbIdSchema } from '@/lib/imdb/ratings'
 import {
 	deleteImageObject,
@@ -72,8 +72,14 @@ async function resolveShowImage(
 	if (isCoolingDown(imdbId)) {
 		return null
 	}
+	// A row cannot exist without its parent show; skip the external fetch and
+	// the storage upload for ids the catalog does not know.
+	if (!(await showExists(db, imdbId))) {
+		return null
+	}
 	// Upload immutable candidates without holding a database connection across I/O.
 	// The unique IMDb ID chooses one winner, including known-missing results.
+	let uploadedKey: string | null = null
 	try {
 		const enrichment = await fetchShowEnrichment(imdbId)
 		let record: typeof showImage.$inferInsert = { imdbId, objectKey: null }
@@ -90,6 +96,7 @@ async function resolveShowImage(
 				airsTime: enrichment.airsTime,
 			}
 			await storage.put(objectKey, downloaded.body, downloaded.contentType)
+			uploadedKey = objectKey
 		}
 		// On an ambiguous database error, retain the candidate: deleting it
 		// could remove an object whose insert actually committed.
@@ -101,12 +108,17 @@ async function resolveShowImage(
 		if (inserted) {
 			return inserted
 		}
-		if (record.objectKey) {
-			await deleteImageObject(storage, record.objectKey)
+		if (uploadedKey) {
+			await deleteImageObject(storage, uploadedKey)
 		}
 		const winner = await loadShowImageRecord(db, imdbId)
 		return winner ?? null
 	} catch (error) {
+		// A foreign-key rejection means the insert definitely did not commit,
+		// so the candidate is unreachable and must not leak in storage.
+		if (uploadedKey && isForeignKeyViolation(error)) {
+			await deleteImageObject(storage, uploadedKey)
+		}
 		noteFailure(imdbId)
 		throw error
 	}
@@ -120,6 +132,37 @@ type ShowImageRecord = Pick<
 	typeof showImage.$inferSelect,
 	'objectKey' | 'status' | 'network' | 'airsDays' | 'airsTime'
 >
+
+async function showExists(
+	db: NodePgDatabase,
+	imdbId: string,
+): Promise<boolean> {
+	const [row] = await db
+		.select({ imdbId: show.imdbId })
+		.from(show)
+		.where(eq(show.imdbId, imdbId))
+		.limit(1)
+	return row !== undefined
+}
+
+// Drizzle wraps the driver error, so the postgres code can sit one or more
+// causes deep.
+function isForeignKeyViolation(error: unknown): boolean {
+	let current: unknown = error
+	for (let depth = 0; depth < 5; depth++) {
+		if (typeof current !== 'object' || current === null) {
+			return false
+		}
+		if ('code' in current && current.code === '23503') {
+			return true
+		}
+		if (!('cause' in current)) {
+			return false
+		}
+		current = current.cause
+	}
+	return false
+}
 
 /**
  * Drops a row whose object was lost in storage so the next view re-fetches

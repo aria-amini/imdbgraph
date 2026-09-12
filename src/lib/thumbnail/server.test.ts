@@ -47,6 +47,8 @@ const FAILING_ID = 'tt22222222'
 const CONCURRENT_ID = 'tt33333333'
 const STALE_ID = 'tt55555555'
 const MISSING_RACE_ID = 'tt66666666'
+const DROPPED_SHOW_ID = 'tt77777777'
+const UNSAFE_URL_ID = 'tt44444444'
 
 const HBO_AIRING: ShowAiring = {
 	status: 'Ended',
@@ -118,6 +120,8 @@ const test = initDb(async (db) => {
 			CONCURRENT_ID,
 			STALE_ID,
 			MISSING_RACE_ID,
+			DROPPED_SHOW_ID,
+			UNSAFE_URL_ID,
 		].map((imdbId) => ({
 			imdbId,
 			title: `Show ${imdbId}`,
@@ -267,7 +271,7 @@ describe('show image pipeline', () => {
 		vi.mocked(fetchShowEnrichment).mockResolvedValue(
 			enrichmentFor('http://static.tvmaze.com/poster.png'),
 		)
-		await expect(getPosterImageBytes('tt44444444')).rejects.toThrow(
+		await expect(getPosterImageBytes(UNSAFE_URL_ID)).rejects.toThrow(
 			'poster URL',
 		)
 		expect(fetch).not.toHaveBeenCalled()
@@ -331,6 +335,40 @@ describe('show image pipeline', () => {
 			.from(showImage)
 			.where(eq(showImage.imdbId, MISSING_RACE_ID))
 		expect(row?.objectKey).toBeNull()
+		expect(put).toHaveBeenCalledTimes(1)
+		expect(await storage.get(put.mock.calls[0]![0])).toBeNull()
+	})
+
+	test('skips the pipeline for shows absent from the catalog', async ({
+		db,
+	}) => {
+		vi.mocked(createDb).mockReturnValue(db)
+
+		expect(await getPosterImageBytes('tt88888888')).toBeNull()
+		expect(fetchShowEnrichment).not.toHaveBeenCalled()
+		const rows = await db
+			.select()
+			.from(showImage)
+			.where(eq(showImage.imdbId, 'tt88888888'))
+		expect(rows).toHaveLength(0)
+	})
+
+	test('a show dropped mid-flight discards the upload', async ({ db }) => {
+		vi.mocked(createDb).mockReturnValue(db)
+		vi.mocked(fetchShowEnrichment).mockImplementation(async () => {
+			await db.delete(show).where(eq(show.imdbId, DROPPED_SHOW_ID))
+			return enrichmentFor(imageServerUrl)
+		})
+		imageBytes = PNG_BYTES
+		const put = vi.spyOn(storage, 'put')
+
+		await expect(getPosterImageBytes(DROPPED_SHOW_ID)).rejects.toThrow()
+
+		const rows = await db
+			.select()
+			.from(showImage)
+			.where(eq(showImage.imdbId, DROPPED_SHOW_ID))
+		expect(rows).toHaveLength(0)
 		expect(put).toHaveBeenCalledTimes(1)
 		expect(await storage.get(put.mock.calls[0]![0])).toBeNull()
 	})

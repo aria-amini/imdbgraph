@@ -121,9 +121,18 @@ describe('scraper tests', () => {
 				network: 'HBO',
 			}),
 		])
+		// The rebuilt catalog dropped The Simpsons, so the restored foreign
+		// key rejects its image row, while a null objectKey stays insertable
+		// under an existing parent.
 		await expect(
 			db.insert(showImage).values({ imdbId: SIMPSONS_ID }),
 		).rejects.toThrow()
+		await db.insert(show).values({
+			imdbId: 'tt0086789',
+			title: 'Fresh Parent',
+			startYear: '2020',
+		})
+		await db.insert(showImage).values({ imdbId: 'tt0086789' })
 
 		expect(await getRatingsDb(db, GAME_OF_THRONES_ID)).toEqual(
 			expectedGameOfThronesRatings,
