@@ -1,5 +1,5 @@
 import { GithubLogo, LinkedinLogo } from '@phosphor-icons/react/dist/ssr'
-import type { QueryClient } from '@tanstack/react-query'
+import { useQuery, type QueryClient } from '@tanstack/react-query'
 import {
 	ClientOnly,
 	ErrorComponentProps,
@@ -14,7 +14,10 @@ import { useEffect, type ReactNode } from 'react'
 
 import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { getLatestScrapeRun } from '@/lib/imdb/scrape-run'
+import {
+	latestScrapeRunQuery,
+	scrapeRunStaleTime,
+} from '@/lib/imdb/scrape-run-query'
 import { SITE_LINKS } from '@/lib/site'
 import { createThemeBootstrapScript, getThemePreference } from '@/lib/theme'
 
@@ -40,8 +43,15 @@ export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
 }>()({
 	beforeLoad: () => ({ theme: getThemePreference() }),
-	loader: async () => {
-		return { latestScrapeRun: await getLatestScrapeRun() }
+	loader: async ({ context: { queryClient } }) => {
+		const { queryKey } = latestScrapeRunQuery(0)
+		return {
+			latestScrapeRun: await queryClient.fetchQuery(
+				latestScrapeRunQuery(
+					scrapeRunStaleTime(queryClient.getQueryData<string>(queryKey)),
+				),
+			),
+		}
 	},
 	head: () => ({
 		meta: [
@@ -111,13 +121,17 @@ function RootNotFoundComponent() {
 
 function RootComponent() {
 	const { latestScrapeRun } = Route.useLoaderData()
+	const { data: refreshedLatestScrapeRun = latestScrapeRun } = useQuery({
+		...latestScrapeRunQuery(scrapeRunStaleTime(latestScrapeRun)),
+		refetchInterval: ({ state: { data } }) => scrapeRunStaleTime(data),
+	})
 
 	return (
 		<>
 			<div className="flex-1">
 				<Outlet />
 			</div>
-			<SiteFooter completedAt={latestScrapeRun} />
+			<SiteFooter completedAt={refreshedLatestScrapeRun} />
 			<ClientOnly fallback={null}>
 				<Analytics />
 			</ClientOnly>

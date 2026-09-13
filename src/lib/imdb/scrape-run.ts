@@ -2,13 +2,13 @@ import { createServerFn } from '@tanstack/react-start'
 import { desc } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { createDb } from '@/db/connection'
 import { scrapeRun } from '@/db/tables'
 
 /** Loads the latest scrape completion time through the server-function boundary. */
 export const getLatestScrapeRun = createServerFn().handler(async () => {
-	const db = createDb()
-	return getLatestScrapeRunDb(db)
+	// Lazy import keeps postgres out of the client bundle.
+	const { createDb } = await import('@/db/connection')
+	return getLatestScrapeRunDb(createDb())
 })
 
 /** Returns the completion time of the most recent IMDb data scrape. */

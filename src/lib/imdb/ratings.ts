@@ -3,18 +3,17 @@ import { asc, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { z } from 'zod'
 
-import { createDb } from '@/db/connection'
 import { episode, show } from '@/db/tables'
+import { imdbIdSchema } from '@/lib/imdb/imdb-id'
 import type { Episode, Ratings } from '@/lib/imdb/types'
-
-export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
 /** Loads ratings for a show through the server-function boundary. */
 export const getRatings = createServerFn()
 	.validator(z.object({ showId: imdbIdSchema }))
 	.handler(async ({ data }) => {
-		const db = createDb()
-		return getRatingsDb(db, data.showId)
+		// Lazy import keeps postgres out of the client bundle.
+		const { createDb } = await import('@/db/connection')
+		return getRatingsDb(createDb(), data.showId)
 	})
 
 /** Loads a show's metadata and episodes, grouped by season. */
@@ -33,6 +32,7 @@ export async function getRatingsDb(
 
 	const episodes = await db
 		.select({
+			episodeId: episode.episodeId,
 			title: episode.title,
 			seasonNum: episode.seasonNum,
 			episodeNum: episode.episodeNum,
