@@ -23,9 +23,10 @@ import {
 	ChartTooltip,
 } from '@/components/ui/chart'
 import { transformRatingsData } from '@/lib/imdb/chart-data'
-import type { Episode, Ratings } from '@/lib/imdb/types'
+import { imdbIdSchema, type Episode, type Ratings } from '@/lib/imdb/types'
 
 const episodeSchema: z.ZodType<Episode> = z.object({
+	episodeId: imdbIdSchema,
 	title: z.string(),
 	seasonNum: z.number(),
 	episodeNum: z.number(),

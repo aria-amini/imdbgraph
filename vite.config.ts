@@ -78,8 +78,7 @@ const lint = {
 				'scripts/**',
 				'mise-tasks/**',
 				'**/*.server.ts',
-				'src/lib/imdb/file-downloader.ts',
-				'src/lib/imdb/scraper.ts',
+				'src/lib/imdb/scraper/**',
 			],
 			rules: {
 				'no-console': 'off',

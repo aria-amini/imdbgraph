@@ -1,18 +1,66 @@
+import { queryOptions } from '@tanstack/react-query'
+import { createServerFn } from '@tanstack/react-start'
 import { desc, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import { z } from 'zod'
 
+import { createDb } from '@/db/connection'
 import { show } from '@/db/tables'
 
-/** Finds up to five shows matching a fuzzy title query. */
-export async function fetchSuggestions(db: NodePgDatabase, q: string) {
-	if (!q) {
-		throw new Error('Empty search parameter (q)')
+/** Fuzzy-matches show titles, best-voted first. */
+export async function searchShows(
+	db: NodePgDatabase,
+	query: string,
+): Promise<Suggestion[]> {
+	return db
+		.select({
+			imdbId: show.imdbId,
+			title: show.title,
+			startYear: show.startYear,
+			endYear: show.endYear,
+			rating: show.rating,
+			numVotes: show.numVotes,
+		})
+		.from(show)
+		.where(sql`${query}::text <% ${show.title}`)
+		.orderBy(desc(show.numVotes))
+		.limit(50)
+}
+
+export const getSearchResults = createServerFn()
+	.validator(z.object({ query: z.string().min(1) }))
+	.handler(({ data }) => searchShows(createDb(), data.query))
+
+export const searchResultsQuery = (scrapeVersion: string, query: string) =>
+	queryOptions({
+		queryKey: ['search', scrapeVersion, query],
+		queryFn: () => getSearchResults({ data: { query } }),
+		staleTime: Number.POSITIVE_INFINITY,
+	})
+
+const suggestionSchema = z.object({
+	imdbId: z.string(),
+	title: z.string(),
+	startYear: z.string(),
+	endYear: z.string().nullable(),
+	rating: z.number(),
+	numVotes: z.number(),
+})
+
+export type Suggestion = z.infer<typeof suggestionSchema>
+
+/** Fetches and validates title suggestions from the application API. */
+export async function fetchSuggestionsFromApi(
+	query: string,
+): Promise<Suggestion[]> {
+	if (!query) return []
+
+	const response = await fetch(
+		`/api/suggestions?q=${encodeURIComponent(query)}`,
+	)
+	if (!response.ok) {
+		throw new Error(`Suggestions request failed: ${response.status}`)
 	}
 
-	return await db
-		.select()
-		.from(show)
-		.where(sql`${q}::text <% ${show.title}`)
-		.orderBy(desc(show.numVotes))
-		.limit(5)
+	return z.array(suggestionSchema).parse(await response.json())
 }

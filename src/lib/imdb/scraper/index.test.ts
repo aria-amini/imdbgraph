@@ -5,14 +5,15 @@ import { initDb } from '@config/test/db'
 import { afterAll, beforeAll, describe, expect, vi } from 'vitest'
 
 import { scrapeRun, show, showImage } from '@/db/tables'
-import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
-import { getRatingsDb } from '@/lib/imdb/ratings'
-import { getLatestScrapeRunDb } from '@/lib/imdb/scrape-run'
-import { update } from '@/lib/imdb/scraper'
+import { loadRatings } from '@/lib/imdb/ratings'
 import type { Ratings } from '@/lib/imdb/types'
 import { deletePosterImage } from '@/lib/s3'
 
-vi.mock(import('@/lib/imdb/file-downloader'))
+import { downloadStream, type ImdbFile } from './file-downloader'
+import { update } from './index'
+import { latestScrapeRun } from './scrape-run'
+
+vi.mock(import('@/lib/imdb/scraper/file-downloader'))
 vi.mock(import('@/lib/s3'))
 
 beforeAll(() => {
@@ -30,6 +31,7 @@ const expectedGameOfThronesRatings: Ratings = {
 	allEpisodeRatings: {
 		1: {
 			1: {
+				episodeId: 'tt1480055',
 				episodeNum: 1,
 				numVotes: 36939,
 				rating: 9.1,
@@ -37,6 +39,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'Winter Is Coming',
 			},
 			2: {
+				episodeId: 'tt1668746',
 				episodeNum: 2,
 				numVotes: 27976,
 				rating: 8.8,
@@ -44,6 +47,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'The Kingsroad',
 			},
 			3: {
+				episodeId: 'tt1829962',
 				episodeNum: 3,
 				numVotes: 26458,
 				rating: 8.7,
@@ -53,6 +57,7 @@ const expectedGameOfThronesRatings: Ratings = {
 		},
 		2: {
 			1: {
+				episodeId: 'tt1971833',
 				episodeNum: 1,
 				numVotes: 23735,
 				rating: 8.9,
@@ -60,6 +65,7 @@ const expectedGameOfThronesRatings: Ratings = {
 				title: 'The North Remembers',
 			},
 			2: {
+				episodeId: 'tt2069318',
 				episodeNum: 2,
 				numVotes: 22413,
 				rating: 8.6,
@@ -70,6 +76,7 @@ const expectedGameOfThronesRatings: Ratings = {
 	},
 	show: {
 		endYear: '2019',
+		genres: ['Action', 'Adventure', 'Drama'],
 		imdbId: 'tt0944947',
 		numVotes: 1563413,
 		rating: 9.4,
@@ -81,16 +88,16 @@ const expectedGameOfThronesRatings: Ratings = {
 // =============================================================================
 // Tests
 // =============================================================================
-const test = initDb(() => {})
+const test = initDb()
 
 describe('scraper tests', () => {
 	test('loading sample files into database', async ({ db }) => {
 		await db.delete(scrapeRun)
 
 		mockDownloads({
-			'title.basics.tsv.gz': './__fixtures__/titles.tsv',
-			'title.episode.tsv.gz': './__fixtures__/episodes.tsv',
-			'title.ratings.tsv.gz': './__fixtures__/ratings.tsv',
+			'title.basics.tsv.gz': '../__fixtures__/titles.tsv',
+			'title.episode.tsv.gz': '../__fixtures__/episodes.tsv',
+			'title.ratings.tsv.gz': '../__fixtures__/ratings.tsv',
 		})
 
 		await db.insert(show).values([
@@ -134,14 +141,14 @@ describe('scraper tests', () => {
 		})
 		await db.insert(showImage).values({ imdbId: 'tt0086789' })
 
-		expect(await getRatingsDb(db, GAME_OF_THRONES_ID)).toEqual(
+		expect(await loadRatings(db, GAME_OF_THRONES_ID)).toEqual(
 			expectedGameOfThronesRatings,
 		)
-		expect(await getRatingsDb(db, SIMPSONS_ID)).toBeUndefined()
+		expect(await loadRatings(db, SIMPSONS_ID)).toBeUndefined()
 
-		const latestScrapeRun = await getLatestScrapeRunDb(db)
-		expect(latestScrapeRun).toEqual(expect.any(String))
-		expect(Number.isNaN(Date.parse(latestScrapeRun ?? ''))).toBe(false)
+		const completedAt = await latestScrapeRun(db)
+		expect(completedAt).toEqual(expect.any(String))
+		expect(Number.isNaN(Date.parse(completedAt ?? ''))).toBe(false)
 		expect(await db.select().from(scrapeRun)).toHaveLength(1)
 	})
 
@@ -155,21 +162,21 @@ describe('scraper tests', () => {
 				{ completedAt: new Date('2026-01-02T00:00:00.000Z') },
 			])
 
-		expect(await getLatestScrapeRunDb(db)).toBe('2026-01-02T00:00:00.000Z')
+		expect(await latestScrapeRun(db)).toBe('2026-01-02T00:00:00.000Z')
 	})
 
 	test('handling bad files', async ({ db }) => {
 		await db.delete(scrapeRun)
 
 		mockDownloads({
-			'title.basics.tsv.gz': './__fixtures__/titles.tsv',
-			'title.episode.tsv.gz': './__fixtures__/bad-episodes.tsv',
-			'title.ratings.tsv.gz': './__fixtures__/ratings.tsv',
+			'title.basics.tsv.gz': '../__fixtures__/titles.tsv',
+			'title.episode.tsv.gz': '../__fixtures__/bad-episodes.tsv',
+			'title.ratings.tsv.gz': '../__fixtures__/ratings.tsv',
 		})
 		await expect(update(db)).rejects.toThrow(
 			'invalid input syntax for type integer: "5   corrupt-data 1212"',
 		)
-		expect(await getLatestScrapeRunDb(db)).toBeNull()
+		expect(await latestScrapeRun(db)).toBeNull()
 	})
 })
 
