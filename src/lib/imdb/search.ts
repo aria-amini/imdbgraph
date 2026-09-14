@@ -32,7 +32,7 @@ export const getSearchResults = createServerFn()
 	.validator(z.object({ query: z.string().min(1) }))
 	.handler(({ data }) => searchShows(createDb(), data.query))
 
-const MAX_SUGGESTIONS = 5
+export const MAX_SUGGESTIONS = 5
 
 /** Top matches for the searchbar dropdown, capped at five rows. */
 export async function suggestionsFor(db: NodePgDatabase, query: string) {
