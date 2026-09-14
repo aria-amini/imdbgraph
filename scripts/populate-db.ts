@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import type { PoolClient } from 'pg'
 import { Pool } from 'pg'
 
-import { update } from '@/lib/imdb/scraper.ts'
+import { update } from '@/lib/imdb/scraper'
 
 import { serverEnv as env } from '../src/env.server.ts'
 
