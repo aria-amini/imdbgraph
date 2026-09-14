@@ -30,6 +30,8 @@ const test = baseTest.extend<{ worker: Worker; _cleanup: void }>({
 		) => {
 			await use()
 			worker.resetHandlers(...handlers)
+			vi.restoreAllMocks()
+			document.documentElement.classList.remove('dark')
 		},
 		{ auto: true },
 	],
