@@ -11,6 +11,7 @@ import { show } from '@/db/tables'
 export async function searchShows(
 	db: NodePgDatabase,
 	query: string,
+	limit = 50,
 ): Promise<Suggestion[]> {
 	return db
 		.select({
@@ -24,7 +25,7 @@ export async function searchShows(
 		.from(show)
 		.where(sql`${query}::text <% ${show.title}`)
 		.orderBy(desc(show.numVotes))
-		.limit(50)
+		.limit(limit)
 }
 
 export const getSearchResults = createServerFn()
@@ -35,7 +36,7 @@ const MAX_SUGGESTIONS = 5
 
 /** Top matches for the searchbar dropdown, capped at five rows. */
 export async function suggestionsFor(db: NodePgDatabase, query: string) {
-	return (await searchShows(db, query)).slice(0, MAX_SUGGESTIONS)
+	return searchShows(db, query, MAX_SUGGESTIONS)
 }
 
 export const searchResultsQuery = (scrapeVersion: string, query: string) =>
