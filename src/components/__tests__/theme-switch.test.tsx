@@ -2,10 +2,9 @@ import { test } from '@config/test/browser'
 import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { createThemeBootstrapScript } from '@/lib/theme'
+import { applyThemeToDocument, createThemeBootstrapScript } from '@/lib/theme'
 
-import { ThemeProvider } from './theme-provider'
-import { ThemeToggle } from './theme-toggle'
+import { ThemeProvider, ThemeSwitch } from '../theme-switch'
 
 const THEME_COOKIE_NAME = 'theme'
 const THEME_STORAGE_KEY = 'theme'
@@ -17,7 +16,7 @@ function storedCookieValue() {
 	return match?.split('=')[1]
 }
 
-describe('theme toggle', () => {
+describe('theme switch', () => {
 	afterEach(() => vi.unstubAllGlobals())
 	beforeEach(() => {
 		localStorage.removeItem(THEME_STORAGE_KEY)
@@ -29,7 +28,7 @@ describe('theme toggle', () => {
 	test('toggles dark: class, color-scheme, cookie, aria state', async () => {
 		const screen = await render(
 			<ThemeProvider preference={null}>
-				<ThemeToggle />
+				<ThemeSwitch />
 			</ThemeProvider>,
 		)
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
@@ -62,7 +61,7 @@ describe('theme toggle', () => {
 
 		const screen = await render(
 			<ThemeProvider preference={null}>
-				<ThemeToggle />
+				<ThemeSwitch />
 			</ThemeProvider>,
 		)
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
@@ -79,11 +78,11 @@ describe('theme toggle', () => {
 	})
 
 	test('keeps multiple consumers synchronized with the bootstrap theme', async () => {
-		document.documentElement.classList.add('dark')
+		applyThemeToDocument('dark')
 		const screen = await render(
 			<ThemeProvider preference={null}>
-				<ThemeToggle />
-				<ThemeToggle />
+				<ThemeSwitch />
+				<ThemeSwitch />
 			</ThemeProvider>,
 		)
 		const switches = screen.getByRole('switch', { name: 'Dark mode' })
@@ -108,7 +107,7 @@ describe('theme toggle', () => {
 	test('renders both mode icons and a sliding knob', async () => {
 		const screen = await render(
 			<ThemeProvider preference={null}>
-				<ThemeToggle />
+				<ThemeSwitch />
 			</ThemeProvider>,
 		)
 
