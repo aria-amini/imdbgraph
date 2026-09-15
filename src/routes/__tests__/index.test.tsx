@@ -1,19 +1,13 @@
 import { test } from '@config/test/browser'
 import { http, HttpResponse } from 'msw'
 import type { ComponentType } from 'react'
-import { expect, vi } from 'vite-plus/test'
+import { expect } from 'vite-plus/test'
 import { userEvent } from 'vite-plus/test/browser'
 
 import { shows } from '@/lib/imdb/__fixtures__/shows'
-import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { Route as HomeRoute } from '@/routes/index'
-import { Route as RatingsRoute } from '@/routes/ratings/$id'
 
-import { renderVisualPage } from './support/render/visual-page'
-
-vi.mock('@/lib/imdb/ratings', () => ({
-	getRatings: async () => gameOfThronesRatings,
-}))
+import { renderVisualPage } from '@tests/support/render/visual-page'
 
 function routeComponent({
 	options,
@@ -42,20 +36,9 @@ const searchResults = [
 	return show
 })
 
-test('ratings page matches screenshot', async () => {
-	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue(gameOfThronesRatings)
-
-	const visualPage = await renderVisualPage({
-		path: '/ratings/$id',
-		component: routeComponent(RatingsRoute),
-		waitFor: (screen) =>
-			screen.getByRole('heading', { name: /game of thrones/i }),
-	})
-
-	await visualPage.expectScreenshot('ratings-game-of-thrones')
-})
-
-test('home page search interaction matches screenshots', async ({ worker }) => {
+test('home page search interaction matches screenshots', async ({
+	worker,
+}) => {
 	worker.use(
 		http.get('/api/suggestions', () => {
 			return HttpResponse.json(searchResults)
