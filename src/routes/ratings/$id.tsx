@@ -3,18 +3,14 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
+import { votedEpisodes } from '@/lib/imdb/episodes'
 import { getRatings } from '@/lib/imdb/ratings'
 import { imdbIdSchema, type Ratings } from '@/lib/imdb/types'
 
 function hasRatings(ratings: Ratings): boolean {
-	for (const seasonRatings of Object.values(ratings.allEpisodeRatings)) {
-		for (const episode of Object.values(seasonRatings)) {
-			if (episode.numVotes > 0) {
-				return true
-			}
-		}
-	}
-	return false
+	return Object.keys(ratings.allEpisodeRatings).some(
+		(seasonNum) => votedEpisodes(ratings, Number(seasonNum)).length > 0,
+	)
 }
 
 export const Route = createFileRoute('/ratings/$id')({
