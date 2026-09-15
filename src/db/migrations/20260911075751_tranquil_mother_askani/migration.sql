@@ -1,0 +1,1 @@
+ALTER TABLE "show" ADD COLUMN "genres" text[];--> statement-breakpoint

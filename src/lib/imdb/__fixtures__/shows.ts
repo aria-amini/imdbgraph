@@ -1,6 +1,6 @@
-import type { Show } from '@/lib/imdb/types'
+import type { Suggestion } from '../search'
 
-export const shows: Show[] = [
+export const shows: Suggestion[] = [
 	{
 		imdbId: 'tt0944947',
 		title: 'Game of Thrones',

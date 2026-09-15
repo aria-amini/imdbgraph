@@ -1,51 +1,46 @@
 import { resolve } from 'node:path'
 
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import type { Pool } from 'pg'
-import {
-	afterEach,
-	beforeEach,
-	describe,
-	expect,
-	test as baseTest,
-	vi,
-} from 'vite-plus/test'
+import { PostgreSqlContainer } from '@testcontainers/postgresql'
+import { sql } from 'drizzle-orm'
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
+import { migrate } from 'drizzle-orm/node-postgres/migrator'
+import { Pool } from 'pg'
+import { test as baseTest } from 'vite-plus/test'
+
+import { REQUIRED_EXTENSIONS } from '@/db/extensions'
 
 type Database = NodePgDatabase & { $client: Pool }
 type Seed = (db: Database) => Promise<void> | void
 
-function createDbTest(seed: Seed) {
+/** Creates one migrated database per test file, shared by its tests. */
+export function initDb(seed?: Seed) {
 	return baseTest.extend<{ db: Database }>({
 		db: [
 			async ({}, use) => {
-				const { PostgreSqlContainer } =
-					await import('@testcontainers/postgresql')
-				const { drizzle } = await import('drizzle-orm/node-postgres')
-				const { migrate } = await import('drizzle-orm/node-postgres/migrator')
-				const { reset } = await import('drizzle-seed')
-				const { sql } = await import('drizzle-orm')
-				const { Pool } = await import('pg')
-				const { REQUIRED_EXTENSIONS } = await import('../../src/db/extensions')
 				const container = await new PostgreSqlContainer('postgres:17').start()
-				const client = new Pool({
-					connectionString: container.getConnectionUri(),
-				})
-				const db = Object.assign(drizzle({ client }), { $client: client })
 				try {
-					for (const extension of REQUIRED_EXTENSIONS) {
-						await db.execute(
-							sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)}`,
-						)
-					}
-					const schemaPath = resolve(process.cwd(), 'src/db/tables.ts')
-					await migrate(db, {
-						migrationsFolder: resolve(process.cwd(), 'src/db/migrations'),
+					const client = new Pool({
+						connectionString: container.getConnectionUri(),
 					})
-					await reset(db, await import(/* @vite-ignore */ schemaPath))
-					await seed(db)
-					await use(db)
+					try {
+						const db = drizzle({ client })
+						for (const extension of REQUIRED_EXTENSIONS) {
+							await db.execute(
+								sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)}`,
+							)
+						}
+						await migrate(db, {
+							migrationsFolder: resolve(
+								import.meta.dirname,
+								'../../src/db/migrations',
+							),
+						})
+						await seed?.(db)
+						await use(db)
+					} finally {
+						await client.end()
+					}
 				} finally {
-					await db.$client.end()
 					await container.stop()
 				}
 			},
@@ -53,10 +48,3 @@ function createDbTest(seed: Seed) {
 		],
 	})
 }
-
-/** Creates a database-backed Vitest fixture seeded for each test file. */
-export function initDb(seed: Seed) {
-	return createDbTest(seed)
-}
-
-export { afterEach, beforeEach, describe, expect, baseTest as test, vi }

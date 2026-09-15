@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import type { PoolClient } from 'pg'
 import { Pool } from 'pg'
 
-import { update } from '@/lib/imdb/scraper.ts'
+import { update } from '@/lib/imdb/scraper'
 
 import { serverEnv as env } from '../src/env.server.ts'
 
@@ -12,7 +12,6 @@ const LOCK_KEY = 'imdbgraph:populate'
 const pool = new Pool({
 	connectionString: env.DATABASE_URL,
 })
-const db = drizzle({ client: pool })
 
 async function isPopulated(client: PoolClient): Promise<boolean> {
 	const reg = await client.query<{ reg: string | null }>(
@@ -45,7 +44,7 @@ async function populateDb() {
 			}
 		}
 
-		await update(db)
+		await update(drizzle({ client: pool }))
 		console.log('DB population completed successfully.')
 	} finally {
 		if (lockClient) {

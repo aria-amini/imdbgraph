@@ -1,40 +1,16 @@
 import { randomUUID } from 'node:crypto'
 
-import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { createDb } from '@/db/connection'
 import { show, showImage } from '@/db/tables'
-import { imdbIdSchema } from '@/lib/imdb/ratings'
 import {
 	deleteImageObject,
 	getStorage,
 	type Storage,
 	type StoredImage,
 } from '@/lib/s3'
-import {
-	fetchShowEnrichment,
-	parsePosterUrl,
-	type ShowAiring,
-} from '@/lib/thumbnail/tvmaze'
-
-export interface ShowImage extends ShowAiring {
-	url: string
-}
-
-/** Loads a show's image through the server-function boundary. */
-export const getShowImage = createServerFn({ method: 'GET' })
-	.validator(imdbIdSchema)
-	.handler(async ({ data: imdbId }) => {
-		try {
-			const record = await resolveShowImage(createDb(), imdbId, getStorage())
-			return record ? toShowImage(imdbId, record) : null
-		} catch (error) {
-			console.warn(`Failed to load image for ${imdbId}`, error)
-			return null
-		}
-	})
+import { fetchShowEnrichment, parsePosterUrl } from '@/lib/thumbnail/tvmaze'
 
 /**
  * Returns the stored poster bytes, fetching and persisting the poster on
@@ -42,9 +18,9 @@ export const getShowImage = createServerFn({ method: 'GET' })
  * the stored object was lost; the next view re-fetches in that case.
  */
 export async function getPosterImageBytes(
+	db: NodePgDatabase,
 	imdbId: string,
 ): Promise<StoredImage | null> {
-	const db = createDb()
 	const storage = getStorage()
 	const record = await resolveShowImage(db, imdbId, storage)
 	if (!record?.objectKey) {
@@ -197,22 +173,6 @@ async function loadShowImageRecord(
 		.where(eq(showImage.imdbId, imdbId))
 		.limit(1)
 	return row
-}
-
-function toShowImage(
-	imdbId: string,
-	record: ShowImageRecord,
-): ShowImage | null {
-	if (!record.objectKey) {
-		return null
-	}
-	return {
-		url: `/api/thumbnails/${imdbId}`,
-		status: record.status,
-		network: record.network,
-		airsDays: record.airsDays ?? [],
-		airsTime: record.airsTime,
-	}
 }
 
 async function downloadImage(url: string): Promise<DownloadedImage> {

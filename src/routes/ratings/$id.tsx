@@ -3,8 +3,8 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { Graph } from '@/components/graph'
 import { Navbar } from '@/components/navbar'
 import { SearchBar } from '@/components/search-bar'
-import { getRatings, imdbIdSchema } from '@/lib/imdb/ratings'
-import { type Ratings } from '@/lib/imdb/types'
+import { getRatings } from '@/lib/imdb/ratings'
+import { imdbIdSchema, type Ratings } from '@/lib/imdb/types'
 
 function hasRatings(ratings: Ratings): boolean {
 	for (const seasonRatings of Object.values(ratings.allEpisodeRatings)) {

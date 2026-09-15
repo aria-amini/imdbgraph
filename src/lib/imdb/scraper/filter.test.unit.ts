@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import {
-	parseEpisodeLine,
-	parseRatingsLine,
-	shouldCopyTitle,
-} from '@/lib/imdb/scraper-filter'
+import { parseEpisodeLine, parseRatingsLine, shouldCopyTitle } from './filter'
 
 describe('scraper filtering', () => {
 	test('collects rated identifiers and episode show identifiers', () => {

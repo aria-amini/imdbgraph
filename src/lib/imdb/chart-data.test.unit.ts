@@ -5,6 +5,7 @@ import type { Episode } from '@/lib/imdb/types'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
 const unratedEpisode: Episode = {
+	episodeId: 'tt9999999',
 	title: 'Unrated Episode',
 	seasonNum: 1,
 	episodeNum: 11,

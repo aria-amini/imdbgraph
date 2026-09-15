@@ -6,22 +6,17 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { Pool, PoolClient } from 'pg'
 import { from as copyFrom } from 'pg-copy-streams'
 
-import { downloadStream, type ImdbFile } from '@/lib/imdb/file-downloader'
-import {
-	parseEpisodeLine,
-	parseRatingsLine,
-	shouldCopyTitle,
-} from '@/lib/imdb/scraper-filter'
 import { deletePosterImage } from '@/lib/s3'
+
+import { downloadStream, type ImdbFile } from './file-downloader'
+import { parseEpisodeLine, parseRatingsLine, shouldCopyTitle } from './filter'
 
 /**
  * Main method that downloads the latest files from IMDB and updates our
  * internal database with the latest data.
  */
 export async function update(
-	db: NodePgDatabase & {
-		$client: Pool
-	},
+	db: NodePgDatabase & { $client: Pool },
 ): Promise<void> {
 	const client = await db.$client.connect()
 	console.log('Connected to db. Starting database population...')
@@ -136,6 +131,7 @@ async function transfer(client: PoolClient) {
       tt.primary_title as title,
       tt.start_year,
       tt.end_year,
+      string_to_array(tt.genres, ',') AS genres,
       COALESCE(tr.imdb_rating, 0.0) AS rating,
       COALESCE(tr.num_votes, 0) AS num_votes
     FROM temp_title tt JOIN temp_ratings tr ON tt.imdb_id = tr.imdb_id

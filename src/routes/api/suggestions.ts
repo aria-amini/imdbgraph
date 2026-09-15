@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { createDb } from '@/db/connection'
-import { fetchSuggestions } from '@/lib/imdb/search'
+import { suggestionsFor } from '@/lib/imdb/search'
 
 export const Route = createFileRoute('/api/suggestions')({
 	server: {
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/api/suggestions')({
 					return new Response(JSON.stringify([]))
 				}
 
-				const shows = await fetchSuggestions(createDb(), q)
+				const shows = await suggestionsFor(createDb(), q)
 				return new Response(JSON.stringify(shows), {
 					headers: {
 						'CDN-Cache-Control':

@@ -11,10 +11,7 @@ import {
 	InputGroupInput,
 } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
-import {
-	fetchSuggestionsFromApi,
-	type Suggestion,
-} from '@/lib/imdb/suggestions'
+import { fetchSuggestionsFromApi, type Suggestion } from '@/lib/imdb/search'
 import { formatYears } from '@/lib/imdb/types'
 
 /** Renders the title search input and its suggestion list. */
