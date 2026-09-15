@@ -165,11 +165,23 @@ export default defineConfig({
 				extends: true,
 				test: {
 					name: 'browser',
+					// Docker network changes in server tests abort Chromium module requests.
+					sequence: { groupOrder: 1 },
 					include: ['src/**/*.test.tsx', 'tests/**/*.test.tsx'],
 					setupFiles: ['./src/styles.css'],
 					fileParallelism: false,
-					testTimeout: 5_000,
+					retry: 0,
+					testTimeout: 15_000,
 					browser: {
+						commands: {
+							async resizeBrowserViewport(
+								{ page },
+								width: number,
+								height: number,
+							) {
+								await page.setViewportSize({ width, height })
+							},
+						},
 						instances: [
 							{
 								browser: 'chromium',

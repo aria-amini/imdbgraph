@@ -62,7 +62,6 @@ jobs:
       - name: setup vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          version: '0.2.1'
           node-version: '24'
       - name: Install Playwright Browsers
         run: vpx playwright install --with-deps --only-shell

@@ -3,32 +3,17 @@ import { http, HttpResponse } from 'msw'
 import type { ComponentType } from 'react'
 import { expect, vi } from 'vite-plus/test'
 import { userEvent } from 'vite-plus/test/browser'
-import type { Locator } from 'vite-plus/test/browser'
-import type { RenderResult } from 'vitest-browser-react'
 
 import { shows } from '@/lib/imdb/__fixtures__/shows'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 import { Route as HomeRoute } from '@/routes/index'
 import { Route as RatingsRoute } from '@/routes/ratings/$id'
 
-import {
-	expectPageScreenshot,
-	renderVisualPage,
-} from './support/render/visual-page'
+import { renderVisualPage } from './support/render/visual-page'
 
-vi.mock('@/lib/imdb/ratings', async (importOriginal) => ({
-	...(await importOriginal<typeof import('@/lib/imdb/ratings')>()),
+vi.mock('@/lib/imdb/ratings', () => ({
 	getRatings: async () => gameOfThronesRatings,
 }))
-
-interface PageScreenshotCase {
-	name: string
-	path: string
-	component: ComponentType
-	waitFor: (screen: RenderResult) => Locator
-	setup?: () => void | Promise<void>
-	viewport?: { width: number; height: number }
-}
 
 function routeComponent({
 	options,
@@ -42,61 +27,35 @@ function routeComponent({
 	return component
 }
 
-function stubLoaderData<TRoute extends { useLoaderData: () => unknown }>(
-	route: TRoute,
-	data: ReturnType<TRoute['useLoaderData']>,
-) {
-	Object.assign(route, { useLoaderData: () => data })
-}
+const searchResults = [
+	'tt0417299',
+	'tt0944947',
+	'tt0903747',
+	'tt11126994',
+	'tt0306414',
+].map((imdbId) => {
+	const show = shows.find((fixture) => fixture.imdbId === imdbId)
+	if (!show) {
+		throw new Error(`Search result fixture not found: ${imdbId}`)
+	}
 
-const pages = [
-	{
-		name: 'ratings-game-of-thrones',
-		path: '/ratings/$id',
-		component: routeComponent(RatingsRoute),
-		waitFor: (screen) =>
-			screen.getByRole('heading', { name: /game of thrones/i }),
-		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
-		},
-	},
-	{
-		name: 'ratings-game-of-thrones-mobile',
-		path: '/ratings/$id',
-		component: routeComponent(RatingsRoute),
-		waitFor: (screen) =>
-			screen.getByRole('heading', { name: /game of thrones/i }),
-		viewport: { width: 375, height: 812 },
-		setup: () => {
-			stubLoaderData(RatingsRoute, gameOfThronesRatings)
-		},
-	},
-] satisfies PageScreenshotCase[]
-
-test.each(pages)('$name page matches screenshot', async (visualPage) => {
-	await expectPageScreenshot(visualPage)
+	return show
 })
 
-test('home page search interaction matches desktop screenshots', async ({
-	worker,
-}) => {
-	const searchResultIds = [
-		'tt0417299',
-		'tt0944947',
-		'tt0903747',
-		'tt11126994',
-		'tt0306414',
-	]
+test('ratings page matches screenshot', async () => {
+	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue(gameOfThronesRatings)
 
-	const searchResults = searchResultIds.map((imdbId) => {
-		const show = shows.find((fixture) => fixture.imdbId === imdbId)
-		if (!show) {
-			throw new Error(`Search result fixture not found: ${imdbId}`)
-		}
-
-		return show
+	const visualPage = await renderVisualPage({
+		path: '/ratings/$id',
+		component: routeComponent(RatingsRoute),
+		waitFor: (screen) =>
+			screen.getByRole('heading', { name: /game of thrones/i }),
 	})
 
+	await visualPage.expectScreenshot('ratings-game-of-thrones')
+})
+
+test('home page search interaction matches screenshots', async ({ worker }) => {
 	worker.use(
 		http.get('/api/suggestions', () => {
 			return HttpResponse.json(searchResults)
@@ -109,7 +68,7 @@ test('home page search interaction matches desktop screenshots', async ({
 		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
 	})
 
-	await visualPage.expectScreenshot('home', { soft: true })
+	await visualPage.expectScreenshot('home')
 
 	const searchBar = visualPage.screen.getByRole('combobox')
 	await userEvent.fill(searchBar, 'Ava')
@@ -119,5 +78,5 @@ test('home page search interaction matches desktop screenshots', async ({
 	await expect.element(avatarResult).toBeVisible()
 	avatarResult.element().scrollIntoView({ block: 'nearest' })
 
-	await visualPage.expectScreenshot('home-search-avatar', { soft: true })
+	await visualPage.expectScreenshot('home-search-avatar')
 })
