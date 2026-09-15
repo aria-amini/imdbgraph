@@ -48,6 +48,13 @@ export function scrapeRunStaleTime(completedAt: string | null | undefined) {
 	return Math.max(nextScrapeAt - Date.now(), OVERDUE_REFETCH_MS)
 }
 
+/** Polls on the overdue interval until the first scrape ever completes. */
+export function scrapeRunRefetchInterval(
+	completedAt: string | null | undefined,
+) {
+	return completedAt ? scrapeRunStaleTime(completedAt) : OVERDUE_REFETCH_MS
+}
+
 /** Stable version token for per-scrape query keys before any scrape exists. */
 export function scrapeVersion(queryClient: QueryClient): string {
 	return (

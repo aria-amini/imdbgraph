@@ -16,6 +16,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeToggle } from '@/components/theme-toggle'
 import {
 	latestScrapeRunQuery,
+	scrapeRunRefetchInterval,
 	scrapeRunStaleTime,
 } from '@/lib/imdb/scraper/scrape-run'
 import { SITE_LINKS } from '@/lib/site'
@@ -123,7 +124,7 @@ function RootComponent() {
 	const { latestScrapeRun } = Route.useLoaderData()
 	const { data: refreshedLatestScrapeRun = latestScrapeRun } = useQuery({
 		...latestScrapeRunQuery(scrapeRunStaleTime(latestScrapeRun)),
-		refetchInterval: ({ state: { data } }) => scrapeRunStaleTime(data),
+		refetchInterval: ({ state: { data } }) => scrapeRunRefetchInterval(data),
 	})
 
 	return (
