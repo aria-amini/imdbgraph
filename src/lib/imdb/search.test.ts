@@ -4,7 +4,7 @@ import { describe, expect } from 'vitest'
 import { show } from '@/db/tables'
 
 import { shows } from './__fixtures__/shows'
-import { searchShows } from './search'
+import { searchShows, suggestionsFor } from './search'
 
 const test = initDb(async (db) => {
 	await db.insert(show).values(shows)
@@ -77,5 +77,12 @@ describe('search tests', () => {
 		expect(results.map((result) => result.numVotes)).toEqual(
 			Array.from({ length: 50 }, (_, index) => 50 - index),
 		)
+	})
+
+	test('caps suggestions at five, best-voted first', async ({ db }) => {
+		const results = await suggestionsFor(db, 'the')
+
+		expect(results).toHaveLength(5)
+		expect(results).toEqual((await searchShows(db, 'the')).slice(0, 5))
 	})
 })
