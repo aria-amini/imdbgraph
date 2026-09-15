@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
-import { transformRatingsData } from '@/lib/imdb/chart-data'
+import { transformRatingsData } from '@/components/graph'
+import { votedEpisodes } from '@/lib/imdb/episodes'
 import type { Episode } from '@/lib/imdb/types'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
@@ -41,5 +42,32 @@ describe('chart data', () => {
 		expect(result.data.some((point) => point.episode1 === unratedEpisode)).toBe(
 			false,
 		)
+	})
+})
+
+test('orders voted episodes and excludes unknown episode numbers', () => {
+	const first = {
+		...unratedEpisode,
+		episodeId: 'tt1',
+		episodeNum: 1,
+		numVotes: 10,
+	}
+	const third = { ...first, episodeId: 'tt3', episodeNum: 3 }
+	const unknown = { ...first, episodeId: 'tt0', episodeNum: 0 }
+	const ratings = {
+		...gameOfThronesRatings,
+		allEpisodeRatings: {
+			1: { 1: third, 2: unknown, 3: first, 4: unratedEpisode },
+			2: {},
+		},
+	}
+	expect(votedEpisodes(ratings, 1)).toEqual([first, third])
+	expect(votedEpisodes(ratings, 3)).toEqual([])
+	expect(transformRatingsData(ratings)).toEqual({
+		seasons: [1, 2],
+		data: [
+			{ episodeIndex: 1, season1: first.rating, episode1: first },
+			{ episodeIndex: 2, season1: third.rating, episode1: third },
+		],
 	})
 })

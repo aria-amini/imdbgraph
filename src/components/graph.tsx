@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import {
 	CartesianGrid,
 	Line,
@@ -8,7 +9,6 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import { z } from 'zod'
 
 import {
 	Card,
@@ -22,21 +22,46 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from '@/components/ui/chart'
-import { transformRatingsData } from '@/lib/imdb/chart-data'
-import { imdbIdSchema, type Episode, type Ratings } from '@/lib/imdb/types'
+import { votedEpisodes } from '@/lib/imdb/episodes'
+import { episodeSchema, type Episode, type Ratings } from '@/lib/imdb/types'
 
-const episodeSchema: z.ZodType<Episode> = z.object({
-	episodeId: imdbIdSchema,
-	title: z.string(),
-	seasonNum: z.number(),
-	episodeNum: z.number(),
-	rating: z.number(),
-	numVotes: z.number(),
-})
+type ChartDataPoint = {
+	episodeIndex: number
+} & Record<`season${number}` | `episode${number}`, number | Episode | null>
+
+/** Converts grouped episode ratings into chart points and season labels. */
+export function transformRatingsData(ratings: Ratings): {
+	data: ChartDataPoint[]
+	seasons: number[]
+} {
+	let episodeIndex = 1
+	const data: ChartDataPoint[] = []
+	const seasons: number[] = []
+
+	for (const [seasonNumber] of Object.entries(ratings.allEpisodeRatings)) {
+		const seasonNum = Number.parseInt(seasonNumber, 10)
+		seasons.push(seasonNum)
+		for (const episode of votedEpisodes(ratings, seasonNum)) {
+			data.push({
+				episodeIndex,
+				[`season${seasonNum}`]: episode.rating,
+				[`episode${seasonNum}`]: episode,
+			})
+			episodeIndex++
+		}
+	}
+
+	return { data, seasons }
+}
 
 /** Renders episode ratings as a season-by-season line chart. */
-export function Graph({ ratings }: { ratings: Ratings }) {
-	const { show } = ratings
+export function Graph({
+	ratings,
+	toolbar,
+}: {
+	ratings: Ratings
+	toolbar?: ReactNode
+}) {
 	const { data: chartData, seasons } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
 	const chartColors = [
@@ -50,22 +75,23 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 	seasons.forEach((seasonNum, index) => {
 		chartConfig[`season${seasonNum}`] = {
 			label: `Season ${seasonNum}`,
-			color: chartColors[index % chartColors.length] ?? 'var(--chart-1)',
+			// chartColors is a non-empty module constant, so the modulo index
+			// is always in bounds.
+			color: chartColors[index % chartColors.length]!,
 		}
 	})
 
 	return (
-		<Card data-testid="ratings-graph" className="px-2 py-4 sm:px-4 lg:px-8">
-			<CardHeader className="text-center">
-				<h1 className="text-xl leading-none font-extrabold tracking-tight text-balance">
-					{show.title}
-				</h1>
-				<span className="text-muted-foreground text-sm">
-					Rating: {show.rating.toFixed(1)} / 10.0 (
-					{show.numVotes.toLocaleString()} votes)
-				</span>
-			</CardHeader>
-			<CardContent className="px-0">
+		<Card
+			data-testid="ratings-graph"
+			className="border-border bg-card gap-0 rounded-none py-0 shadow-none"
+		>
+			{toolbar && (
+				<div className="border-border flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-b px-4 py-2 sm:px-6 lg:px-8">
+					{toolbar}
+				</div>
+			)}
+			<CardContent className="px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[clamp(260px,min(56vw,calc(100dvh-12rem)),620px)]"
@@ -132,15 +158,17 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 	const episodeData = episode.data
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>
+		<Card className="gap-1.5 px-3 py-2.5 shadow-lg">
+			<CardHeader className="px-0">
+				<CardTitle className="font-mono text-xs font-bold tracking-widest">
 					S{episodeData.seasonNum}E{episodeData.episodeNum}:
 				</CardTitle>
-				<CardDescription>{episodeData.title}</CardDescription>
+				<CardDescription className="text-xs leading-snug">
+					{episodeData.title}
+				</CardDescription>
 			</CardHeader>
-			<CardContent>
-				<CardDescription>
+			<CardContent className="px-0">
+				<CardDescription className="font-mono text-xs tabular-nums">
 					{episodeData.rating.toFixed(1)} / 10.0 (
 					{episodeData.numVotes.toLocaleString()} votes)
 				</CardDescription>

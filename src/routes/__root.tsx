@@ -12,8 +12,7 @@ import {
 import posthog from 'posthog-js'
 import { useEffect, type ReactNode } from 'react'
 
-import { ThemeProvider } from '@/components/theme-provider'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { ThemeProvider, ThemeSwitch } from '@/components/theme-switch'
 import {
 	latestScrapeRunQuery,
 	scrapeRunRefetchInterval,
@@ -168,7 +167,7 @@ function SiteFooter({ completedAt }: { completedAt: string | null }) {
 						<LinkedinLogo aria-hidden className="size-3.5" weight="bold" />
 						LinkedIn
 					</a>
-					<ThemeToggle className="ml-1" />
+					<ThemeSwitch className="ml-1" />
 				</div>
 			</div>
 		</footer>

@@ -110,6 +110,7 @@ export default defineConfig({
 		'*': 'vp check --fix',
 	},
 	root,
+	optimizeDeps: { include: ['@base-ui/react/tooltip'] },
 	server: { host: '127.0.0.1', port: Number(process.env.APP_PORT ?? 3000) },
 	resolve: {
 		tsconfigPaths: true,
@@ -164,21 +165,72 @@ export default defineConfig({
 			{
 				extends: true,
 				test: {
-					name: 'browser',
-					include: ['src/**/*.test.tsx', 'tests/**/*.test.tsx'],
+					name: 'browser-components',
+					include: ['src/components/**/*.test.tsx'],
 					setupFiles: ['./src/styles.css'],
 					fileParallelism: false,
 					testTimeout: 5_000,
 					browser: {
+						screenshotDirectory: 'tests/__screenshots__/components',
+						commands: {
+							async resizeBrowserViewport(
+								{ page },
+								width: number,
+								height: number,
+							) {
+								await page.setViewportSize({ width, height })
+							},
+						},
 						instances: [
 							{
 								browser: 'chromium',
-								name: 'desktop',
+								name: 'component-desktop',
 								viewport: { width: 1280, height: 720 },
 							},
 							{
 								browser: 'chromium',
-								name: 'mobile',
+								name: 'component-mobile',
+								viewport: { width: 375, height: 812 },
+							},
+						],
+						provider: playwright({
+							launchOptions: { args: ['--disable-lcd-text'] },
+							actionTimeout: 3_000,
+						}),
+						enabled: true,
+						headless: true,
+					},
+				},
+			},
+			{
+				extends: true,
+				test: {
+					name: 'browser-routes',
+					passWithNoTests: true,
+					include: ['src/routes/**/*.test.tsx'],
+					setupFiles: ['./src/styles.css'],
+					fileParallelism: false,
+					testTimeout: 5_000,
+					browser: {
+						screenshotDirectory: 'tests/__screenshots__/routes',
+						commands: {
+							async resizeBrowserViewport(
+								{ page },
+								width: number,
+								height: number,
+							) {
+								await page.setViewportSize({ width, height })
+							},
+						},
+						instances: [
+							{
+								browser: 'chromium',
+								name: 'route-desktop',
+								viewport: { width: 1280, height: 720 },
+							},
+							{
+								browser: 'chromium',
+								name: 'route-mobile',
 								viewport: { width: 375, height: 812 },
 							},
 						],
