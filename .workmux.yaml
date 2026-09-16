@@ -1,0 +1,18 @@
+# Session mode: `windows` (multiple tabs per worktree) requires it.
+mode: session
+
+windows:
+  - name: dev
+    panes:
+      - command: opencode
+        focus: true
+      - command: |
+          mise run bootstrap
+          mise run setup
+        split: horizontal
+  - name: tests
+    panes:
+      - command: |
+          vp test --watch
+      - command: pitchfork logs dev --follow
+        split: horizontal
