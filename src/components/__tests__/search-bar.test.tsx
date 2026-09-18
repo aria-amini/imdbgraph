@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { page, userEvent } from 'vitest/browser'
 
-import { SearchBar } from './search-bar'
+import { SearchBar } from '../search-bar'
 
 const testQueryClient = new QueryClient({
 	defaultOptions: {
