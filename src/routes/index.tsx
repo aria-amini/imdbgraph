@@ -1,12 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { SearchBar } from '@/components/search-bar'
+import { usePreloadRatingsChunk } from '@/lib/imdb/ratings'
 
 export const Route = createFileRoute('/')({
 	component: Home,
 })
 
 function Home() {
+	usePreloadRatingsChunk()
+
 	return (
 		<div className="flex flex-1 flex-col">
 			<main className="flex flex-1 flex-col">
@@ -19,7 +22,10 @@ function Home() {
 							Episode ratings for every TV series.
 						</p>
 
-						<SearchBar className="mx-auto mt-10 max-w-xl" />
+						<SearchBar
+							className="mx-auto mt-10 max-w-xl"
+							variant="standalone"
+						/>
 					</div>
 				</section>
 			</main>
