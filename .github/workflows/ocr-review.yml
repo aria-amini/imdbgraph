@@ -1,0 +1,100 @@
+name: OpenCodeReview PR Review
+
+# pull_request_target keeps secrets available for fork PRs. Safe here: the
+# action only reads the diff and never executes code from the PR.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+# Per-PR group so a re-review comment cancels a stale run; unrelated comments
+# land in a unique group and skip instantly instead of cancelling a review.
+concurrency:
+  group: >-
+    ${{
+      (
+        github.event_name == 'pull_request_target'
+        || (
+          github.event_name == 'issue_comment'
+          && github.event.issue.pull_request
+          && github.event.comment.user.type != 'Bot'
+          && (
+            github.event.comment.author_association == 'MEMBER'
+            || github.event.comment.author_association == 'OWNER'
+            || github.event.comment.author_association == 'COLLABORATOR'
+          )
+          && (
+            startsWith(github.event.comment.body, '/open-code-review')
+            || startsWith(github.event.comment.body, '@open-code-review')
+          )
+        )
+      )
+      && format('ocr-{0}', github.event.pull_request.number || github.event.issue.number)
+      || format('noop-{0}', github.run_id)
+    }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ocr-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Comment triggers are limited to humans with write access, so only
+    # trusted users can spend LLM quota on a re-review.
+    if: |
+      github.event_name == 'pull_request_target'
+      || (
+        github.event_name == 'issue_comment'
+        && github.event.issue.pull_request
+        && github.event.comment.user.type != 'Bot'
+        && (
+          github.event.comment.author_association == 'MEMBER'
+          || github.event.comment.author_association == 'OWNER'
+          || github.event.comment.author_association == 'COLLABORATOR'
+        )
+        && (
+          startsWith(github.event.comment.body, '/open-code-review')
+          || startsWith(github.event.comment.body, '@open-code-review')
+        )
+      )
+    steps:
+      - name: get PR context
+        id: pr-context
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('base_ref', pullRequest.base.ref);
+            core.setOutput('head_sha', pullRequest.head.sha);
+
+      - name: run OpenCodeReview
+        uses: alibaba/open-code-review@v1.12.5
+        with:
+          llm_url: ${{ vars.OCR_LLM_URL }}
+          llm_auth_token: ${{ secrets.OCR_LLM_AUTH_TOKEN }}
+          llm_model: ${{ vars.OCR_LLM_MODEL }}
+          llm_use_anthropic: ${{ vars.OCR_LLM_USE_ANTHROPIC }}
+          base_ref: ${{ steps.pr-context.outputs.base_ref }}
+          head_sha: ${{ steps.pr-context.outputs.head_sha }}
+          sticky_summary: 'true'
+          incremental: 'true'
+
+      # Required ruleset check "ocr-review". Fails closed: a missing or
+      # unparseable result also fails the job.
+      - name: gate on findings
+        run: |
+          total="$(jq '.comments | length' /tmp/ocr-result.json)"
+          echo "ocr findings: $total"
+          if [ "$total" -gt 0 ]; then
+            echo "::error::$total finding(s) block this merge. Fix them, or bypass via the admin ruleset override."
+            exit 1
+          fi
