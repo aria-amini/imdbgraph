@@ -87,7 +87,7 @@ export function Graph({ ratings }: { ratings: Ratings }) {
 			<CardContent className="px-0">
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[clamp(260px,min(56vw,calc(100dvh-12rem)),620px)]"
+					className="aspect-auto h-[clamp(260px,min(56vw,calc(100dvh-13.5rem)),620px)]"
 				>
 					<LineChart
 						accessibilityLayer
