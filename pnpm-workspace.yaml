@@ -6,9 +6,21 @@ allowBuilds:
   protobufjs: true
   ssh2: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.1
-  vitest: 4.1.9
-  vite-plus: 0.2.1
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.3
+  vitest: 4.1.11
+  vite-plus: 0.3.3
+# TODO: Remove these exceptions after 2026-09-19 03:09 UTC, when all packages exceed the 24-hour minimum age.
+minimumReleaseAgeExclude:
+  - vite-plus@0.3.3
+  - '@voidzero-dev/vite-plus-core@0.3.3'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.3.3'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.3.3'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.3.3'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.3.3'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.3.3'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.3.3'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.3.3'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.3.3'
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'

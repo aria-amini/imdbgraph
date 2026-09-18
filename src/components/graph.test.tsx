@@ -56,7 +56,7 @@ describe('graph tests', () => {
 		await waitForAnimationFrames()
 
 		await expect.element(chart).toBeVisible()
-	}, 5_000)
+	})
 
 	test('chart stays responsive after viewport resize', async () => {
 		const screen = await render(<Graph ratings={ratings} />)
@@ -82,7 +82,7 @@ describe('graph tests', () => {
 		} finally {
 			await page.viewport(originalWidth, originalHeight)
 		}
-	}, 5_000)
+	})
 })
 
 function waitForAnimationFrames() {

@@ -8,7 +8,6 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts'
-import { z } from 'zod'
 
 import {
 	Card,
@@ -22,17 +21,37 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from '@/components/ui/chart'
-import { transformRatingsData } from '@/lib/imdb/chart-data'
-import { imdbIdSchema, type Episode, type Ratings } from '@/lib/imdb/types'
+import { episodeSchema, votedEpisodes } from '@/lib/imdb/episodes'
+import { type Episode, type Ratings } from '@/lib/imdb/types'
 
-const episodeSchema: z.ZodType<Episode> = z.object({
-	episodeId: imdbIdSchema,
-	title: z.string(),
-	seasonNum: z.number(),
-	episodeNum: z.number(),
-	rating: z.number(),
-	numVotes: z.number(),
-})
+type ChartDataPoint = {
+	episodeIndex: number
+} & Record<`season${number}` | `episode${number}`, number | Episode | null>
+
+/** Converts grouped episode ratings into chart points and season labels. */
+export function transformRatingsData(ratings: Ratings): {
+	data: ChartDataPoint[]
+	seasons: number[]
+} {
+	let episodeIndex = 1
+	const data: ChartDataPoint[] = []
+	const seasons: number[] = []
+
+	for (const [seasonNumber] of Object.entries(ratings.allEpisodeRatings)) {
+		const seasonNum = Number.parseInt(seasonNumber, 10)
+		seasons.push(seasonNum)
+		for (const episode of votedEpisodes(ratings, seasonNum)) {
+			data.push({
+				episodeIndex,
+				[`season${seasonNum}`]: episode.rating,
+				[`episode${seasonNum}`]: episode,
+			})
+			episodeIndex++
+		}
+	}
+
+	return { data, seasons }
+}
 
 /** Renders episode ratings as a season-by-season line chart. */
 export function Graph({ ratings }: { ratings: Ratings }) {

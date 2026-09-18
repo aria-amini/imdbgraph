@@ -1,9 +1,9 @@
 import { MagnifyingGlass, Star } from '@phosphor-icons/react/dist/ssr'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useHydrated, useRouter } from '@tanstack/react-router'
 import { Command } from 'cmdk'
 import { cn } from 'cn'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import {
 	InputGroup,
@@ -17,15 +17,11 @@ import { formatYears } from '@/lib/imdb/types'
 /** Renders the title search input and its suggestion list. */
 export function SearchBar({ className }: { className?: string }) {
 	const [search, setSearch] = useState('')
-	const [isHydrated, setIsHydrated] = useState(false)
+	const isHydrated = useHydrated()
 	const [isFocused, setIsFocused] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
-
-	useEffect(() => {
-		setIsHydrated(true)
-	}, [])
 
 	const handleBlur = () => {
 		requestAnimationFrame(() => {

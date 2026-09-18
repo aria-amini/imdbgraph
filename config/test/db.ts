@@ -22,6 +22,12 @@ export function initDb(seed?: Seed) {
 					const client = new Pool({
 						connectionString: container.getConnectionUri(),
 					})
+					// Postgres terminates pooled connections on container stop;
+					// without a listener those errors become uncaught exceptions
+					// that fail the whole run despite passing tests.
+					client.on('error', (err) => {
+						console.error('test pg pool error:', err.message)
+					})
 					try {
 						const db = drizzle({ client })
 						for (const extension of REQUIRED_EXTENSIONS) {
