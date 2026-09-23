@@ -147,7 +147,7 @@ export default defineConfig({
 		// Headless runs and screenshot baselines work with writes disabled.
 		// allowWrite exists for UI clients on the tailnet (snapshot/baseline
 		// updates from the browser UI); execution stays disabled.
-		api: { allowWrite: true },
+		api: { allowWrite: true, allowExec: false },
 		projects: [
 			{
 				extends: true,
