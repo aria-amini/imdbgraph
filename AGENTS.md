@@ -21,6 +21,7 @@ root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
 - `pitchfork list` / `pitchfork logs dev` / `pitchfork tui` — inspect the dev
   daemon
 - `vp check` — format, lint, and type-check
+- `vp lint` — enforce Oxlint and shadcn design-system rules
 - `vp test run` — run Vitest projects
 - `vp run test:ui` — Vitest UI for the browser project. Binds `TAILSCALE_IP`
   when set; otherwise auto-detects the tailnet IP, else loopback. Set your own

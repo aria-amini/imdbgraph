@@ -50,7 +50,10 @@ const lint = {
 		'node',
 		'promise',
 	],
-	jsPlugins: [{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' }],
+	jsPlugins: [
+		{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' },
+		'@shadcn/lint',
+	],
 	categories: {},
 	options: {
 		typeAware: true,
@@ -71,8 +74,83 @@ const lint = {
 					'Do not build className with template literals. Use cn() from "cn" instead.',
 			},
 		],
+		'shadcn/require-static-classes': 'error',
+		'shadcn/no-raw-colors': 'error',
+		'shadcn/no-unknown-classes': 'error',
+		'shadcn/no-restyle': [
+			'error',
+			{
+				allow: ['layout'],
+				contracts: [
+					{
+						pattern: '^Button$',
+						allow: [
+							'layout',
+							'font-mono',
+							'text-[11px]',
+							'tracking-widest',
+							'uppercase',
+						],
+					},
+					{
+						pattern: '^Card$',
+						allow: [
+							'layout',
+							'border-border',
+							'bg-card',
+							'gap-0',
+							'gap-1.5',
+							'rounded-none',
+							'px-3',
+							'py-0',
+							'py-2.5',
+							'shadow-none',
+							'shadow-lg',
+						],
+					},
+					{
+						pattern: '^CardContent$',
+						allow: [
+							'layout',
+							'px-0',
+							'px-4',
+							'py-6',
+							'sm:px-6',
+							'sm:py-6',
+							'lg:px-8',
+						],
+					},
+					{ pattern: '^CardHeader$', allow: ['layout', 'px-0'] },
+					{ pattern: '^CardTitle$', allow: ['layout', 'typography'] },
+					{ pattern: '^CardDescription$', allow: ['layout', 'typography'] },
+					{
+						pattern: '^InputGroup$',
+						allow: [
+							'layout',
+							'border-input',
+							'bg-input/10',
+							'shadow-none',
+							'transition-opacity',
+							'opacity-70',
+						],
+					},
+					{ pattern: '^InputGroupAddon$', allow: ['layout', 'opacity-60'] },
+					{
+						pattern: '^InputGroupButton$',
+						allow: ['layout', 'text-muted-foreground', 'hover:text-foreground'],
+					},
+				],
+			},
+		],
 	},
 	overrides: [
+		{
+			files: ['src/components/ui/**'],
+			rules: {
+				'shadcn/require-static-classes': 'off',
+				'shadcn/no-restyle': 'off',
+			},
+		},
 		{
 			files: [
 				'scripts/**',
