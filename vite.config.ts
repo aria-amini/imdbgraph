@@ -144,9 +144,10 @@ export default defineConfig({
 	fmt,
 	lint,
 	test: {
-		// The UI server binds 0.0.0.0 so remote clients can reach it; without
-		// these, vitest disables fs writes and screenshot tests cannot save.
-		api: { allowWrite: true, allowExec: true },
+		// The API binds the tailnet IP so remote clients can reach the UI;
+		// without allowWrite, vitest disables fs writes and screenshot
+		// tests cannot save.
+		api: { allowWrite: true },
 		projects: [
 			{
 				extends: true,
