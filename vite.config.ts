@@ -50,7 +50,10 @@ const lint = {
 		'node',
 		'promise',
 	],
-	jsPlugins: [{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' }],
+	jsPlugins: [
+		{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' },
+		'@shadcn/lint',
+	],
 	categories: {},
 	options: {
 		typeAware: true,
@@ -71,8 +74,57 @@ const lint = {
 					'Do not build className with template literals. Use cn() from "cn" instead.',
 			},
 		],
+		'shadcn/require-static-classes': 'error',
+		'shadcn/no-raw-colors': 'error',
+		'shadcn/no-unknown-classes': 'error',
+		'shadcn/no-restyle': [
+			'error',
+			{
+				allow: ['layout'],
+				contracts: [
+					{
+						pattern: '^Button$',
+						allow: [
+							'layout',
+							'font-mono',
+							'text-[11px]',
+							'tracking-widest',
+							'uppercase',
+						],
+					},
+					{
+						pattern: '^Card$',
+						allow: ['layout', 'px-2', 'py-4', 'sm:px-4', 'lg:px-8'],
+					},
+					{ pattern: '^CardContent$', allow: ['layout', 'px-0'] },
+					{
+						pattern: '^InputGroup$',
+						allow: [
+							'layout',
+							'border-input',
+							'bg-input/10',
+							'shadow-none',
+							'transition-opacity',
+							'opacity-70',
+						],
+					},
+					{ pattern: '^InputGroupAddon$', allow: ['layout', 'opacity-60'] },
+					{
+						pattern: '^InputGroupButton$',
+						allow: ['layout', 'text-muted-foreground', 'hover:text-foreground'],
+					},
+				],
+			},
+		],
 	},
 	overrides: [
+		{
+			files: ['src/components/ui/**'],
+			rules: {
+				'shadcn/require-static-classes': 'off',
+				'shadcn/no-restyle': 'off',
+			},
+		},
 		{
 			files: [
 				'scripts/**',
