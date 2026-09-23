@@ -83,6 +83,16 @@ const lint = {
 				allow: ['layout'],
 				contracts: [
 					{
+						pattern: '^Button$',
+						allow: [
+							'layout',
+							'font-mono',
+							'text-[11px]',
+							'tracking-widest',
+							'uppercase',
+						],
+					},
+					{
 						pattern: '^Card$',
 						allow: ['layout', 'px-2', 'py-4', 'sm:px-4', 'lg:px-8'],
 					},
@@ -99,6 +109,10 @@ const lint = {
 						],
 					},
 					{ pattern: '^InputGroupAddon$', allow: ['layout', 'opacity-60'] },
+					{
+						pattern: '^InputGroupButton$',
+						allow: ['layout', 'text-muted-foreground', 'hover:text-foreground'],
+					},
 				],
 			},
 		],
@@ -216,6 +230,9 @@ export default defineConfig({
 					testTimeout: 15_000,
 					browser: {
 						commands: {
+							async resetScreenshotPointer({ page }) {
+								await page.mouse.move(0, 0)
+							},
 							async resizeBrowserViewport(
 								{ page },
 								width: number,
