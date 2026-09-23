@@ -98,14 +98,8 @@ describe('searchbar tests', () => {
 				.toBe('14px')
 		}
 
-		const originalWidth = window.innerWidth
-		const originalHeight = window.innerHeight
-		try {
-			await expectFontSizeAt(768, 1024)
-			await expectFontSizeAt(1280, 720)
-		} finally {
-			await page.viewport(originalWidth, originalHeight)
-		}
+		await expectFontSizeAt(768, 1024)
+		await expectFontSizeAt(1280, 720)
 	})
 
 	test('basic search', async () => {

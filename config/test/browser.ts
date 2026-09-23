@@ -7,6 +7,7 @@ import {
 	test as baseTest,
 	vi,
 } from 'vite-plus/test'
+import { page } from 'vite-plus/test/browser'
 
 import handlers from '@/mocks/handlers'
 
@@ -28,7 +29,14 @@ const test = baseTest.extend<{ worker: Worker; _cleanup: void }>({
 			{ worker }: { worker: Worker },
 			use: (value: void) => Promise<void>,
 		) => {
+			const viewport = {
+				width: window.innerWidth,
+				height: window.innerHeight,
+			}
 			await use()
+			// Layout variants read the viewport once at import time; restore
+			// the pinned size so a leaked resize cannot flip that selection.
+			await page.viewport(viewport.width, viewport.height)
 			worker.resetHandlers(...handlers)
 			vi.restoreAllMocks()
 		},

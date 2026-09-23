@@ -71,17 +71,11 @@ describe('graph tests', () => {
 		}
 		const initialWidth = chartSvg.getAttribute('width')
 
-		const originalWidth = window.innerWidth
-		const originalHeight = window.innerHeight
-		try {
-			await page.viewport(390, 844)
-			await waitForAnimationFrames()
-			expect(chartSvg.getAttribute('width')).not.toBe(initialWidth)
-			expect(Number(chartSvg.getAttribute('width'))).toBeGreaterThan(0)
-			await expect.element(chartSvg).toHaveAttribute('height', '260')
-		} finally {
-			await page.viewport(originalWidth, originalHeight)
-		}
+		await page.viewport(390, 844)
+		await waitForAnimationFrames()
+		expect(chartSvg.getAttribute('width')).not.toBe(initialWidth)
+		expect(Number(chartSvg.getAttribute('width'))).toBeGreaterThan(0)
+		await expect.element(chartSvg).toHaveAttribute('height', '260')
 	})
 })
 

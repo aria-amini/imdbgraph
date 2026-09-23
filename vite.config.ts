@@ -144,9 +144,9 @@ export default defineConfig({
 	fmt,
 	lint,
 	test: {
-		// The API binds the tailnet IP so remote clients can reach the UI;
-		// without allowWrite, vitest disables fs writes and screenshot
-		// tests cannot save.
+		// Headless runs and screenshot baselines work with writes disabled.
+		// allowWrite exists for UI clients on the tailnet (snapshot/baseline
+		// updates from the browser UI); execution stays disabled.
 		api: { allowWrite: true },
 		projects: [
 			{
