@@ -178,6 +178,9 @@ export default defineConfig({
 					testTimeout: 15_000,
 					browser: {
 						commands: {
+							async resetScreenshotPointer({ page }) {
+								await page.mouse.move(0, 0)
+							},
 							async resizeBrowserViewport(
 								{ page },
 								width: number,

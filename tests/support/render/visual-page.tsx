@@ -18,6 +18,7 @@ import { applyThemeToDocument } from '@/lib/theme'
 
 declare module 'vitest/browser' {
 	interface BrowserCommands {
+		resetScreenshotPointer: () => Promise<void>
 		resizeBrowserViewport: (width: number, height: number) => Promise<void>
 	}
 }
@@ -94,6 +95,7 @@ export async function expectElementScreenshot(
 	name: string,
 ) {
 	const { suffix } = currentViewport()
+	await server.commands.resetScreenshotPointer()
 	await waitForPageIdle()
 	await expect.element(target).toMatchScreenshot(`${name}${suffix}.png`, {
 		screenshotOptions: {

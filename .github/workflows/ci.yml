@@ -54,8 +54,9 @@ jobs:
         run: vp test run --project browser
       - name: Upload screenshot diff report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-test-report
           path: .vitest-attachments/
+          include-hidden-files: true
           retention-days: 14
