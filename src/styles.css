@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	color-scheme: light;
+	color-scheme: light dark;
 	--background: oklch(0.8452 0 0);
 	--foreground: oklch(0.2393 0 0);
 	--card: oklch(0.7572 0 0);
@@ -64,6 +64,10 @@
 	--shadow-2xl: 0px 2px 4px 0px hsl(0 0% 0% / 1);
 	--tracking-normal: 0em;
 	--spacing: 0.25rem;
+}
+
+.light {
+	color-scheme: light;
 }
 
 .dark {
@@ -126,6 +130,13 @@
 }
 
 @theme inline {
+	--aspect-poster: 2 / 3;
+	--text-2xs: 11px;
+	--text-3xs: 10px;
+	--text-4xs: 9px;
+	--text-5xs: 8px;
+	--leading-display: 1.05;
+	--animate-pending-slide: pending-slide 1.2s ease-in-out infinite;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -176,6 +187,36 @@
 	--shadow-lg: var(--shadow-lg);
 	--shadow-xl: var(--shadow-xl);
 	--shadow-2xl: var(--shadow-2xl);
+}
+
+@utility grid-cols-season {
+	grid-template-columns: 2.25rem 1fr;
+}
+
+@utility grid-cols-season-wide {
+	grid-template-columns: 2.75rem 1fr;
+}
+
+@utility chart-height {
+	height: clamp(260px, min(56vw, calc(100dvh - 13.5rem)), 620px);
+}
+
+@utility search-safe-area {
+	padding-top: max(1rem, env(safe-area-inset-top));
+	padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@utility search-results-height {
+	max-height: calc(100dvh - 6rem);
+	@media (min-width: 48rem) {
+		max-height: calc(100dvh - 5rem);
+	}
+}
+
+@utility switch-hit-target {
+	&::before {
+		content: '';
+	}
 }
 
 @layer base {

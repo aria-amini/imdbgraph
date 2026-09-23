@@ -54,12 +54,12 @@ export function Block({
 						<div
 							key={season.seasonNum}
 							className={cn(
-								'grid grid-cols-[2.25rem_1fr] items-start gap-x-1.5 sm:grid-cols-[2.75rem_1fr] sm:gap-2',
+								'grid grid-cols-season items-start gap-x-1.5 sm:grid-cols-season-wide sm:gap-2',
 							)}
 						>
 							<span
 								className={cn(
-									'flex h-9 items-center font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase sm:h-11',
+									'flex h-9 items-center font-mono text-2xs font-bold tracking-widest text-muted-foreground uppercase sm:h-11',
 								)}
 							>
 								S{season.seasonNum}
@@ -79,18 +79,18 @@ export function Block({
 													rel="noopener noreferrer"
 													aria-label={episodeLabel(episode)}
 													className={cn(
-														'group relative flex size-9 items-center justify-center border border-background/40 text-[10px] font-bold transition-transform after:absolute after:-inset-1 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
+														'group relative flex size-9 items-center justify-center border border-background/40 bg-(--rating-bg) text-3xs text-(--rating-fg) font-bold transition-transform after:absolute after:-inset-1 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
 													)}
 													style={{
-														backgroundColor: ratingColor(episode.rating),
-														color: ratingTextColor(episode.rating),
+														'--rating-bg': ratingColor(episode.rating),
+														'--rating-fg': ratingTextColor(episode.rating),
 													}}
 												/>
 											}
 										>
 											<span
 												className={cn(
-													'absolute top-0.5 left-0.5 font-mono text-[8px] leading-none font-bold opacity-70 sm:top-1 sm:left-1 sm:text-[9px]',
+													'absolute top-0.5 left-0.5 font-mono text-5xs leading-none font-bold opacity-70 sm:top-1 sm:left-1 sm:text-4xs',
 												)}
 											>
 												E{episode.episodeNum}

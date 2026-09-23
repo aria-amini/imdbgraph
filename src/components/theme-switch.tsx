@@ -70,7 +70,7 @@ export function ThemeSwitch({ className }: { className?: string }) {
 				'relative flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 outline-none',
 				'bg-input/70 transition-colors motion-reduce:transition-none dark:bg-muted',
 				'focus-visible:ring-3 focus-visible:ring-ring/50',
-				'before:absolute before:-inset-2.5 before:rounded-md before:content-[""]',
+				'before:absolute before:-inset-2.5 before:rounded-md switch-hit-target',
 				className,
 			)}
 		>

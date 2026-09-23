@@ -50,7 +50,10 @@ const lint = {
 		'node',
 		'promise',
 	],
-	jsPlugins: [{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' }],
+	jsPlugins: [
+		{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' },
+		'@shadcn/lint',
+	],
 	categories: {},
 	options: {
 		typeAware: true,
@@ -71,8 +74,30 @@ const lint = {
 					'Do not build className with template literals. Use cn() from "cn" instead.',
 			},
 		],
+		'shadcn/require-static-classes': 'error',
+		'shadcn/no-raw-colors': 'error',
+		'shadcn/no-unknown-classes': 'error',
+		'shadcn/no-arbitrary-values': 'error',
+		'shadcn/no-inline-styles': 'error',
+		'shadcn/no-restyle': [
+			'error',
+			{
+				allow: ['layout'],
+				contracts: [
+					{ pattern: '^ChartContainer$', allow: ['layout', 'chart-height'] },
+				],
+			},
+		],
 	},
 	overrides: [
+		{
+			files: ['src/components/ui/**'],
+			rules: {
+				'shadcn/require-static-classes': 'off',
+				'shadcn/no-restyle': 'off',
+				'shadcn/no-arbitrary-values': 'off',
+			},
+		},
 		{
 			files: [
 				'scripts/**',

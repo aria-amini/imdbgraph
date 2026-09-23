@@ -21,7 +21,6 @@ test.describe('theme SSR responses', () => {
 		const htmlTag = htmlTagOf(html)
 
 		expect(htmlTag).toContain('class="dark"')
-		expect(htmlTag).toMatch(/color-scheme:\s*dark/)
 		await context.dispose()
 	})
 
@@ -35,18 +34,16 @@ test.describe('theme SSR responses', () => {
 		const htmlTag = htmlTagOf(html)
 
 		expect(htmlTag).toContain('class="light"')
-		expect(htmlTag).toMatch(/color-scheme:\s*light(?!\s+dark)/)
 		await context.dispose()
 	})
 
-	test('no cookie leaves the canvas scheme open until the bootstrap resolves', async ({
+	test('no cookie leaves the theme unset until the bootstrap resolves', async ({
 		request,
 	}) => {
 		const html = await (await request.get('/')).text()
 		const htmlTag = htmlTagOf(html)
 
 		expect(htmlTag).not.toMatch(/class="[^"]*(light|dark)/)
-		expect(htmlTag).toMatch(/color-scheme:\s*light\s+dark/)
 	})
 })
 
@@ -88,10 +85,12 @@ test.describe('theme in the browser', () => {
 		await page.emulateMedia({ colorScheme: 'dark' })
 		await page.goto('/')
 		await expect(page.locator('html')).toHaveClass(/dark/)
+		await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark')
 
 		await page.emulateMedia({ colorScheme: 'light' })
 		await page.goto('/')
 		await expect(page.locator('html')).toHaveClass(/light/)
+		await expect(page.locator('html')).toHaveCSS('color-scheme', 'light')
 	})
 
 	test('the not-found document keeps the themed shell', async ({

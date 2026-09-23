@@ -82,19 +82,16 @@ export function Graph({
 	})
 
 	return (
-		<Card
-			data-testid="ratings-graph"
-			className="border-border bg-card gap-0 rounded-none py-0 shadow-none"
-		>
+		<Card data-testid="ratings-graph" variant="graph">
 			{toolbar && (
 				<div className="border-border flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-b px-4 py-2 sm:px-6 lg:px-8">
 					{toolbar}
 				</div>
 			)}
-			<CardContent className="px-4 py-6 sm:px-6 sm:py-6 lg:px-8">
+			<CardContent>
 				<ChartContainer
 					config={chartConfig}
-					className="aspect-auto h-[clamp(260px,min(56vw,calc(100dvh-13.5rem)),620px)]"
+					className="chart-height aspect-auto"
 				>
 					<LineChart
 						accessibilityLayer
@@ -158,17 +155,17 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 	const episodeData = episode.data
 
 	return (
-		<Card className="gap-1.5 px-3 py-2.5 shadow-lg">
-			<CardHeader className="px-0">
-				<CardTitle className="font-mono text-xs font-bold tracking-widest">
+		<Card variant="tooltip">
+			<CardHeader>
+				<CardTitle>
 					S{episodeData.seasonNum}E{episodeData.episodeNum}:
 				</CardTitle>
-				<CardDescription className="text-xs leading-snug">
+				<CardDescription variant="tooltip-title">
 					{episodeData.title}
 				</CardDescription>
 			</CardHeader>
-			<CardContent className="px-0">
-				<CardDescription className="font-mono text-xs tabular-nums">
+			<CardContent>
+				<CardDescription variant="tooltip-rating">
 					{episodeData.rating.toFixed(1)} / 10.0 (
 					{episodeData.numVotes.toLocaleString()} votes)
 				</CardDescription>

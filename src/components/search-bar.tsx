@@ -257,7 +257,10 @@ export function SearchBar({
 						'flex w-full flex-col',
 						className,
 						isMobileSearchActive &&
-							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
+							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:search-safe-area max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
+						isMobileSearchActive &&
+							overlayViewport &&
+							'max-md:top-(--overlay-top) max-md:h-(--overlay-height)',
 					)}
 					role={isMobileSearchActive ? 'dialog' : undefined}
 					aria-modal={isMobileSearchActive || undefined}
@@ -287,7 +290,10 @@ export function SearchBar({
 					}}
 					style={
 						isMobileSearchActive && overlayViewport
-							? { top: overlayViewport.top, height: overlayViewport.height }
+							? {
+									'--overlay-top': `${overlayViewport.top}px`,
+									'--overlay-height': `${overlayViewport.height}px`,
+								}
 							: undefined
 					}
 					shouldFilter={false}
@@ -304,14 +310,13 @@ export function SearchBar({
 					>
 						<div ref={inputRowRef} className="flex">
 							<InputGroup
-								className={cn(
-									'h-11 flex-1 border-input bg-input/10 shadow-none transition-opacity md:h-8',
-									{
-										'cursor-progress opacity-70': !isHydrated,
-									},
-								)}
+								variant="search"
+								data-loading={!isHydrated}
+								className={cn('h-11 flex-1 md:h-8', {
+									'cursor-progress': !isHydrated,
+								})}
 							>
-								<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
+								<InputGroupAddon>
 									<MagnifyingGlass weight="bold" />
 								</InputGroupAddon>
 								<Command.Input
@@ -345,7 +350,6 @@ export function SearchBar({
 											size="icon-sm"
 											onClick={clearSearch}
 											aria-label="Clear search"
-											className="text-muted-foreground hover:text-foreground"
 										>
 											<XCircle aria-hidden className="size-4" weight="bold" />
 										</InputGroupButton>
@@ -355,7 +359,6 @@ export function SearchBar({
 											size="icon-sm"
 											onClick={dismissSearch}
 											aria-label="Close search"
-											className="text-muted-foreground hover:text-foreground"
 										>
 											<X aria-hidden className="size-4" weight="bold" />
 										</InputGroupButton>
@@ -370,14 +373,14 @@ export function SearchBar({
 								aria-live="polite"
 								className="flex items-center justify-center gap-2 px-2 py-1.5"
 							>
-								<span className="text-destructive font-mono text-[11px] tracking-widest uppercase">
+								<span className="text-destructive text-2xs font-mono tracking-widest uppercase">
 									Couldn’t load suggestions
 								</span>
 								<Button
 									type="button"
 									variant="outline"
+									label
 									size="xs"
-									className="font-mono text-[11px] tracking-widest uppercase"
 									onClick={() => void refetch()}
 								>
 									Retry
@@ -390,7 +393,7 @@ export function SearchBar({
 								className={cn(
 									'bg-popover z-50 border p-2 shadow-md',
 									variant === 'navbar'
-										? 'fixed inset-x-4 top-17 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto md:inset-x-0 md:top-14 md:mx-auto md:max-w-md md:max-h-[calc(100dvh-5rem)]'
+										? 'fixed inset-x-4 top-17 mt-2 search-results-height overflow-y-auto md:inset-x-0 md:top-14 md:mx-auto md:max-w-md'
 										: 'absolute top-full right-0 left-0 mt-2 w-full',
 									isMobileSearchActive &&
 										'max-md:static max-md:mt-3 max-md:max-h-full max-md:overflow-y-auto max-md:animate-in max-md:fade-in max-md:slide-in-from-top-1 max-md:motion-reduce:animate-none max-md:duration-200',

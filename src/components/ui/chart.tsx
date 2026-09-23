@@ -9,9 +9,6 @@ const THEMES = { light: '', dark: '.dark' } as const
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
-type ChartCustomProperties = React.CSSProperties &
-	Record<`--${string}`, string | number | undefined>
-
 export type ChartConfig = Record<
 	string,
 	{
@@ -91,6 +88,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 	}
 
 	return (
+		// oxlint-disable-next-line shadcn/no-inline-styles -- Chart colors depend on the current series and theme.
 		<style
 			dangerouslySetInnerHTML={{
 				__html: Object.entries(THEMES)
@@ -152,7 +150,6 @@ function ChartTooltipContent({
 		}
 
 		const [item] = payload
-		// oxlint-disable-next-line typescript/restrict-template-expressions
 		const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
 		const itemConfig = getPayloadConfigFromPayload(config, item, key)
 		const value =
@@ -201,14 +198,9 @@ function ChartTooltipContent({
 				{payload
 					.filter((item) => item.type !== 'none')
 					.map((item, index) => {
-						// oxlint-disable-next-line typescript/restrict-template-expressions
 						const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`
 						const itemConfig = getPayloadConfigFromPayload(config, item, key)
 						const indicatorColor = color ?? item.payload?.fill ?? item.color
-						const indicatorStyle: ChartCustomProperties = {
-							'--color-bg': indicatorColor,
-							'--color-border': indicatorColor,
-						}
 
 						return (
 							<div
@@ -237,7 +229,10 @@ function ChartTooltipContent({
 															'my-0.5': nestLabel && indicator === 'dashed',
 														},
 													)}
-													style={indicatorStyle}
+													style={{
+														'--color-bg': indicatorColor,
+														'--color-border': indicatorColor,
+													}}
 												/>
 											)
 										)}
@@ -300,7 +295,6 @@ function ChartLegendContent({
 			{payload
 				.filter((item) => item.type !== 'none')
 				.map((item, index) => {
-					// oxlint-disable-next-line typescript/restrict-template-expressions
 					const key = `${nameKey ?? item.dataKey ?? 'value'}`
 					const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
@@ -315,9 +309,9 @@ function ChartLegendContent({
 								<itemConfig.icon />
 							) : (
 								<div
-									className="h-2 w-2 shrink-0 rounded-[2px]"
+									className="h-2 w-2 shrink-0 rounded-[2px] bg-(--indicator-color)"
 									style={{
-										backgroundColor: item.color,
+										'--indicator-color': item.color,
 									}}
 								/>
 							)}

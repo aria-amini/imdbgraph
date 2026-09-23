@@ -8,14 +8,21 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function InputGroup({
+	className,
+	variant = 'default',
+	...props
+}: React.ComponentProps<'div'> & { variant?: 'default' | 'search' }) {
 	return (
 		<div
 			data-slot="input-group"
+			data-variant={variant}
 			// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
 			role="group"
 			className={cn(
 				'group/input-group relative flex h-9 w-full min-w-0 items-center rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:bg-input/30 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5',
+				variant === 'search' &&
+					'bg-input/10 shadow-none transition-opacity data-[loading=true]:opacity-70',
 				className,
 			)}
 			{...props}
@@ -24,7 +31,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 const inputGroupAddonVariants = cva(
-	"flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
+	"flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 group-data-[loading=true]/input-group:opacity-60 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
 	{
 		variants: {
 			align: {
@@ -56,13 +63,13 @@ function InputGroupAddon({
 			role="group"
 			data-slot="input-group-addon"
 			data-align={align}
-			className={cn(inputGroupAddonVariants({ align }), className)}
 			onClick={(e) => {
 				if (e.target instanceof Element && e.target.closest('button')) {
 					return
 				}
 				e.currentTarget.parentElement?.querySelector('input')?.focus()
 			}}
+			className={cn(inputGroupAddonVariants({ align }), className)}
 			{...props}
 		/>
 	)
@@ -77,7 +84,8 @@ const inputGroupButtonVariants = cva(
 				sm: '',
 				'icon-xs':
 					'size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0',
-				'icon-sm': 'size-8 p-0 has-[>svg]:p-0',
+				'icon-sm':
+					'size-8 p-0 text-muted-foreground hover:text-foreground has-[>svg]:p-0',
 			},
 		},
 		defaultVariants: {
