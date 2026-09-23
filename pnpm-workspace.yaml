@@ -21,6 +21,8 @@ minimumReleaseAgeExclude:
   - '@voidzero-dev/vite-plus-linux-x64-musl@0.3.3'
   - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.3.3'
   - '@voidzero-dev/vite-plus-win32-x64-msvc@0.3.3'
+  # Remove after 2026-09-23 11:02 UTC, when the release exceeds the 24-hour minimum age.
+  - '@shadcn/lint@0.2.0'
 overrides:
   vite: 'catalog:'
   vitest: 'catalog:'
