@@ -18,7 +18,7 @@
 		"test:browser": "vp test run --project browser",
 		"test:update": "vp test run --project browser --update",
 		"test:watch": "vp test --watch",
-		"test:ui": "vp test dev --ui --open=false --project browser --api.port ${APP_PORT:-5123} --api.strictPort --api.host 0.0.0.0",
+		"test:ui": "vp test dev --ui --open=false --project browser --api.port ${APP_PORT:-5123} --api.strictPort --api.host \"${TAILSCALE_IP:-$(tailscale ip -4 2>/dev/null || echo 127.0.0.1)}\"",
 		"e2e": "varlock run -- playwright test",
 		"e2e:update": "varlock run -- playwright test --update-snapshots",
 		"report": "playwright show-report .playwright/report",

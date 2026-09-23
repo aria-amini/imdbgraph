@@ -22,6 +22,11 @@ root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
   daemon
 - `vp check` — format, lint, and type-check
 - `vp test run` — run Vitest projects
+- `vp run test:ui` — Vitest UI for the browser project. Binds `TAILSCALE_IP`
+  when set; otherwise auto-detects the tailnet IP, else loopback. Set your own
+  `TAILSCALE_IP` to override. The UI trusts the tailnet: clients can write
+  snapshots and baselines but cannot execute commands (`allowWrite` on,
+  `allowExec` off).
 - `vp run e2e` — run Playwright smoke tests against the workspace proxy
 - `vp run compose:up` — start local services
 - `vp run db:push` — apply the current schema

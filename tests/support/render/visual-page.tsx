@@ -133,32 +133,28 @@ export async function renderVisualPage({
 	return {
 		screen,
 		expectScreenshot: async (name: string) => {
-			try {
-				if (fullHeight) {
-					// Viewport-relative content can keep growing after each resize.
-					let height = 0
-					for (let i = 0; i < 5; i++) {
-						await resizeScreenshotViewport(
-							viewport.width,
-							Math.max(viewport.height, Math.ceil(container.scrollHeight)),
-						)
-						await waitForPageIdle()
-						const next = Math.ceil(container.scrollHeight)
-						if (next === height) break
-						height = next
-					}
-				}
-				await expect
-					.poll(() =>
-						Array.from(container.querySelectorAll('img')).every(
-							(image) => image.complete,
-						),
+			if (fullHeight) {
+				// Viewport-relative content can keep growing after each resize.
+				let height = 0
+				for (let i = 0; i < 5; i++) {
+					await resizeScreenshotViewport(
+						viewport.width,
+						Math.max(viewport.height, Math.ceil(container.scrollHeight)),
 					)
-					.toBe(true)
-				await expectElementScreenshot(screen.locator, name)
-			} finally {
-				await resizeScreenshotViewport(viewport.width, viewport.height)
+					await waitForPageIdle()
+					const next = Math.ceil(container.scrollHeight)
+					if (next === height) break
+					height = next
+				}
 			}
+			await expect
+				.poll(() =>
+					Array.from(container.querySelectorAll('img')).every(
+						(image) => image.complete,
+					),
+				)
+				.toBe(true)
+			await expectElementScreenshot(screen.locator, name)
 		},
 	}
 }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@config/test/browser'
+import { describe, expect, mobileTest, test } from '@config/test/browser'
 import { render } from 'vitest-browser-react'
 import { page } from 'vitest/browser'
 
@@ -58,7 +58,7 @@ describe('graph tests', () => {
 		await expect.element(chart).toBeVisible()
 	})
 
-	test('chart stays responsive after viewport resize', async () => {
+	mobileTest('chart stays responsive after viewport resize', async () => {
 		const screen = await render(<Graph ratings={ratings} />)
 
 		const chart = screen.getByTestId('ratings-graph')
@@ -71,17 +71,11 @@ describe('graph tests', () => {
 		}
 		const initialWidth = chartSvg.getAttribute('width')
 
-		const originalWidth = window.innerWidth
-		const originalHeight = window.innerHeight
-		try {
-			await page.viewport(390, 844)
-			await waitForAnimationFrames()
-			expect(chartSvg.getAttribute('width')).not.toBe(initialWidth)
-			expect(Number(chartSvg.getAttribute('width'))).toBeGreaterThan(0)
-			await expect.element(chartSvg).toHaveAttribute('height', '260')
-		} finally {
-			await page.viewport(originalWidth, originalHeight)
-		}
+		await page.viewport(390, 844)
+		await waitForAnimationFrames()
+		expect(chartSvg.getAttribute('width')).not.toBe(initialWidth)
+		expect(Number(chartSvg.getAttribute('width'))).toBeGreaterThan(0)
+		await expect.element(chartSvg).toHaveAttribute('height', '260')
 	})
 })
 
