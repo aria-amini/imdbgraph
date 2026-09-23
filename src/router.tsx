@@ -11,6 +11,17 @@ import type { TsrSerializable } from '@tanstack/router-core'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
+function PendingProgress() {
+	return (
+		<output
+			aria-label="Loading page"
+			className="bg-primary/25 fixed inset-x-0 top-0 z-50 block h-0.5 overflow-hidden"
+		>
+			<div className="bg-primary h-full w-1/4 animate-[pending-slide_1.2s_ease-in-out_infinite] motion-reduce:animate-none" />
+		</output>
+	)
+}
+
 /**
  * react-query types dehydrated query keys as `unknown`, which the router
  * cannot prove serializable. Dehydrate/hydrate round-trip inside react-query
@@ -49,6 +60,8 @@ export const getRouter = () => {
 		routeTree,
 		scrollRestoration: true,
 		defaultPreloadStaleTime: 0,
+		defaultPendingMs: 300,
+		defaultPendingComponent: PendingProgress,
 		context: {
 			queryClient,
 		},

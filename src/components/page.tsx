@@ -37,7 +37,10 @@ export function Page({
 					<House weight="bold" aria-hidden="true" />
 				</Link>
 				<div className="min-w-0 flex-1">
-					<SearchBar className="w-full md:mx-auto md:max-w-md" />
+					<SearchBar
+						className="w-full md:mx-auto md:max-w-md"
+						variant="navbar"
+					/>
 				</div>
 			</nav>
 			<main
