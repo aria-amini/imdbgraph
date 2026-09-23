@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@config/test/browser'
+import { describe, expect, mobileTest, test } from '@config/test/browser'
 import { render } from 'vitest-browser-react'
 import { page } from 'vitest/browser'
 
@@ -58,7 +58,7 @@ describe('graph tests', () => {
 		await expect.element(chart).toBeVisible()
 	})
 
-	test('chart stays responsive after viewport resize', async () => {
+	mobileTest('chart stays responsive after viewport resize', async () => {
 		const screen = await render(<Graph ratings={ratings} />)
 
 		const chart = screen.getByTestId('ratings-graph')
