@@ -21,7 +21,8 @@
 
 ## Known deliberate decisions
 
-- Seasons are rows; episode bars flow left-to-right, wrap, left-aligned.
+- Seasons are rows; episode bars stay on one line in episode order. Each row
+  scrolls horizontally when it exceeds the available width.
 - Episode bars share a baseline and scale in height with the rating. Each bar
   displays its exact rating, with `E<n>` beneath it, and links to IMDb.
 - View toggle lives inside the content card, right-aligned, `border-b` row.

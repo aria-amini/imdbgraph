@@ -52,62 +52,65 @@ export function Block({
 							<span className="text-muted-foreground flex h-24 items-end pb-1 font-mono text-[11px] font-bold tracking-widest uppercase sm:h-28">
 								S{season.seasonNum}
 							</span>
-							<div className="flex flex-wrap justify-start gap-x-1.5 gap-y-3 sm:gap-x-2 sm:gap-y-4">
+							<ol
+								aria-label={`Season ${season.seasonNum} episodes`}
+								className="flex min-w-0 gap-1.5 overflow-x-auto overscroll-x-contain pb-2 sm:gap-2"
+							>
 								{season.episodes.map((episode) => (
-									<Tooltip.Root
-										key={`${episode.seasonNum}-${episode.episodeNum}`}
-									>
-										<Tooltip.Trigger
-											render={
-												<a
-													href={`https://www.imdb.com/title/${episode.episodeId}/`}
-													target="_blank"
-													rel="noopener noreferrer"
-													aria-label={episodeLabel(episode)}
-													className="group focus-visible:ring-ring focus-visible:ring-offset-background relative flex w-9 flex-col text-center font-bold tabular-nums transition-transform hover:z-10 hover:scale-105 focus-visible:z-10 focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-11"
-												/>
-											}
-										>
-											<span className="border-border flex h-24 items-end border-b sm:h-28">
-												<span
-													className="flex w-full items-start justify-center pt-1 text-xs leading-none font-black sm:text-sm"
-													style={{
-														height: `${Math.max(25, episode.rating * 10)}%`,
-														backgroundColor: ratingColor(episode.rating),
-														color: ratingTextColor(episode.rating),
-													}}
-												>
-													{episode.rating.toFixed(1)}
-												</span>
-											</span>
-											<span
-												aria-hidden
-												className="text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground pt-1 font-mono text-[11px] leading-none"
+									<li key={episode.episodeId} className="shrink-0">
+										<Tooltip.Root>
+											<Tooltip.Trigger
+												render={
+													<a
+														href={`https://www.imdb.com/title/${episode.episodeId}/`}
+														target="_blank"
+														rel="noopener noreferrer"
+														aria-label={episodeLabel(episode)}
+														className="group focus-visible:ring-ring focus-visible:ring-offset-background relative flex w-9 shrink-0 flex-col text-center font-bold tabular-nums transition-transform hover:z-10 hover:scale-105 focus-visible:z-10 focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-11"
+													/>
+												}
 											>
-												E{episode.episodeNum}
-											</span>
-										</Tooltip.Trigger>
-										<Tooltip.Portal>
-											<Tooltip.Positioner
-												side={seasonIndex === 0 ? 'bottom' : 'top'}
-												sideOffset={6}
-												collisionPadding={8}
-												className="z-50"
-											>
-												<Tooltip.Popup
-													data-testid="episode-tooltip"
-													className="border-border bg-background text-foreground w-52 border px-2.5 py-2 text-left text-xs font-normal shadow-lg"
-												>
-													{episode.title}
-													<span className="text-muted-foreground ml-1 font-mono">
+												<span className="border-border flex h-24 items-end border-b sm:h-28">
+													<span
+														className="flex w-full items-start justify-center pt-1 text-xs leading-none font-black sm:text-sm"
+														style={{
+															height: `${Math.max(25, episode.rating * 10)}%`,
+															backgroundColor: ratingColor(episode.rating),
+															color: ratingTextColor(episode.rating),
+														}}
+													>
 														{episode.rating.toFixed(1)}
 													</span>
-												</Tooltip.Popup>
-											</Tooltip.Positioner>
-										</Tooltip.Portal>
-									</Tooltip.Root>
+												</span>
+												<span
+													aria-hidden
+													className="text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground pt-1 font-mono text-[11px] leading-none"
+												>
+													E{episode.episodeNum}
+												</span>
+											</Tooltip.Trigger>
+											<Tooltip.Portal>
+												<Tooltip.Positioner
+													side={seasonIndex === 0 ? 'bottom' : 'top'}
+													sideOffset={6}
+													collisionPadding={8}
+													className="z-50"
+												>
+													<Tooltip.Popup
+														data-testid="episode-tooltip"
+														className="border-border bg-background text-foreground w-52 border px-2.5 py-2 text-left text-xs font-normal shadow-lg"
+													>
+														{episode.title}
+														<span className="text-muted-foreground ml-1 font-mono">
+															{episode.rating.toFixed(1)}
+														</span>
+													</Tooltip.Popup>
+												</Tooltip.Positioner>
+											</Tooltip.Portal>
+										</Tooltip.Root>
+									</li>
 								))}
-							</div>
+							</ol>
 						</div>
 					))}
 				</div>

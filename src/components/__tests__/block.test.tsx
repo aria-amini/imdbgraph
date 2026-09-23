@@ -5,7 +5,7 @@ import { render } from 'vitest-browser-react'
 import { Block } from '@/components/block'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
-// The first/last tiles in a wrapped row must keep their episode titles readable.
+// Edge bars in a scrolling row must keep their episode titles readable.
 test('episode tooltips stay inside a narrow viewport', async () => {
 	const original = { width: window.innerWidth, height: window.innerHeight }
 	try {
@@ -23,6 +23,33 @@ test('episode tooltips stay inside a narrow viewport', async () => {
 				})
 				.toBe(true)
 		}
+	} finally {
+		await page.viewport(original.width, original.height)
+	}
+})
+
+test('a narrow season stays on one line and scrolls to later episodes', async () => {
+	const original = { width: window.innerWidth, height: window.innerHeight }
+	try {
+		await page.viewport(320, 800)
+		const screen = await render(<Block ratings={gameOfThronesRatings} />)
+		const season = screen.getByRole('list', { name: 'Season 1 episodes' })
+		const first = season.getByRole('link', { name: /Season 1, episode 1:/ })
+		const last = season.getByRole('link', { name: /Season 1, episode 10:/ })
+		const row = season.element()
+
+		expect(row.scrollWidth).toBeGreaterThan(row.clientWidth)
+		expect(last.element().getBoundingClientRect().top).toBe(
+			first.element().getBoundingClientRect().top,
+		)
+		row.scrollLeft = row.scrollWidth
+		await expect
+			.poll(
+				() =>
+					last.element().getBoundingClientRect().right <=
+					row.getBoundingClientRect().right,
+			)
+			.toBe(true)
 	} finally {
 		await page.viewport(original.width, original.height)
 	}
