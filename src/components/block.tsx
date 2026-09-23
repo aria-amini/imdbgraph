@@ -36,37 +36,23 @@ export function Block({
 				className={cn('mx-auto max-w-7xl border border-border bg-card')}
 			>
 				{toolbar && (
-					<div
-						className={cn(
-							'flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-border border-b px-4 py-2 sm:px-6 lg:px-8',
-						)}
-					>
+					<div className="border-border flex flex-wrap items-center justify-end gap-x-4 gap-y-2 border-b px-4 py-2 sm:px-6 lg:px-8">
 						{toolbar}
 					</div>
 				)}
 				<div
-					className={cn(
-						'flex flex-col gap-4 px-4 py-6 sm:gap-6 sm:px-6 lg:px-8',
-					)}
+					className="flex flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 lg:px-8"
 					aria-label="Episode ratings by season"
 				>
 					{seasons.map((season, seasonIndex) => (
 						<div
 							key={season.seasonNum}
-							className={cn(
-								'grid grid-cols-[2.25rem_1fr] items-start gap-x-1.5 sm:grid-cols-[2.75rem_1fr] sm:gap-2',
-							)}
+							className="grid grid-cols-[2.25rem_1fr] items-start gap-x-1.5 sm:grid-cols-[2.75rem_1fr] sm:gap-2"
 						>
-							<span
-								className={cn(
-									'flex h-9 items-center font-mono text-[11px] font-bold tracking-widest text-muted-foreground uppercase sm:h-11',
-								)}
-							>
+							<span className="text-muted-foreground flex h-24 items-end pb-1 font-mono text-[11px] font-bold tracking-widest uppercase sm:h-28">
 								S{season.seasonNum}
 							</span>
-							<div
-								className={cn('flex flex-wrap justify-start gap-1.5 sm:gap-2')}
-							>
+							<div className="flex flex-wrap justify-start gap-x-1.5 gap-y-3 sm:gap-x-2 sm:gap-y-4">
 								{season.episodes.map((episode) => (
 									<Tooltip.Root
 										key={`${episode.seasonNum}-${episode.episodeNum}`}
@@ -78,25 +64,27 @@ export function Block({
 													target="_blank"
 													rel="noopener noreferrer"
 													aria-label={episodeLabel(episode)}
-													className={cn(
-														'group relative flex size-9 items-center justify-center border border-background/40 text-[10px] font-bold transition-transform after:absolute after:-inset-1 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
-													)}
-													style={{
-														backgroundColor: ratingColor(episode.rating),
-														color: ratingTextColor(episode.rating),
-													}}
+													className="group focus-visible:ring-ring focus-visible:ring-offset-background relative flex w-9 flex-col text-center font-bold tabular-nums transition-transform hover:z-10 hover:scale-105 focus-visible:z-10 focus-visible:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-11"
 												/>
 											}
 										>
+											<span className="border-border flex h-24 items-end border-b sm:h-28">
+												<span
+													className="flex w-full items-start justify-center pt-1 text-xs leading-none font-black sm:text-sm"
+													style={{
+														height: `${Math.max(25, episode.rating * 10)}%`,
+														backgroundColor: ratingColor(episode.rating),
+														color: ratingTextColor(episode.rating),
+													}}
+												>
+													{episode.rating.toFixed(1)}
+												</span>
+											</span>
 											<span
-												className={cn(
-													'absolute top-0.5 left-0.5 font-mono text-[8px] leading-none font-bold opacity-70 sm:top-1 sm:left-1 sm:text-[9px]',
-												)}
+												aria-hidden
+												className="text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground pt-1 font-mono text-[11px] leading-none"
 											>
 												E{episode.episodeNum}
-											</span>
-											<span className={cn('text-sm font-black sm:text-base')}>
-												{episode.rating.toFixed(1)}
 											</span>
 										</Tooltip.Trigger>
 										<Tooltip.Portal>
@@ -104,20 +92,14 @@ export function Block({
 												side={seasonIndex === 0 ? 'bottom' : 'top'}
 												sideOffset={6}
 												collisionPadding={8}
-												className={cn('z-50')}
+												className="z-50"
 											>
 												<Tooltip.Popup
 													data-testid="episode-tooltip"
-													className={cn(
-														'w-52 border border-border bg-background px-2.5 py-2 text-left text-xs font-normal text-foreground shadow-lg',
-													)}
+													className="border-border bg-background text-foreground w-52 border px-2.5 py-2 text-left text-xs font-normal shadow-lg"
 												>
 													{episode.title}
-													<span
-														className={cn(
-															'ml-1 font-mono text-muted-foreground',
-														)}
-													>
+													<span className="text-muted-foreground ml-1 font-mono">
 														{episode.rating.toFixed(1)}
 													</span>
 												</Tooltip.Popup>

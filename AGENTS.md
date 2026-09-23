@@ -11,9 +11,24 @@ Product analytics run through PostHog behind a `/api/ingest` proxy.
 
 ## Local URLs
 
-Pitchfork maps each app to `https://<app>.lvh.ariaamini.com` and each additional
-worktree to `https://<worktree>.<app>.lvh.ariaamini.com`. Labels derive from
-root directory names. `mise run setup` registers the URLs and writes `BASE_URL`.
+Pitchfork maps registered slugs to `https://<slug>.lvh.ariaamini.com`.
+`mise run setup` writes `BASE_URL`, but only the default workspace registers its
+slug. A generated worktree URL is not proof that the proxy routes to that
+worktree. An unrecognized subdomain can serve the default app with HTTP 200.
+
+Before sharing a worktree URL:
+
+1. Run `pitchfork proxy status`. Confirm that the slug maps to this worktree's
+   absolute directory and `dev` daemon. If it does not, register a unique
+   single-label slug with
+   `pitchfork proxy add <slug> --dir <absolute-worktree-path> --daemon dev`.
+2. Start `pitchfork start dev`. If the route needs data, start this worktree's
+   services, apply migrations, and load data before testing the route.
+3. Request the exact feature URL you will share. Confirm that the response
+   contains feature-specific content, not only HTTP 200 or the home page. Use a
+   browser when the feature renders only on the client or the user asks for
+   visual verification.
+4. Share the verified URL of that feature, not an inferred URL.
 
 ## Commands
 
