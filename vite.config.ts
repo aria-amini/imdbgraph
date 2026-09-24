@@ -50,7 +50,10 @@ const lint = {
 		'node',
 		'promise',
 	],
-	jsPlugins: [{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' }],
+	jsPlugins: [
+		{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' },
+		'@shadcn/lint',
+	],
 	categories: {},
 	options: {
 		typeAware: true,
@@ -71,8 +74,79 @@ const lint = {
 					'Do not build className with template literals. Use cn() from "cn" instead.',
 			},
 		],
+		'shadcn/require-static-classes': 'error',
+		'shadcn/no-raw-colors': 'error',
+		// The theme declares these utilities in @theme inline, but the rule
+		// cannot resolve values declared that way, so they are allow-listed
+		// by name.
+		'shadcn/no-unknown-classes': [
+			'error',
+			{
+				allow: [
+					'text-2xs',
+					'text-3xs',
+					'text-4xs',
+					'text-5xs',
+					'leading-display',
+					'animate-pending-slide',
+				],
+			},
+		],
+		'shadcn/no-arbitrary-values': ['error', { allow: ['layout'] }],
+		'shadcn/no-inline-styles': 'error',
+		'shadcn/no-restyle': [
+			'error',
+			{
+				allow: ['layout'],
+				contracts: [
+					// Graph page: square-cornered chart surface and compact tooltip.
+					{
+						pattern: '^Card$',
+						allow: [
+							'layout',
+							'spacing',
+							'color',
+							'border',
+							'shadow',
+							'shape',
+							'effects',
+						],
+					},
+					{ pattern: '^CardHeader$', allow: ['layout', 'spacing'] },
+					{ pattern: '^CardTitle$', allow: ['layout', 'typography'] },
+					{ pattern: '^CardDescription$', allow: ['layout', 'typography'] },
+					{ pattern: '^CardContent$', allow: ['layout', 'spacing'] },
+					// Search bar composes the input group into a distinct look.
+					{
+						pattern: '^InputGroup$',
+						allow: ['layout', 'color', 'effects', 'motion'],
+					},
+					{ pattern: '^InputGroupButton$', allow: ['layout', 'color'] },
+					{ pattern: '^InputGroupAddon$', allow: ['layout', 'effects'] },
+					// Retry uses the app's mono micro label treatment.
+					{
+						pattern: '^Button$',
+						allow: [
+							'layout',
+							'font-mono',
+							'text-2xs',
+							'tracking-widest',
+							'uppercase',
+						],
+					},
+				],
+			},
+		],
 	},
 	overrides: [
+		{
+			files: ['src/components/ui/**'],
+			rules: {
+				'shadcn/require-static-classes': 'off',
+				'shadcn/no-restyle': 'off',
+				'shadcn/no-arbitrary-values': 'off',
+			},
+		},
 		{
 			files: [
 				'scripts/**',
