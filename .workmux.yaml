@@ -1,4 +1,4 @@
-# Session mode: `windows` (multiple tabs per worktree) requires it.
+# This session-mode windows layout requires tmux.
 mode: session
 
 windows:
@@ -6,9 +6,7 @@ windows:
     panes:
       - command: opencode
         focus: true
-      - command: |
-          mise run bootstrap
-          mise run setup
+      - command: mise run bootstrap
         split: horizontal
   - name: tests
     panes:
