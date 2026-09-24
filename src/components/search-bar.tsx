@@ -257,7 +257,7 @@ export function SearchBar({
 						'flex w-full flex-col',
 						className,
 						isMobileSearchActive &&
-							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(1rem,env(safe-area-inset-bottom))] max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
+							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:search-safe-area max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
 					)}
 					role={isMobileSearchActive ? 'dialog' : undefined}
 					aria-modal={isMobileSearchActive || undefined}
