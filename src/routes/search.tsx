@@ -33,18 +33,21 @@ function SearchSkeleton() {
 	)
 }
 
-export const Route = createFileRoute('/search/$query')({
+export const Route = createFileRoute('/search')({
+	validateSearch: (search: Record<string, unknown>): { q: string } => ({
+		q: typeof search.q === 'string' ? search.q.trim() : '',
+	}),
 	component: SearchResults,
 	pendingComponent: SearchSkeleton,
-	loader: async ({ params, context: { queryClient } }) => {
-		const query = params.query.trim()
-		if (query === '') {
-			return { query, results: [] }
+	loaderDeps: ({ search: { q } }) => [q] as const,
+	loader: async ({ deps: [q], context: { queryClient } }) => {
+		if (q === '') {
+			return { query: q, results: [] }
 		}
 		return {
-			query,
+			query: q,
 			results: await queryClient.ensureQueryData(
-				searchResultsQuery(scrapeVersion(queryClient), query),
+				searchResultsQuery(scrapeVersion(queryClient), q),
 			),
 		}
 	},

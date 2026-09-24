@@ -158,8 +158,8 @@ export function SearchBar({
 		if (!query) return
 
 		void router.navigate({
-			to: '/search/$query',
-			params: { query },
+			to: '/search',
+			search: { q: query },
 		})
 	}
 
@@ -431,8 +431,8 @@ export function SearchBar({
 										className="border-border w-full cursor-pointer border-t text-sm outline-none select-none"
 									>
 										<Link
-											to="/search/$query"
-											params={{ query: search.trim() }}
+											to="/search"
+											search={{ q: search.trim() }}
 											onClickCapture={captureLinkClick}
 											className="group hover:bg-muted focus-visible:bg-muted aria-selected:bg-muted block px-2 py-1.5 focus-visible:outline-none"
 										>
