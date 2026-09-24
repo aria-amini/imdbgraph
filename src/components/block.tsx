@@ -79,11 +79,11 @@ export function Block({
 													rel="noopener noreferrer"
 													aria-label={episodeLabel(episode)}
 													className={cn(
-														'group relative flex size-9 items-center justify-center border border-background/40 text-3xs font-bold transition-transform after:absolute after:-inset-1 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
+														'group relative flex size-9 items-center justify-center border border-background/40 bg-(--rating-bg) text-(--rating-fg) text-3xs font-bold transition-transform after:absolute after:-inset-1 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:size-11 sm:text-xs',
 													)}
 													style={{
-														backgroundColor: ratingColor(episode.rating),
-														color: ratingTextColor(episode.rating),
+														'--rating-bg': ratingColor(episode.rating),
+														'--rating-fg': ratingTextColor(episode.rating),
 													}}
 												/>
 											}

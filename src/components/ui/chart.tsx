@@ -88,6 +88,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 	}
 
 	return (
+		// oxlint-disable-next-line shadcn/no-inline-styles -- Chart colors depend on the current series and theme.
 		<style
 			dangerouslySetInnerHTML={{
 				__html: Object.entries(THEMES)
@@ -310,9 +311,9 @@ function ChartLegendContent({
 								<itemConfig.icon />
 							) : (
 								<div
-									className="h-2 w-2 shrink-0 rounded-[2px]"
+									className="h-2 w-2 shrink-0 rounded-[2px] bg-(--indicator-color)"
 									style={{
-										backgroundColor: item.color,
+										'--indicator-color': item.color,
 									}}
 								/>
 							)}

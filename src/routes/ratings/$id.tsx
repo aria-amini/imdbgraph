@@ -146,7 +146,7 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 			<ShowPoster key={show.imdbId} show={show} />
 
 			<div className="min-w-0 flex-1">
-				<h1 className="text-3xl leading-display font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
+				<h1 className="leading-display text-3xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
 					{show.title}
 				</h1>
 				<p className="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
@@ -166,10 +166,10 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 				>
 					<span className="flex items-center gap-x-1.5">
 						<span
-							className="inline-flex items-center gap-x-1 rounded-sm px-1.5 py-0.5"
+							className="inline-flex items-center gap-x-1 rounded-sm bg-(--rating-bg) px-1.5 py-0.5 text-(--rating-fg)"
 							style={{
-								backgroundColor: ratingColor(show.rating),
-								color: ratingTextColor(show.rating),
+								'--rating-bg': ratingColor(show.rating),
+								'--rating-fg': ratingTextColor(show.rating),
 							}}
 						>
 							<Star aria-hidden className="size-4 shrink-0" weight="fill" />

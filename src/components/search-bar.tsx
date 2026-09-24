@@ -257,7 +257,7 @@ export function SearchBar({
 						'flex w-full flex-col',
 						className,
 						isMobileSearchActive &&
-							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:search-safe-area max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
+							'max-md:fixed max-md:inset-0 max-md:z-50 max-md:m-0 max-md:max-w-none max-md:bg-background max-md:px-4 max-md:search-safe-area max-md:top-(--overlay-top,0) max-md:h-(--overlay-height,auto) max-md:animate-in max-md:fade-in max-md:motion-reduce:animate-none max-md:duration-200',
 					)}
 					role={isMobileSearchActive ? 'dialog' : undefined}
 					aria-modal={isMobileSearchActive || undefined}
@@ -287,7 +287,10 @@ export function SearchBar({
 					}}
 					style={
 						isMobileSearchActive && overlayViewport
-							? { top: overlayViewport.top, height: overlayViewport.height }
+							? {
+									'--overlay-top': `${overlayViewport.top}px`,
+									'--overlay-height': `${overlayViewport.height}px`,
+								}
 							: undefined
 					}
 					shouldFilter={false}
@@ -370,14 +373,14 @@ export function SearchBar({
 								aria-live="polite"
 								className="flex items-center justify-center gap-2 px-2 py-1.5"
 							>
-								<span className="text-destructive font-mono text-2xs tracking-widest uppercase">
+								<span className="text-destructive text-2xs font-mono tracking-widest uppercase">
 									Couldn’t load suggestions
 								</span>
 								<Button
 									type="button"
 									variant="outline"
 									size="xs"
-									className="font-mono text-2xs tracking-widest uppercase"
+									className="text-2xs font-mono tracking-widest uppercase"
 									onClick={() => void refetch()}
 								>
 									Retry
