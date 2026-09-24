@@ -19,6 +19,7 @@ export async function loadRatings(
 		.select()
 		.from(show)
 		.where(eq(show.imdbId, showId))
+
 	if (!foundShow) {
 		return undefined
 	}
@@ -37,6 +38,7 @@ export async function loadRatings(
 		.orderBy(asc(episode.seasonNum), asc(episode.episodeNum))
 
 	const groupedEpisodes: Record<number, Record<number, Episode>> = {}
+
 	for (const episodeInfo of episodes) {
 		const { seasonNum, episodeNum } = episodeInfo
 
@@ -66,6 +68,7 @@ export function usePreloadRatingsChunk() {
 	const router = useRouter()
 	useEffect(() => {
 		const route = router.looseRoutesById['/ratings/$id']
+
 		if (route) void router.loadRouteChunk(route)
 	}, [router])
 }

@@ -7,12 +7,14 @@ import { applyThemeToDocument, createThemeBootstrapScript } from '@/lib/theme'
 import { ThemeProvider, ThemeSwitch } from '../theme-switch'
 
 const THEME_COOKIE_NAME = 'theme'
+
 const THEME_STORAGE_KEY = 'theme'
 
 function storedCookieValue() {
 	const match = document.cookie
 		.split('; ')
 		.find((entry) => entry.startsWith(`${THEME_COOKIE_NAME}=`))
+
 	return match?.split('=')[1]
 }
 
@@ -31,6 +33,7 @@ describe('theme switch', () => {
 				<ThemeSwitch />
 			</ThemeProvider>,
 		)
+
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 
 		expect(control).toHaveAttribute('aria-checked', 'false')
@@ -64,6 +67,7 @@ describe('theme switch', () => {
 				<ThemeSwitch />
 			</ThemeProvider>,
 		)
+
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 		expect(control).toHaveAttribute('aria-checked', 'true')
 		expect(document.documentElement.style.colorScheme).toBe('dark')
@@ -79,12 +83,14 @@ describe('theme switch', () => {
 
 	test('keeps multiple consumers synchronized with the bootstrap theme', async () => {
 		applyThemeToDocument('dark')
+
 		const screen = await render(
 			<ThemeProvider preference={null}>
 				<ThemeSwitch />
 				<ThemeSwitch />
 			</ThemeProvider>,
 		)
+
 		const switches = screen.getByRole('switch', { name: 'Dark mode' })
 		await expect
 			.element(switches.nth(0))

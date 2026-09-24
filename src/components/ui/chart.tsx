@@ -7,6 +7,7 @@ import type { TooltipValueType } from 'recharts'
 const THEMES = { light: '', dark: '.dark' } as const
 
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
+
 type TooltipNameType = number | string
 
 type ChartCustomProperties = React.CSSProperties &
@@ -103,6 +104,7 @@ ${colorConfig
 		const color =
 			(theme === 'light' ? itemConfig.theme?.light : itemConfig.theme?.dark) ??
 			itemConfig.color
+
 		return color ? `  --color-${key}: ${color};` : null
 	})
 	.join('\n')}
@@ -156,6 +158,7 @@ function ChartTooltipContent({
 		// oxlint-disable-next-line typescript/restrict-template-expressions
 		const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
 		const itemConfig = getPayloadConfigFromPayload(config, item, key)
+
 		const value =
 			!labelKey && typeof label === 'string'
 				? (config[label]?.label ?? label)
@@ -206,6 +209,7 @@ function ChartTooltipContent({
 						const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`
 						const itemConfig = getPayloadConfigFromPayload(config, item, key)
 						const indicatorColor = color ?? item.payload?.fill ?? item.color
+
 						const indicatorStyle: ChartCustomProperties = {
 							'--color-bg': indicatorColor,
 							'--color-border': indicatorColor,
@@ -332,6 +336,7 @@ function ChartLegendContent({
 
 function readStringField(source: object, key: string): string | undefined {
 	const value: unknown = Reflect.get(source, key)
+
 	return typeof value === 'string' ? value : undefined
 }
 
@@ -354,6 +359,7 @@ function getPayloadConfigFromPayload(
 	let configLabelKey: string = key
 
 	const direct = readStringField(payload, key)
+
 	if (direct !== undefined) {
 		configLabelKey = direct
 	} else if (payloadPayload) {

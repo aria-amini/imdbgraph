@@ -9,11 +9,13 @@ export const Route = createFileRoute('/api/thumbnails/$id')({
 		handlers: {
 			GET: async ({ params }) => {
 				const parsed = imdbIdSchema.safeParse(params.id)
+
 				if (!parsed.success) {
 					return new Response(null, { status: 400 })
 				}
 
 				const stored = await getPosterImageBytes(createDb(), parsed.data)
+
 				if (!stored) {
 					return new Response(null, { status: 404 })
 				}

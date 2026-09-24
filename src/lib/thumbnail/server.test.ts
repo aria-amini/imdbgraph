@@ -36,12 +36,19 @@ const PNG_BYTES = Buffer.from(
 )
 
 const FETCHED_ID = 'tt0417299'
+
 const MISSING_ID = 'tt11111111'
+
 const FAILING_ID = 'tt22222222'
+
 const CONCURRENT_ID = 'tt33333333'
+
 const STALE_ID = 'tt55555555'
+
 const MISSING_RACE_ID = 'tt66666666'
+
 const DROPPED_SHOW_ID = 'tt77777777'
+
 const UNSAFE_URL_ID = 'tt44444444'
 
 const HBO_AIRING: ShowAiring = {
@@ -54,10 +61,13 @@ const HBO_AIRING: ShowAiring = {
 const enrichmentFor = (url: string) => ({ posterUrl: url, ...HBO_AIRING })
 
 const counts = { download: 0 }
+
 let imageBytes: Uint8Array | undefined
+
 const imageServerUrl = 'https://static.tvmaze.com/uploads/images/poster.png'
 
 let storage: Storage
+
 let minio: StartedTestContainer | undefined
 
 beforeAll(async () => {
@@ -85,6 +95,7 @@ beforeAll(async () => {
 beforeEach(() => {
 	vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
 		counts.download++
+
 		return imageBytes
 			? new Response(Buffer.from(imageBytes), {
 					headers: { 'content-type': 'image/png' },
@@ -141,6 +152,7 @@ describe('show image pipeline', () => {
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, FETCHED_ID))
+
 		expect(row?.objectKey).toMatch(
 			new RegExp(`^thumbnails/${FETCHED_ID}/.+\\.png$`),
 		)
@@ -173,6 +185,7 @@ describe('show image pipeline', () => {
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, MISSING_ID))
+
 		expect(row?.objectKey).toBeNull()
 
 		await getPosterImageBytes(db, MISSING_ID)
@@ -192,6 +205,7 @@ describe('show image pipeline', () => {
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, FAILING_ID))
+
 		expect(rows).toHaveLength(0)
 
 		await getPosterImageBytes(db, FAILING_ID)
@@ -221,27 +235,34 @@ describe('show image pipeline', () => {
 
 		const uploadedKeys: string[] = []
 		let release = () => {}
+
 		const ready = new Promise<void>((resolve) => {
 			release = resolve
 		})
+
 		const concurrentStorage = {
 			...storage,
 			async put(key: string, body: Uint8Array, contentType: string) {
 				await storage.put(key, body, contentType)
 				uploadedKeys.push(key)
+
 				if (uploadedKeys.length === 2) release()
 				await ready
 			},
 		}
+
 		vi.mocked(getStorage).mockReturnValue(concurrentStorage)
+
 		const results = await Promise.all([
 			getPosterImageBytes(db, CONCURRENT_ID),
 			getPosterImageBytes(db, CONCURRENT_ID),
 		])
+
 		const rows = await db
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, CONCURRENT_ID))
+
 		expect(rows).toHaveLength(1)
 		const row = rows[0]!
 		const isPng = row.contentType === 'image/png'
@@ -281,14 +302,17 @@ describe('show image pipeline', () => {
 					.update(showImage)
 					.set({ objectKey: replacementKey })
 					.where(eq(showImage.imdbId, imdbId))
+
 				return null
 			},
 		})
 		expect(await getPosterImageBytes(db, imdbId)).toBeNull()
+
 		const [row] = await db
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, imdbId))
+
 		expect(row?.objectKey).toBe(replacementKey)
 	})
 
@@ -296,17 +320,22 @@ describe('show image pipeline', () => {
 		db,
 	}) => {
 		let releaseDownload = () => {}
+
 		const resumeDownload = new Promise<void>((resolve) => {
 			releaseDownload = resolve
 		})
+
 		let notifyStarted = () => {}
+
 		const started = new Promise<void>((resolve) => {
 			notifyStarted = resolve
 		})
+
 		vi.mocked(fetchShowEnrichment)
 			.mockImplementationOnce(async () => {
 				notifyStarted()
 				await resumeDownload
+
 				return enrichmentFor(imageServerUrl)
 			})
 			.mockResolvedValueOnce(null)
@@ -317,10 +346,12 @@ describe('show image pipeline', () => {
 		expect(await getPosterImageBytes(db, MISSING_RACE_ID)).toBeNull()
 		releaseDownload()
 		expect(await pending).toBeNull()
+
 		const [row] = await db
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, MISSING_RACE_ID))
+
 		expect(row?.objectKey).toBeNull()
 		expect(put).toHaveBeenCalledTimes(1)
 		expect(await storage.get(put.mock.calls[0]![0])).toBeNull()
@@ -331,16 +362,19 @@ describe('show image pipeline', () => {
 	}) => {
 		expect(await getPosterImageBytes(db, 'tt88888888')).toBeNull()
 		expect(fetchShowEnrichment).not.toHaveBeenCalled()
+
 		const rows = await db
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, 'tt88888888'))
+
 		expect(rows).toHaveLength(0)
 	})
 
 	test('a show dropped mid-flight discards the upload', async ({ db }) => {
 		vi.mocked(fetchShowEnrichment).mockImplementation(async () => {
 			await db.delete(show).where(eq(show.imdbId, DROPPED_SHOW_ID))
+
 			return enrichmentFor(imageServerUrl)
 		})
 		imageBytes = PNG_BYTES
@@ -352,6 +386,7 @@ describe('show image pipeline', () => {
 			.select()
 			.from(showImage)
 			.where(eq(showImage.imdbId, DROPPED_SHOW_ID))
+
 		expect(rows).toHaveLength(0)
 		expect(put).toHaveBeenCalledTimes(1)
 		expect(await storage.get(put.mock.calls[0]![0])).toBeNull()

@@ -44,6 +44,7 @@ export const Route = createFileRoute('/ratings/$id')({
 	pendingComponent: RatingsSkeleton,
 	loader: async ({ params, context: { queryClient } }) => {
 		const showId = imdbIdSchema.safeParse(params.id)
+
 		if (!showId.success) {
 			throw notFound()
 		}
@@ -51,6 +52,7 @@ export const Route = createFileRoute('/ratings/$id')({
 		const ratings = await queryClient.ensureQueryData(
 			ratingsQuery(scrapeVersion(queryClient), showId.data),
 		)
+
 		if (!ratings) {
 			throw notFound()
 		}
@@ -85,6 +87,7 @@ function PosterImage({
 				ref={(node) => {
 					// Cached images finish before hydration, so onLoad never fires.
 					if (!node?.complete) return
+
 					if (node.naturalWidth > 0) {
 						setLoaded(true)
 					} else {
