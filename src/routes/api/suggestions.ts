@@ -12,10 +12,12 @@ export const Route = createFileRoute('/api/suggestions')({
 
 				if (!q) {
 					console.error('Empty parameter')
+
 					return new Response(JSON.stringify([]))
 				}
 
 				const shows = await suggestionsFor(createDb(), q)
+
 				return new Response(JSON.stringify(shows), {
 					headers: {
 						'CDN-Cache-Control':

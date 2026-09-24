@@ -23,13 +23,17 @@ export async function getPosterImageBytes(
 ): Promise<StoredImage | null> {
 	const storage = getStorage()
 	const record = await resolveShowImage(db, imdbId, storage)
+
 	if (!record?.objectKey) {
 		return null
 	}
+
 	const stored = await storage.get(record.objectKey)
+
 	if (!stored) {
 		await dropStaleImageRow(db, imdbId, record.objectKey)
 	}
+
 	return stored
 }
 
@@ -40,6 +44,7 @@ async function resolveShowImage(
 	storage: Storage,
 ): Promise<ShowImageRecord | null> {
 	const cached = await loadShowImageRecord(db, imdbId)
+
 	if (cached !== undefined) {
 		return cached
 	}
@@ -48,17 +53,21 @@ async function resolveShowImage(
 	if (isCoolingDown(imdbId)) {
 		return null
 	}
+
 	// A row cannot exist without its parent show; skip the external fetch and
 	// the storage upload for ids the catalog does not know.
 	if (!(await showExists(db, imdbId))) {
 		return null
 	}
+
 	// Upload immutable candidates without holding a database connection across I/O.
 	// The unique IMDb ID chooses one winner, including known-missing results.
 	let uploadedKey: string | null = null
+
 	try {
 		const enrichment = await fetchShowEnrichment(imdbId)
 		let record: typeof showImage.$inferInsert = { imdbId, objectKey: null }
+
 		if (enrichment) {
 			const downloaded = await downloadImage(enrichment.posterUrl)
 			const objectKey = `thumbnails/${imdbId}/${randomUUID()}.${downloaded.extension}`
@@ -74,6 +83,7 @@ async function resolveShowImage(
 			await storage.put(objectKey, downloaded.body, downloaded.contentType)
 			uploadedKey = objectKey
 		}
+
 		// On an ambiguous database error, retain the candidate: deleting it
 		// could remove an object whose insert actually committed.
 		const [inserted] = await db
@@ -81,13 +91,17 @@ async function resolveShowImage(
 			.values(record)
 			.onConflictDoNothing()
 			.returning()
+
 		if (inserted) {
 			return inserted
 		}
+
 		if (uploadedKey) {
 			await deleteImageObject(storage, uploadedKey)
 		}
+
 		const winner = await loadShowImageRecord(db, imdbId)
+
 		return winner ?? null
 	} catch (error) {
 		// A foreign-key rejection means the insert definitely did not commit,
@@ -95,6 +109,7 @@ async function resolveShowImage(
 		if (uploadedKey && isForeignKeyViolation(error)) {
 			await deleteImageObject(storage, uploadedKey)
 		}
+
 		noteFailure(imdbId)
 		throw error
 	}
@@ -118,6 +133,7 @@ async function showExists(
 		.from(show)
 		.where(eq(show.imdbId, imdbId))
 		.limit(1)
+
 	return row !== undefined
 }
 
@@ -125,18 +141,23 @@ async function showExists(
 // causes deep.
 function isForeignKeyViolation(error: unknown): boolean {
 	let current: unknown = error
+
 	for (let depth = 0; depth < 5; depth++) {
 		if (typeof current !== 'object' || current === null) {
 			return false
 		}
+
 		if ('code' in current && current.code === '23503') {
 			return true
 		}
+
 		if (!('cause' in current)) {
 			return false
 		}
+
 		current = current.cause
 	}
+
 	return false
 }
 
@@ -172,6 +193,7 @@ async function loadShowImageRecord(
 		.from(showImage)
 		.where(eq(showImage.imdbId, imdbId))
 		.limit(1)
+
 	return row
 }
 
@@ -180,6 +202,7 @@ async function downloadImage(url: string): Promise<DownloadedImage> {
 		redirect: 'error',
 		signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
 	})
+
 	if (!response.ok || !response.body) {
 		throw new Error(`thumbnail download failed with status ${response.status}`)
 	}
@@ -188,27 +211,34 @@ async function downloadImage(url: string): Promise<DownloadedImage> {
 		.split(';')[0]!
 		.trim()
 		.toLowerCase()
+
 	const extension = EXTENSIONS[contentType]
+
 	if (!extension) {
 		throw new Error(`unsupported thumbnail content type "${contentType}"`)
 	}
 
 	const chunks: Uint8Array[] = []
 	let total = 0
+
 	for await (const chunk of response.body) {
 		total += chunk.byteLength
+
 		if (total > MAX_IMAGE_BYTES) {
 			throw new Error('thumbnail exceeds size limit')
 		}
+
 		chunks.push(chunk)
 	}
 
 	const body = new Uint8Array(total)
 	let offset = 0
+
 	for (const chunk of chunks) {
 		body.set(chunk, offset)
 		offset += chunk.byteLength
 	}
+
 	return { body, contentType, extension }
 }
 
@@ -219,8 +249,11 @@ interface DownloadedImage {
 }
 
 const DOWNLOAD_TIMEOUT_MS = 10_000
+
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
 const RETRY_DELAY_MS = 60_000
+
 const EXTENSIONS: Record<string, string> = {
 	'image/jpeg': 'jpg',
 	'image/png': 'png',
@@ -228,31 +261,39 @@ const EXTENSIONS: Record<string, string> = {
 }
 
 const cooldowns = new Map<string, number>()
+
 const MAX_COOLDOWN_ENTRIES = 1000
 
 function isCoolingDown(imdbId: string): boolean {
 	const failedAt = cooldowns.get(imdbId)
+
 	if (failedAt === undefined) {
 		return false
 	}
+
 	if (Date.now() - failedAt > RETRY_DELAY_MS) {
 		cooldowns.delete(imdbId)
+
 		return false
 	}
+
 	return true
 }
 
 function noteFailure(imdbId: string): void {
 	const now = Date.now()
+
 	for (const [id, failedAt] of cooldowns) {
 		if (now - failedAt > RETRY_DELAY_MS) {
 			cooldowns.delete(id)
 		}
 	}
+
 	// Eviction walks insertion order (oldest first); 1000 in-flight failures
 	// inside one cooldown window means something is badly wrong anyway.
 	while (cooldowns.size >= MAX_COOLDOWN_ENTRIES) {
 		cooldowns.delete(cooldowns.keys().next().value!)
 	}
+
 	cooldowns.set(imdbId, now)
 }

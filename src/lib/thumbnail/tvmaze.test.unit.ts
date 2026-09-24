@@ -4,6 +4,7 @@ import { fetchShowEnrichment } from '@/lib/thumbnail/tvmaze'
 
 const posterUrl =
 	'https://static.tvmaze.com/uploads/images/original_untouched/1.jpg'
+
 const payload = {
 	image: { original: posterUrl },
 	status: 'Ended',
@@ -24,6 +25,7 @@ describe('TVmaze enrichment', () => {
 				}),
 			)
 			.mockResolvedValueOnce(Response.json(payload))
+
 		expect(await fetchShowEnrichment('tt0944947')).toEqual({
 			posterUrl,
 			status: 'Ended',
@@ -55,6 +57,7 @@ describe('TVmaze enrichment', () => {
 		const fetch = vi
 			.spyOn(globalThis, 'fetch')
 			.mockResolvedValue(Response.json({ image: { original: url } }))
+
 		await expect(fetchShowEnrichment('tt0944947')).rejects.toThrow('poster URL')
 		expect(fetch).toHaveBeenCalledTimes(1)
 	})
@@ -71,6 +74,7 @@ describe('TVmaze enrichment', () => {
 			.mockResolvedValue(
 				new Response(null, { status: 301, headers: { location } }),
 			)
+
 		await expect(fetchShowEnrichment('tt0944947')).rejects.toThrow(
 			'lookup redirect',
 		)

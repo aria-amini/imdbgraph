@@ -41,6 +41,7 @@ export function transformRatingsData(ratings: Ratings): {
 	for (const [seasonNumber] of Object.entries(ratings.allEpisodeRatings)) {
 		const seasonNum = Number.parseInt(seasonNumber, 10)
 		seasons.push(seasonNum)
+
 		for (const episode of votedEpisodes(ratings, seasonNum)) {
 			data.push({
 				episodeIndex,
@@ -64,6 +65,7 @@ export function Graph({
 }) {
 	const { data: chartData, seasons } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
+
 	const chartColors = [
 		'var(--chart-1)',
 		'var(--chart-2)',
@@ -144,17 +146,23 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 	if (!active || !payload || payload.length == 0) {
 		return null
 	}
+
 	const activeData = payload.find((item) => item.value !== null)
+
 	if (!activeData) {
 		return null
 	}
+
 	const seasonNum = activeData.dataKey?.toString()?.replace('season', '')
+
 	const episode = episodeSchema.safeParse(
 		activeData.payload[`episode${seasonNum}`],
 	)
+
 	if (!episode.success) {
 		return null
 	}
+
 	const episodeData = episode.data
 
 	return (

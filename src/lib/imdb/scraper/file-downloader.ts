@@ -12,6 +12,7 @@ const nodeWebStreamSchema = z.custom<NodeWebReadableStream<Uint8Array>>(
 
 // https://www.imdb.com/interfaces
 const baseUri = 'https://datasets.imdbws.com'
+
 export type ImdbFile =
 	| 'title.basics.tsv.gz'
 	| 'title.episode.tsv.gz'
@@ -21,9 +22,11 @@ export type ImdbFile =
 export async function downloadStream(file: ImdbFile): Promise<Readable> {
 	const uri = `${baseUri}/${file}`
 	const { body, ok, status } = await fetch(uri)
+
 	if (!ok) {
 		throw new Error(`HTTP error! status: ${status.toString()}`)
 	}
+
 	if (!body) {
 		throw new Error('Response body is null')
 	}
@@ -34,6 +37,7 @@ export async function downloadStream(file: ImdbFile): Promise<Readable> {
 /** Downloads and decompresses an IMDb dataset to a local file. */
 export async function download(file: ImdbFile, output: string): Promise<void> {
 	const uri = `${baseUri}/${file}`
+
 	try {
 		const source = await downloadStream(file)
 		await pipeline(source, createWriteStream(output))

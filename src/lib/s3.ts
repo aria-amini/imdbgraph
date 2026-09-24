@@ -35,14 +35,17 @@ export interface StorageConfig {
 
 export function createStorage(config: StorageConfig = {}): Storage {
 	const bucketName = config.bucketName ?? env.AWS_S3_BUCKET_NAME
+
 	if (!bucketName) {
 		throw new Error('S3 storage is not configured (missing AWS_S3_BUCKET_NAME)')
 	}
+
 	const autoCreateBucket = config.autoCreateBucket ?? true
 	const region = config.region ?? 'us-east-1'
 	const accessKeyId = config.accessKeyId ?? env.AWS_ACCESS_KEY_ID
 	const secretAccessKey = config.secretAccessKey ?? env.AWS_SECRET_ACCESS_KEY
 	const endpoint = config.endpointUrl ?? env.AWS_ENDPOINT_URL
+
 	const client = new S3Client({
 		forcePathStyle: true,
 		requestHandler: {
@@ -58,16 +61,19 @@ export function createStorage(config: StorageConfig = {}): Storage {
 	})
 
 	let bucketReady: Promise<void> | undefined
+
 	const ensureBucket = () => {
 		if (!autoCreateBucket) {
 			return Promise.resolve()
 		}
+
 		bucketReady ??= createBucketIfNeeded(client, bucketName, region).catch(
 			(error) => {
 				bucketReady = undefined
 				throw error
 			},
 		)
+
 		return bucketReady
 	}
 
@@ -93,9 +99,11 @@ export function createStorage(config: StorageConfig = {}): Storage {
 				const output = await client.send(
 					new GetObjectCommand({ Bucket: bucketName, Key: key }),
 				)
+
 				if (!output.Body) {
 					return null
 				}
+
 				return {
 					data: await output.Body.transformToByteArray(),
 					contentType: output.ContentType,
@@ -104,6 +112,7 @@ export function createStorage(config: StorageConfig = {}): Storage {
 				if (errorStatus(error) === 404 || errorName(error) === 'NoSuchKey') {
 					return null
 				}
+
 				throw error
 			}
 		},
@@ -120,6 +129,7 @@ export const getStorage = createServerOnlyFn(() => {
 	sharedStorage ??= createStorage({
 		autoCreateBucket: process.env.NODE_ENV !== 'production',
 	})
+
 	return sharedStorage
 })
 
@@ -130,6 +140,7 @@ async function createBucketIfNeeded(
 ): Promise<void> {
 	try {
 		await client.send(new HeadBucketCommand({ Bucket: bucketName }))
+
 		return
 	} catch (error) {
 		if (errorStatus(error) !== 404) {
@@ -143,6 +154,7 @@ async function createBucketIfNeeded(
 		const locationConstraint = Object.values(BucketLocationConstraint).find(
 			(value) => value === region,
 		)
+
 		await client.send(
 			new CreateBucketCommand({
 				Bucket: bucketName,
@@ -158,6 +170,7 @@ async function createBucketIfNeeded(
 		// Production buckets are pre-provisioned and concurrent views can race
 		// on first use; both surface as an "already exists" error.
 		const name = errorName(error)
+
 		if (name !== 'BucketAlreadyOwnedByYou' && name !== 'BucketAlreadyExists') {
 			throw error
 		}
@@ -168,7 +181,9 @@ function errorStatus(error: unknown): number | undefined {
 	if (typeof error !== 'object' || error === null || !('$metadata' in error)) {
 		return undefined
 	}
+
 	const metadata: unknown = error.$metadata
+
 	if (
 		typeof metadata !== 'object' ||
 		metadata === null ||
@@ -176,7 +191,9 @@ function errorStatus(error: unknown): number | undefined {
 	) {
 		return undefined
 	}
+
 	const status: unknown = metadata.httpStatusCode
+
 	return typeof status === 'number' ? status : undefined
 }
 

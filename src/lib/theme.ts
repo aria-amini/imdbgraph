@@ -4,6 +4,7 @@ import { getCookie } from '@tanstack/react-start/server'
 export type Theme = 'light' | 'dark'
 
 const THEME_COOKIE_NAME = 'theme'
+
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
 
 function parseTheme(value: unknown): Theme | null {

@@ -9,6 +9,7 @@ import {
 } from '@/lib/theme'
 
 const THEME_COOKIE_NAME = 'theme'
+
 const THEME_STORAGE_KEY = 'theme'
 
 function clearStoredTheme() {
@@ -22,6 +23,7 @@ function storedCookieValue() {
 	const match = document.cookie
 		.split('; ')
 		.find((entry) => entry.startsWith(`${THEME_COOKIE_NAME}=`))
+
 	return match?.split('=')[1]
 }
 

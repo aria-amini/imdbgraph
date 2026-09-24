@@ -9,6 +9,7 @@ export function routeComponent({
 	options: { component?: ComponentType }
 }): ComponentType {
 	if (!options.component) throw new Error('Route has no component')
+
 	return options.component
 }
 
@@ -20,6 +21,8 @@ export const searchResults = [
 	'tt0306414',
 ].map((imdbId) => {
 	const show = shows.find((fixture) => fixture.imdbId === imdbId)
+
 	if (!show) throw new Error(`Search result fixture not found: ${imdbId}`)
+
 	return show
 })

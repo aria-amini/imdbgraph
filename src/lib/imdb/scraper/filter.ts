@@ -6,6 +6,7 @@ export function parseRatingsLine(line: string): {
 	numVotes: number
 } {
 	const [imdbId, , numVotesRaw] = line.split('\t')
+
 	return { imdbId, numVotes: Number(numVotesRaw) }
 }
 
@@ -15,6 +16,7 @@ export function parseEpisodeLine(line: string): {
 	showId: string | undefined
 } {
 	const [episodeId, showId] = line.split('\t')
+
 	return { episodeId, showId }
 }
 
@@ -25,7 +27,9 @@ export function shouldCopyTitle(
 	validShowIds: ReadonlySet<string>,
 ): boolean {
 	const [imdbId, titleType, , , , startYear] = line.split('\t')
+
 	if (!imdbId || !titleType) return false
+
 	if (titleType === 'tvEpisode') return ratedIds.has(imdbId)
 
 	return Boolean(

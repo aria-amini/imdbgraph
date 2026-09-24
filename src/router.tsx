@@ -38,13 +38,16 @@ function getQueryClient(): QueryClient {
 	if (typeof window === 'undefined') {
 		return new QueryClient()
 	}
+
 	browserQueryClient ??= new QueryClient()
+
 	return browserQueryClient
 }
 
 /** Creates the application's TanStack Router instance. */
 export const getRouter = () => {
 	const queryClient = getQueryClient()
+
 	const dehydratedQueryState = (): DehydratedQueryState => {
 		// The brand is a phantom unique-symbol property with no runtime value,
 		// so building it needs one assertion.
@@ -73,5 +76,6 @@ export const getRouter = () => {
 			hydrate(queryClient, dehydrated)
 		},
 	})
+
 	return router
 }

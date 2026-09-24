@@ -5,6 +5,7 @@ const themeCookie = (value: string) => {
 		process.env.BASE_URL ??
 			`http://localhost:${process.env.APP_PORT ?? '3000'}`,
 	).origin
+
 	return { name: 'theme', value, url: origin }
 }
 
@@ -17,6 +18,7 @@ test.describe('theme SSR responses', () => {
 		const context = await playwright.request.newContext({
 			extraHTTPHeaders: { cookie: 'theme=dark' },
 		})
+
 		const html = await (await context.get('/')).text()
 		const htmlTag = htmlTagOf(html)
 
@@ -30,6 +32,7 @@ test.describe('theme SSR responses', () => {
 		const context = await playwright.request.newContext({
 			extraHTTPHeaders: { cookie: 'theme=light' },
 		})
+
 		const html = await (await context.get('/')).text()
 		const htmlTag = htmlTagOf(html)
 

@@ -14,6 +14,7 @@ import { update } from './index'
 import { latestScrapeRun } from './scrape-run'
 
 vi.mock(import('@/lib/imdb/scraper/file-downloader'))
+
 vi.mock(import('@/lib/s3'))
 
 beforeAll(() => {
@@ -25,6 +26,7 @@ afterAll(() => {
 })
 
 const GAME_OF_THRONES_ID = 'tt0944947'
+
 const SIMPSONS_ID = 'tt0096697'
 
 const expectedGameOfThronesRatings: Ratings = {
@@ -186,6 +188,7 @@ describe('scraper tests', () => {
 function mockDownloads(mockedFiles: Record<ImdbFile, string>) {
 	vi.mocked(downloadStream).mockImplementation(async (imdbFile) => {
 		const input = path.join(import.meta.dirname, mockedFiles[imdbFile])
+
 		return createReadStream(input)
 	})
 }

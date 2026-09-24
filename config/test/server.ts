@@ -9,6 +9,7 @@ import {
 } from 'vite-plus/test'
 
 type Server = ReturnType<typeof setupServer>
+
 const server: Server = setupServer()
 
 const test = baseTest.extend<{ server: Server; _cleanup: void }>({

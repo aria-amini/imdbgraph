@@ -53,8 +53,10 @@ test('orders voted episodes and excludes unknown episode numbers', () => {
 		numVotes: 10,
 		rating: 8,
 	}
+
 	const third = { ...first, episodeId: 'tt3', episodeNum: 3 }
 	const unknown = { ...first, episodeId: 'tt0', episodeNum: 0 }
+
 	const ratings = {
 		...gameOfThronesRatings,
 		allEpisodeRatings: {
@@ -62,6 +64,7 @@ test('orders voted episodes and excludes unknown episode numbers', () => {
 			2: {},
 		},
 	}
+
 	expect(votedEpisodes(ratings, 1)).toEqual([first, third])
 	expect(votedEpisodes(ratings, 3)).toEqual([])
 	expect(transformRatingsData(ratings)).toEqual({
@@ -81,12 +84,15 @@ test('excludes episodes with out-of-range ratings', () => {
 		numVotes: 10,
 		rating: 8.5,
 	}
+
 	const below = { ...valid, episodeId: 'tt2', episodeNum: 2, rating: 0.5 }
 	const above = { ...valid, episodeId: 'tt3', episodeNum: 3, rating: 10.5 }
+
 	const ratings = {
 		...gameOfThronesRatings,
 		allEpisodeRatings: { 1: { 1: valid, 2: below, 3: above } },
 	}
+
 	expect(votedEpisodes(ratings, 1)).toEqual([valid])
 	expect(episodeSchema.safeParse(valid).success).toBe(true)
 	expect(episodeSchema.safeParse(below).success).toBe(false)

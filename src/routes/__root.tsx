@@ -26,6 +26,7 @@ import '../styles.css'
 function Analytics() {
 	useEffect(() => {
 		const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY
+
 		if (import.meta.env.MODE === 'development' || !posthogKey) return
 
 		posthog.init(posthogKey, {
@@ -45,6 +46,7 @@ export const Route = createRootRouteWithContext<{
 	beforeLoad: () => ({ theme: getThemePreference() }),
 	loader: async ({ context: { queryClient } }) => {
 		const { queryKey } = latestScrapeRunQuery(0)
+
 		return {
 			latestScrapeRun: await queryClient.fetchQuery(
 				latestScrapeRunQuery(
@@ -116,6 +118,7 @@ function RootNotFoundComponent() {
 
 function RootComponent() {
 	const { latestScrapeRun } = Route.useLoaderData()
+
 	const { data: refreshedLatestScrapeRun = latestScrapeRun } = useQuery({
 		...latestScrapeRunQuery(scrapeRunStaleTime(latestScrapeRun)),
 		refetchInterval: ({ state: { data } }) => scrapeRunRefetchInterval(data),

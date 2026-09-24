@@ -27,17 +27,21 @@ export function useMobileOverlay(
 	useBrowserLayoutEffect(() => {
 		if (!active) return
 		const visualViewport = window.visualViewport
+
 		if (!visualViewport) return
+
 		const sync = () =>
 			setViewport({
 				top: visualViewport.offsetTop,
 				height: visualViewport.height,
 			})
+
 		sync()
 		// Safari can skip the final resize event while the keyboard animates.
 		const timers = [300, 700].map((ms) => setTimeout(sync, ms))
 		visualViewport.addEventListener('resize', sync)
 		visualViewport.addEventListener('scroll', sync)
+
 		return () => {
 			timers.forEach(clearTimeout)
 			visualViewport.removeEventListener('resize', sync)
@@ -52,18 +56,24 @@ export function useMobileOverlay(
 		const row = inputRowRef.current
 		const before = preOverlayRectRef.current
 		preOverlayRectRef.current = null
+
 		if (!row || !before) return
+
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 		const deltaY = before.top - row.getBoundingClientRect().top
+
 		if (Math.abs(deltaY) < 2) return
 		row.style.transform = `translateY(${deltaY}px)`
+
 		const frame = requestAnimationFrame(() => {
 			row.style.transition = 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1)'
 			row.style.transform = ''
 		})
+
 		const settled = setTimeout(() => {
 			row.style.transition = ''
 		}, 400)
+
 		return () => {
 			cancelAnimationFrame(frame)
 			clearTimeout(settled)

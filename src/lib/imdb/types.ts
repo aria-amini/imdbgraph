@@ -6,6 +6,7 @@ import type { episode, show } from '@/db/tables'
 export const imdbIdSchema = z.string().regex(/^tt\d+$/)
 
 export type Show = InferSelectModel<typeof show>
+
 export type Episode = Pick<
 	InferSelectModel<typeof episode>,
 	'episodeId' | 'title' | 'seasonNum' | 'episodeNum' | 'rating' | 'numVotes'
@@ -24,6 +25,7 @@ export function formatYears(show: {
 	endYear: string | null
 }): string {
 	const endDate = show.endYear ?? 'Present'
+
 	return `${show.startYear} - ${endDate}`
 }
 
@@ -37,6 +39,7 @@ const STOPS = [
 ]
 
 const CELL_SATURATION = 0.72
+
 const CELL_LIGHTNESS = 0.46
 
 /**
@@ -45,12 +48,16 @@ const CELL_LIGHTNESS = 0.46
  */
 export function ratingHue(rating: number): number {
 	const clampedRating = Math.max(0, Math.min(10, rating))
+
 	const upperStop =
 		STOPS.find((stop) => stop.rating >= clampedRating) ?? STOPS.at(-1)!
+
 	const lowerStop = STOPS[STOPS.indexOf(upperStop) - 1] ?? upperStop
+
 	const progress =
 		(clampedRating - lowerStop.rating) /
 		(upperStop.rating - lowerStop.rating || 1)
+
 	return Math.round(lowerStop.hue + (upperStop.hue - lowerStop.hue) * progress)
 }
 
@@ -62,6 +69,7 @@ function cellLuminance(hue: number): number {
 	const c = (1 - Math.abs(2 * CELL_LIGHTNESS - 1)) * CELL_SATURATION
 	const hueSegment = (hue % 360) / 60
 	const x = c * (1 - Math.abs((hueSegment % 2) - 1))
+
 	const [r, g, b] =
 		hueSegment < 1
 			? [c, x, 0]
@@ -74,9 +82,12 @@ function cellLuminance(hue: number): number {
 						: hueSegment < 5
 							? [x, 0, c]
 							: [c, 0, x]
+
 	const m = CELL_LIGHTNESS - c / 2
+
 	const gamma = (v: number) =>
 		v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+
 	return 0.2126 * gamma(r + m) + 0.7152 * gamma(g + m) + 0.0722 * gamma(b + m)
 }
 
@@ -87,5 +98,6 @@ const DARK_INK = 'oklch(0.12 0 0)'
 
 export function ratingTextColor(rating: number): string {
 	const contrastWithWhite = 1.05 / (cellLuminance(ratingHue(rating)) + 0.05)
+
 	return contrastWithWhite >= 4.5 ? 'white' : DARK_INK
 }
