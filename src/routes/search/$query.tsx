@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 
 import { Page } from '@/components/page'
+import { SuggestionPoster } from '@/components/suggestion-poster'
 import { usePreloadRatingsChunk } from '@/lib/imdb/ratings'
 import { scrapeVersion } from '@/lib/imdb/scraper/scrape-run'
 import { searchResultsQuery } from '@/lib/imdb/search'
@@ -86,6 +87,7 @@ function ShowResult({ show }: { show: Suggestion }) {
 				'flex items-center gap-4 border-b border-border px-2 py-4 transition-colors last:border-b-0 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
 			)}
 		>
+			<SuggestionPoster imdbId={show.imdbId} title={show.title} />
 			<div className={cn('min-w-0 flex-1')}>
 				<span className={cn('block truncate font-medium')}>{show.title}</span>
 				<span className={cn('text-muted-foreground mt-1 block text-xs')}>
