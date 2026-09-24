@@ -130,6 +130,13 @@
 }
 
 @theme inline {
+	--aspect-poster: 2 / 3;
+	--text-2xs: 11px;
+	--text-3xs: 10px;
+	--text-4xs: 9px;
+	--text-5xs: 8px;
+	--leading-display: 1.05;
+	--animate-pending-slide: pending-slide 1.2s ease-in-out infinite;
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);

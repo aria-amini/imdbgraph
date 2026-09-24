@@ -370,14 +370,14 @@ export function SearchBar({
 								aria-live="polite"
 								className="flex items-center justify-center gap-2 px-2 py-1.5"
 							>
-								<span className="text-destructive font-mono text-[11px] tracking-widest uppercase">
+								<span className="text-destructive font-mono text-2xs tracking-widest uppercase">
 									Couldn’t load suggestions
 								</span>
 								<Button
 									type="button"
 									variant="outline"
 									size="xs"
-									className="font-mono text-[11px] tracking-widest uppercase"
+									className="font-mono text-2xs tracking-widest uppercase"
 									onClick={() => void refetch()}
 								>
 									Retry
