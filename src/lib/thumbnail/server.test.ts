@@ -62,7 +62,7 @@ let minio: StartedTestContainer | undefined
 
 beforeAll(async () => {
 	minio = await new GenericContainer(
-		'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z',
+		'cgr.dev/chainguard/minio@sha256:bd014394a80898e68c149f2311fdf8d5a2c2f3bb2c33b9327ae6d02b4b065ae1',
 	)
 		.withCommand(['server', '/data'])
 		.withEnvironment({

@@ -120,12 +120,12 @@ describe('theme switch', () => {
 		const root = document.documentElement
 
 		root.classList.remove('light', 'dark')
-		expect(getComputedStyle(root).colorScheme).toBe('light')
+		expect(getComputedStyle(root).colorScheme).toBe('light dark')
 
 		root.classList.add('dark')
 		expect(getComputedStyle(root).colorScheme).toBe('dark')
 
 		root.classList.remove('light', 'dark')
-		expect(getComputedStyle(root).colorScheme).toBe('light')
+		expect(getComputedStyle(root).colorScheme).toBe('light dark')
 	})
 })
