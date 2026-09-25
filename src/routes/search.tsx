@@ -2,6 +2,7 @@ import { Star } from '@phosphor-icons/react/dist/ssr'
 import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
+import { z } from 'zod'
 
 import { Page } from '@/components/page'
 import { SuggestionPoster } from '@/components/suggestion-poster'
@@ -33,22 +34,32 @@ function SearchSkeleton() {
 	)
 }
 
+const searchParamsSchema = z.object({
+	q: z
+		.string()
+		.transform((value) => value.trim())
+		.catch(''),
+})
+
 export const Route = createFileRoute('/search')({
 	// An empty or absent q must stay absent: emitting `q: ''` makes the
 	// router rewrite bare `/search` into `/search?q=` (normalizing search)
 	// before rendering. Only non-empty strings are kept.
-	validateSearch: (search: Record<string, unknown>): { q?: string } => {
-		const q = search.q
-		return typeof q === 'string' && q.trim() !== '' ? { q: q.trim() } : {}
+	validateSearch: (search) => {
+		const { q } = searchParamsSchema.parse(search)
+
+		return q === '' ? {} : { q }
 	},
 	component: SearchResults,
 	pendingComponent: SearchSkeleton,
 	loaderDeps: ({ search: { q } }) => [q] as const,
 	loader: async ({ deps: [q], context: { queryClient } }) => {
 		const query = q ?? ''
+
 		if (query === '') {
 			return { query, results: [] }
 		}
+
 		return {
 			query,
 			results: await queryClient.ensureQueryData(
