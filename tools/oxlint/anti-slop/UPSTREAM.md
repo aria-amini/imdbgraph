@@ -11,7 +11,9 @@
 - Deviations: none to rule source. Effect plugin is vendored but not
   registered; this repository does not depend on Effect. Assertion rules
   overlap with the pre-existing `typescript/consistent-type-assertions:
-  never` policy; both are kept.
+  never` policy; both are kept. `no-module-mocking` is vendored but
+  intentionally not enabled; the team rejected the dependency-seam policy
+  for now and may revisit it.
 - Local adaptations: `shared/dictionary-types.ts` rewritten to satisfy this
   repository's `noUncheckedIndexedAccess`/`exactOptionalPropertyTypes`
   compiler options (semantics unchanged). Vendored `*.test.ts` files are
