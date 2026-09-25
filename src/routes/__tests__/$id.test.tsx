@@ -18,6 +18,7 @@ async function renderRatings(theme: Theme = 'light') {
 	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue({
 		ratings: gameOfThronesRatings,
 	})
+
 	const visualPage = await renderVisualPage({
 		path: '/ratings/$id',
 		component: routeComponent(RatingsRoute),
@@ -25,9 +26,11 @@ async function renderRatings(theme: Theme = 'light') {
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /game of thrones/i }),
 	})
+
 	await expect
 		.element(visualPage.screen.getByText('Poster unavailable'))
 		.toBeInTheDocument()
+
 	return visualPage
 }
 
@@ -40,11 +43,13 @@ test('self-heals the poster after a failure', async ({ worker }) => {
 			title: 'Next show',
 		},
 	}
+
 	worker.use(
 		http.get('/api/thumbnails/:imdbId', ({ params }) => {
 			if (params.imdbId !== nextRatings.show.imdbId) {
 				return new HttpResponse(null, { status: 404 })
 			}
+
 			return new HttpResponse(
 				'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30"><rect width="20" height="30" fill="blue"/></svg>',
 				{ headers: { 'Content-Type': 'image/svg+xml' } },
@@ -61,10 +66,12 @@ test('self-heals the poster after a failure', async ({ worker }) => {
 	const poster = visualPage.screen.getByRole('img', {
 		name: 'Next show poster',
 	})
+
 	await expect.element(poster).toBeVisible()
 	await expect
 		.poll(() => {
 			const image = poster.element()
+
 			return image instanceof HTMLImageElement ? image.naturalWidth : 0
 		})
 		.toBeGreaterThan(0)
@@ -76,14 +83,17 @@ test('self-heals the poster after a failure', async ({ worker }) => {
 for (const theme of ['light', 'dark'] as const) {
 	test(`ratings blocks and graph in ${theme} theme`, async () => {
 		const visualPage = await renderRatings(theme)
+
 		const blocks = visualPage.screen.getByRole('button', {
 			name: 'blocks',
 			exact: true,
 		})
+
 		const graph = visualPage.screen.getByRole('button', {
 			name: 'graph',
 			exact: true,
 		})
+
 		await expect.element(blocks).toHaveAttribute('aria-pressed', 'true')
 		await expect
 			.element(visualPage.screen.getByTestId('ratings-block'))

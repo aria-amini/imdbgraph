@@ -11,16 +11,20 @@ test('home search uses the page search bar', async ({ worker }) => {
 	worker.use(
 		http.get('/api/suggestions', () => HttpResponse.json(searchResults)),
 	)
+
 	const visualPage = await renderVisualPage({
 		path: '/',
 		component: routeComponent(HomeRoute),
 		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
 	})
+
 	await visualPage.expectScreenshot('home')
 	await userEvent.fill(visualPage.screen.getByRole('combobox'), 'Ava')
+
 	const first = visualPage.screen.getByRole('option', {
 		name: /Avatar: The Last Airbender/i,
 	})
+
 	await expect.element(first).toHaveAttribute('aria-selected', 'true')
 	await visualPage.expectScreenshot('home-search-avatar')
 
@@ -39,6 +43,7 @@ mobileTest('home search opens an empty mobile overlay', async () => {
 		component: routeComponent(HomeRoute),
 		waitFor: (screen) => screen.getByRole('heading', { name: /imdbgraph/i }),
 	})
+
 	await userEvent.click(visualPage.screen.getByRole('combobox'))
 	await expect
 		.element(visualPage.screen.getByRole('dialog', { name: 'Search TV shows' }))

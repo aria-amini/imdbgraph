@@ -14,6 +14,7 @@ export function SuggestionPoster({
 	className?: string
 }) {
 	const [failed, setFailed] = useState(false)
+
 	return (
 		<span
 			aria-hidden

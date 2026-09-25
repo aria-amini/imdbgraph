@@ -12,12 +12,14 @@ test('search results page matches screenshot', async () => {
 		query: 'avatar',
 		results: searchResults,
 	})
+
 	const visualPage = await renderVisualPage({
 		path: '/search',
 		component: routeComponent(SearchRoute),
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /search results/i }),
 	})
+
 	await expect
 		.element(visualPage.screen.getByText(/Avatar: The Last Airbender/i))
 		.toBeVisible()
@@ -34,12 +36,14 @@ desktopTest(
 			query: 'avatar',
 			results: searchResults,
 		})
+
 		const visualPage = await renderVisualPage({
 			path: '/search',
 			component: routeComponent(SearchRoute),
 			waitFor: (screen) =>
 				screen.getByRole('heading', { name: /search results/i }),
 		})
+
 		await userEvent.fill(visualPage.screen.getByRole('combobox'), 'Ava')
 		await expect
 			.element(
