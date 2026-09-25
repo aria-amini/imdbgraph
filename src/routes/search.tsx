@@ -34,20 +34,25 @@ function SearchSkeleton() {
 }
 
 export const Route = createFileRoute('/search')({
-	validateSearch: (search: Record<string, unknown>): { q: string } => ({
-		q: typeof search.q === 'string' ? search.q.trim() : '',
-	}),
+	// An empty or absent q must stay absent: emitting `q: ''` makes the
+	// router rewrite bare `/search` into `/search?q=` (normalizing search)
+	// before rendering. Only non-empty strings are kept.
+	validateSearch: (search: Record<string, unknown>): { q?: string } => {
+		const q = search.q
+		return typeof q === 'string' && q.trim() !== '' ? { q: q.trim() } : {}
+	},
 	component: SearchResults,
 	pendingComponent: SearchSkeleton,
 	loaderDeps: ({ search: { q } }) => [q] as const,
 	loader: async ({ deps: [q], context: { queryClient } }) => {
-		if (q === '') {
-			return { query: q, results: [] }
+		const query = q ?? ''
+		if (query === '') {
+			return { query, results: [] }
 		}
 		return {
-			query: q,
+			query,
 			results: await queryClient.ensureQueryData(
-				searchResultsQuery(scrapeVersion(queryClient), q),
+				searchResultsQuery(scrapeVersion(queryClient), query),
 			),
 		}
 	},
