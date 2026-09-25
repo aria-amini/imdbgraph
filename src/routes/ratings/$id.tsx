@@ -1,7 +1,7 @@
 import { ImageSquare, Star } from '@phosphor-icons/react/dist/ssr'
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, useHydrated } from '@tanstack/react-router'
 import { cn } from 'cn'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Block } from '@/components/block'
 import { Graph } from '@/components/graph'
@@ -230,11 +230,7 @@ function ViewToggle({
 
 function RatingsPage({ ratings }: { ratings: Ratings }) {
 	const [view, setView] = useState<View>('blocks')
-	const [isHydrated, setIsHydrated] = useState(false)
-
-	useEffect(() => {
-		setIsHydrated(true)
-	}, [])
+	const isHydrated = useHydrated()
 
 	const toolbar = (
 		<ViewToggle view={view} onViewChange={setView} disabled={!isHydrated} />
