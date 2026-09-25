@@ -206,6 +206,13 @@ export default defineConfig({
 	},
 	root,
 	server: { host: '127.0.0.1', port: Number(process.env.APP_PORT ?? 3000) },
+	// TanStack Router ships RSC "use client" directives in its dist for RSC
+	// compat; this app builds no RSC graph, so the bundling warnings are noise.
+	build: {
+		rollupOptions: {
+			checks: { moduleLevelDirective: false },
+		},
+	},
 	resolve: {
 		tsconfigPaths: true,
 		dedupe: ['react', 'react-dom'],
