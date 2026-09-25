@@ -32,6 +32,7 @@ import { useBrowserLayoutEffect } from '@/lib/use-browser-layout-effect'
 
 // Fast suggestion responses would flash the spinner on every keystroke.
 const SPINNER_DELAY_MS = 300
+
 const SEARCH_DEBOUNCE_MS = 200
 
 /** Renders the title search input and its suggestion list.
@@ -48,11 +49,13 @@ export function SearchBar({
 	variant?: 'navbar' | 'standalone'
 }) {
 	const [search, setSearch] = useState('')
+
 	const [debouncedSearch, searchDebouncer] = useDebouncedValue(
 		search,
 		{ wait: SEARCH_DEBOUNCE_MS },
 		(state) => ({ isPending: state.isPending }),
 	)
+
 	const [selectedSuggestion, setSelectedSuggestion] = useState('')
 	const isHydrated = useHydrated()
 	const [isFocused, setIsFocused] = useState(false)
@@ -62,6 +65,7 @@ export function SearchBar({
 	const inputRowRef = useRef<HTMLDivElement>(null)
 	const linkClickRef = useRef<'modified' | 'plain' | null>(null)
 	const router = useRouter()
+
 	const { viewport: overlayViewport, begin: beginOverlay } = useMobileOverlay(
 		isMobileSearchActive,
 		inputRowRef,
@@ -77,20 +81,28 @@ export function SearchBar({
 	// modal surface.
 	useEffect(() => {
 		if (!isFocused) return
+
 		const handlePointerDown = (event: PointerEvent) => {
 			const container = containerRef.current
+
 			if (!container) return
+
 			const pointerInContainer =
 				event.target instanceof Node && container.contains(event.target)
+
 			if (pointerInContainer) return
 			setIsFocused(false)
+
 			if (isMobileSearchActive) {
 				setIsMobileSearchActive(false)
 				resetQueryState()
 			}
+
 			container.querySelector<HTMLInputElement>('input')?.blur()
 		}
+
 		document.addEventListener('pointerdown', handlePointerDown)
+
 		return () => document.removeEventListener('pointerdown', handlePointerDown)
 	}, [isFocused, isMobileSearchActive])
 
@@ -155,6 +167,7 @@ export function SearchBar({
 
 	const openSearchPage = () => {
 		const query = search.trim()
+
 		if (!query) return
 
 		void router.navigate({
@@ -174,6 +187,7 @@ export function SearchBar({
 		enabled: isHydrated && Boolean(debouncedSearch),
 		placeholderData: keepPreviousData,
 	})
+
 	const isSearching = searchDebouncer.state.isPending || isFetching
 
 	useEffect(() => {
@@ -183,12 +197,14 @@ export function SearchBar({
 			() => setShowSpinner(isFetching),
 			isFetching ? SPINNER_DELAY_MS : 0,
 		)
+
 		return () => clearTimeout(timer)
 	}, [isFetching])
 
 	const suggestions = search
 		? (searchResults ?? []).slice(0, MAX_SUGGESTIONS)
 		: []
+
 	const hasSuggestions = suggestions.length > 0
 	const firstSuggestionId = suggestions[0]?.imdbId
 
@@ -213,6 +229,7 @@ export function SearchBar({
 				className="relative h-full w-full"
 				onFocus={() => {
 					setIsFocused(true)
+
 					if (
 						variant === 'standalone' &&
 						window.matchMedia('(max-width: 767px)').matches
@@ -236,23 +253,29 @@ export function SearchBar({
 					onKeyDown={(event) => {
 						if (event.key !== 'Escape') return
 						event.stopPropagation()
+
 						// Desktop keeps input focus so typing reopens the list; the
 						// mobile overlay dismisses to the page, taking the keyboard
 						// with it.
 						if (isMobileSearchActive) {
 							dismissSearch()
+
 							return
 						}
+
 						setIsFocused(false)
 					}}
 					onPointerDown={(event) => {
 						if (!isMobileSearchActive) return
 						const target = event.target
+
 						if (!(target instanceof Element)) return
 						const inInputRow = inputRowRef.current?.contains(target) ?? false
 						const inResults = target.closest('[cmdk-list]') !== null
+
 						const inError =
 							target.closest('[data-slot="search-error"]') !== null
+
 						if (inInputRow || inResults || inError) return
 						dismissSearch()
 					}}
@@ -292,6 +315,7 @@ export function SearchBar({
 									value={search}
 									onValueChange={(value) => {
 										setSearch(value)
+
 										// Escape closes the list while the input keeps
 										// focus; typing must bring it back.
 										if (value) setIsFocused(true)

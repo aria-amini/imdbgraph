@@ -66,6 +66,7 @@ export async function fetchSuggestionsFromApi(
 	const response = await fetch(
 		`/api/suggestions?q=${encodeURIComponent(query)}`,
 	)
+
 	if (!response.ok) {
 		throw new Error(`Suggestions request failed: ${response.status}`)
 	}

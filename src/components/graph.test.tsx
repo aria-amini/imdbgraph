@@ -63,12 +63,15 @@ describe('graph tests', () => {
 
 		const chart = screen.getByTestId('ratings-graph')
 		await expect.element(chart).toBeVisible()
+
 		const chartSvg = document.querySelector(
 			'[data-testid="ratings-graph"] svg.recharts-surface',
 		)
+
 		if (!(chartSvg instanceof SVGSVGElement)) {
 			throw new Error('Chart SVG not found')
 		}
+
 		const initialWidth = chartSvg.getAttribute('width')
 
 		await page.viewport(390, 844)

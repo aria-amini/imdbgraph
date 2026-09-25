@@ -1,7 +1,9 @@
 import { z } from 'zod'
 
 const API_BASE_URL = 'https://api.tvmaze.com'
+
 const METADATA_TIMEOUT_MS = 5_000
+
 const ALLOWED_POSTER_HOSTS = new Set(['static.tvmaze.com'])
 
 const imageSchema = z.object({
@@ -48,6 +50,7 @@ export async function fetchShowEnrichment(
 	imdbId: string,
 ): Promise<ShowEnrichment | null> {
 	const signal = AbortSignal.timeout(METADATA_TIMEOUT_MS)
+
 	let response = await fetch(
 		`${API_BASE_URL}/lookup/shows?imdb=${encodeURIComponent(imdbId)}`,
 		{
@@ -56,12 +59,14 @@ export async function fetchShowEnrichment(
 			signal,
 		},
 	)
+
 	// TVmaze resolves IMDb IDs with a documented 301 to /shows/:id.
 	// Validate that one hop ourselves; never follow arbitrary redirects.
 	if (response.status === 301) {
 		const location = response.headers.get('location')
 		await response.body?.cancel()
 		const target = location ? new URL(location, API_BASE_URL) : null
+
 		if (
 			!target ||
 			target.origin !== API_BASE_URL ||
@@ -73,6 +78,7 @@ export async function fetchShowEnrichment(
 		) {
 			throw new Error('unsupported tvmaze lookup redirect')
 		}
+
 		response = await fetch(target, {
 			headers: { accept: 'application/json' },
 			redirect: 'error',
@@ -84,18 +90,24 @@ export async function fetchShowEnrichment(
 		if (response.status === 404) {
 			return null
 		}
+
 		throw new Error(`tvmaze lookup failed with status ${response.status}`)
 	}
 
 	const parsed = showLookupSchema.safeParse(await response.json())
+
 	if (!parsed.success) {
 		throw new Error('tvmaze returned an unexpected payload')
 	}
+
 	const url = parsed.data.image?.original ?? parsed.data.image?.medium
+
 	if (!url) {
 		return null
 	}
+
 	const time = parsed.data.schedule?.time?.trim()
+
 	return {
 		posterUrl: parsePosterUrl(url).href,
 		status: parsed.data.status ?? null,
@@ -108,6 +120,7 @@ export async function fetchShowEnrichment(
 /** Validate upstream URLs again at the download boundary. */
 export function parsePosterUrl(value: string): URL {
 	const url = new URL(value)
+
 	if (
 		url.protocol !== 'https:' ||
 		!ALLOWED_POSTER_HOSTS.has(url.hostname) ||
@@ -117,5 +130,6 @@ export function parsePosterUrl(value: string): URL {
 	) {
 		throw new Error('unsupported poster URL')
 	}
+
 	return url
 }

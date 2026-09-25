@@ -28,6 +28,7 @@ function sipRound(state: SipState): void {
 // Worktrunk uses Rust's DefaultHasher (SipHash 1-3 with zero keys).
 function worktrunkHash(value: string): bigint {
 	const bytes = Buffer.concat([Buffer.from(value), Buffer.from([0xff])])
+
 	const state: SipState = [
 		0x736f6d6570736575n,
 		0x646f72616e646f6dn,
@@ -36,6 +37,7 @@ function worktrunkHash(value: string): bigint {
 	]
 
 	let offset = 0
+
 	while (offset + 8 <= bytes.length) {
 		const message = bytes.readBigUInt64LE(offset)
 		state[3] ^= message
@@ -45,6 +47,7 @@ function worktrunkHash(value: string): bigint {
 	}
 
 	let tail = (BigInt(bytes.length) << 56n) & MASK_64
+
 	for (let index = offset; index < bytes.length; index++) {
 		tail |= BigInt(bytes.readUInt8(index)) << BigInt((index - offset) * 8)
 	}
@@ -53,6 +56,7 @@ function worktrunkHash(value: string): bigint {
 	sipRound(state)
 	state[0] ^= tail
 	state[2] ^= 0xffn
+
 	for (let round = 0; round < 3; round++) sipRound(state)
 
 	return state[0] ^ state[1] ^ state[2] ^ state[3]
@@ -65,6 +69,7 @@ function hashPort(value: string): number {
 function shortHash(value: string): string {
 	const characters = '0123456789abcdefghijklmnopqrstuvwxyz'
 	const hash = worktrunkHash(value)
+
 	return [hash % 36n, (hash / 36n) % 36n, (hash / 1296n) % 36n]
 		.map((index) => characters[Number(index)])
 		.join('')
@@ -75,10 +80,14 @@ function sanitizeDatabaseName(value: string): string {
 		.replace(/[A-Z]/g, (character) => character.toLowerCase())
 		.replace(/[^a-z0-9]+/g, '_')
 		.replace(/^_+/, '')
+
 	if (!result) result = 'workspace'
+
 	if (!/^[a-z]/.test(result)) result = `w_${result}`
 	result = result.slice(0, 44)
+
 	if (!result.endsWith('_')) result += '_'
+
 	return `${result}${shortHash(value)}`
 }
 
@@ -89,15 +98,22 @@ function run(command: string, args: string[]): string {
 	}).trim()
 }
 
-function detectWorkspace(): { branch: string; worktree: string } {
+interface WorkspaceInfo {
+	branch: string
+	worktree: string
+}
+
+function detectWorkspace(): WorkspaceInfo {
 	try {
 		const root = realpathSync(run('jj', ['workspace', 'root']))
+
 		const names = run('jj', [
 			'workspace',
 			'list',
 			'-T',
 			'self.name() ++ "\\n"',
 		]).split('\n')
+
 		const branch = names.find((name) => {
 			try {
 				return (
@@ -110,6 +126,7 @@ function detectWorkspace(): { branch: string; worktree: string } {
 		})
 
 		if (!branch) throw new Error('Could not identify the current jj workspace')
+
 		return { branch, worktree: basename(root) }
 	} catch (error) {
 		if (error instanceof Error && error.message.startsWith('Could not')) {
@@ -120,6 +137,7 @@ function detectWorkspace(): { branch: string; worktree: string } {
 	try {
 		const root = realpathSync(run('git', ['rev-parse', '--show-toplevel']))
 		const branch = run('git', ['branch', '--show-current']) || basename(root)
+
 		return { branch, worktree: basename(root) }
 	} catch {
 		throw new Error('Run setup from inside a jj workspace or Git worktree')
@@ -127,8 +145,11 @@ function detectWorkspace(): { branch: string; worktree: string } {
 }
 
 const POSTGRES_USER = 'app_user'
+
 const POSTGRES_PASSWORD = 'app_dev'
+
 const AWS_ACCESS_KEY_ID = 'app_minio'
+
 const AWS_SECRET_ACCESS_KEY = 'app_minio_secret'
 
 const ENV_SPEC_HEADER = ['# ---', '# @defaultSensitive=false', '# ---', '']
@@ -139,27 +160,33 @@ function updateEnvFile(
 	replace = false,
 ): void {
 	const updates: Record<string, string> = Object.assign({}, ...groups)
+
 	const lines =
 		!replace && existsSync(path)
 			? readFileSync(path, 'utf8').split(/\r?\n/)
 			: []
+
 	const specIndex = lines.findIndex((line) =>
 		line.includes('@defaultSensitive'),
 	)
+
 	if (specIndex === -1) {
 		lines.unshift(...ENV_SPEC_HEADER)
 	} else {
 		if (lines[specIndex + 1]?.trim() !== '# ---') {
 			lines.splice(specIndex + 1, 0, '# ---', '')
 		}
+
 		if (specIndex === 0 || lines[specIndex - 1]?.trim() !== '# ---') {
 			lines.splice(specIndex, 0, '# ---')
 		}
 	}
+
 	const remaining = new Set(Object.keys(updates))
 
 	for (let index = 0; index < lines.length; index++) {
 		const key = lines[index]?.match(/^\s*([^#=\s]+)\s*=/)?.[1]
+
 		if (!key || !(key in updates)) continue
 
 		lines[index] = `${key}="${updates[key]!}"`
@@ -167,10 +194,14 @@ function updateEnvFile(
 	}
 
 	while (lines.at(-1) === '') lines.pop()
+
 	for (const group of groups) {
 		const pending = Object.keys(group).filter((key) => remaining.has(key))
+
 		if (pending.length === 0) continue
+
 		if (lines.length > 0) lines.push('')
+
 		for (const key of pending) lines.push(`${key}="${updates[key]!}"`)
 	}
 
@@ -185,6 +216,7 @@ function updateEnvFile(
 // the full daemon definition, not just the override.
 function setDaemonPort(appPort: number): void {
 	const base = 'pitchfork.toml'
+
 	if (!existsSync(base)) return
 	const contents = readFileSync(base, 'utf8').replace(/^port = \d+\n/m, '')
 	writeFileSync(
@@ -195,11 +227,13 @@ function setDaemonPort(appPort: number): void {
 
 function readEnvFile(path: string): Record<string, string> {
 	if (!existsSync(path)) return {}
+
 	return Object.fromEntries(
 		readFileSync(path, 'utf8')
 			.split(/\r?\n/)
 			.flatMap((line) => {
 				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
+
 				return match ? [[match[1]!, match[2]!]] : []
 			}),
 	)
@@ -225,6 +259,7 @@ function pitchfork(args: string[]): string {
 function pitchforkAvailable(): boolean {
 	try {
 		pitchfork(['list'])
+
 		return true
 	} catch {
 		return false
@@ -248,10 +283,13 @@ function slugify(value: string): string {
 		.replaceAll(/[^a-z0-9-]+/g, '-')
 		.replaceAll(/-+/g, '-')
 		.replace(/^-+|-+$/g, '')
+
 	if (!slug) return 'workspace'
+
 	if (slug.length <= 63) return slug
 
 	const suffix = worktrunkHash(value).toString(36).padStart(8, '0').slice(0, 8)
+
 	return `${slug.slice(0, 63 - suffix.length - 1).replace(/-+$/, '')}-${suffix}`
 }
 
@@ -262,6 +300,7 @@ function slugify(value: string): string {
 // `proxy trust` needs sudo, so it stays a one-time manual step.
 function registerProxySlug(mainRoot: string): string {
 	const slug = slugify(basename(mainRoot))
+
 	if (realpathSync('.') === mainRoot) {
 		try {
 			pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
@@ -270,6 +309,7 @@ function registerProxySlug(mainRoot: string): string {
 			// pitchfork unavailable — skip registration
 		}
 	}
+
 	return slug
 }
 
@@ -281,7 +321,9 @@ function registerProxySlug(mainRoot: string): string {
 // A foreign file is fully rewritten so the canonical key order is restored.
 function existingPorts(worktree: string): Record<string, string> {
 	const entries = readEnvFile('.env.development.local')
+
 	if (entries['WORKTREE_NAME'] !== worktree) return {}
+
 	return entries
 }
 
@@ -292,15 +334,20 @@ function main(): void {
 	const { branch, worktree } = detectWorkspace()
 	const compose = sanitizeDatabaseName(worktree)
 	const existing = existingPorts(worktree)
+
 	const isForeign =
 		existsSync('.env.development.local') &&
 		readEnvFile('.env.development.local')['WORKTREE_NAME'] !== worktree
+
 	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
 	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
+
 	const postgresPort =
 		Number(existing['POSTGRES_PORT']) || hashPort(`db-${branch}`)
+
 	const minioPort =
 		Number(existing['MINIO_PORT']) || hashPort(`minio-${branch}`)
+
 	const minioConsolePort =
 		Number(existing['MINIO_CONSOLE_PORT']) ||
 		hashPort(`minio-console-${branch}`)
@@ -309,10 +356,12 @@ function main(): void {
 	const tld = proxyTld()
 	const proxySlug = registerProxySlug(mainRoot)
 	const worktreeLabel = slugify(worktree)
+
 	const proxyHost =
 		worktreeLabel === proxySlug
 			? `${proxySlug}.${tld}`
 			: `${worktreeLabel}.${proxySlug}.${tld}`
+
 	const proxyUp = pitchforkAvailable()
 
 	updateEnvFile(
@@ -356,6 +405,7 @@ function main(): void {
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
+
 	if (proxyUp) {
 		console.log(`  proxy:    https://${proxyHost}`)
 	}

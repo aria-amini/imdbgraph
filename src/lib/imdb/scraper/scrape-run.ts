@@ -26,6 +26,7 @@ export const getLatestScrapeRun = createServerFn().handler(() =>
 )
 
 const SCRAPE_INTERVAL_MS = 24 * 60 * 60 * 1000
+
 const OVERDUE_REFETCH_MS = 10 * 60 * 1000
 
 export const latestScrapeRunQuery = (staleTime: number) =>
@@ -44,7 +45,9 @@ export function scrapeRunStaleTime(completedAt: string | null | undefined) {
 	if (!completedAt) {
 		return 0
 	}
+
 	const nextScrapeAt = Date.parse(completedAt) + SCRAPE_INTERVAL_MS
+
 	return Math.max(nextScrapeAt - Date.now(), OVERDUE_REFETCH_MS)
 }
 

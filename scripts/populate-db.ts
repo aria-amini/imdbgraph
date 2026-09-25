@@ -7,6 +7,7 @@ import { update } from '@/lib/imdb/scraper'
 import { serverEnv as env } from '../src/env.server.ts'
 
 const IF_EMPTY = process.argv.includes('--if-empty')
+
 const LOCK_KEY = 'imdbgraph:populate'
 
 const pool = new Pool({
@@ -18,11 +19,13 @@ async function isPopulated(client: PoolClient): Promise<boolean> {
 		'SELECT to_regclass($1) AS reg;',
 		['public.scrape_run'],
 	)
+
 	if (!reg.rows[0]?.reg) {
 		return false
 	}
 
 	const result = await client.query('SELECT 1 FROM scrape_run LIMIT 1;')
+
 	return (result.rowCount ?? 0) > 0
 }
 
@@ -30,6 +33,7 @@ async function populateDb() {
 	console.log('Starting DB population...')
 
 	const lockClient = IF_EMPTY ? await pool.connect() : null
+
 	try {
 		if (lockClient) {
 			await lockClient.query('SELECT pg_advisory_lock(hashtext($1));', [
@@ -40,6 +44,7 @@ async function populateDb() {
 			// the database while this one waited.
 			if (await isPopulated(lockClient)) {
 				console.log('Database already populated. Skipping.')
+
 				return
 			}
 		}
@@ -56,6 +61,7 @@ async function populateDb() {
 				lockClient.release()
 			}
 		}
+
 		await pool.end()
 	}
 }

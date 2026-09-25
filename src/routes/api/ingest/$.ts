@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 const posthogApiHost = 'https://us.i.posthog.com'
+
 const posthogAssetsHost = 'https://us-assets.i.posthog.com'
 
 const hopByHopHeaders = new Set([
@@ -21,9 +22,11 @@ async function proxyPosthogRequest({
 }) {
 	const path = params._splat ?? ''
 	const requestUrl = new URL(request.url)
+
 	const upstreamHost = path.startsWith('static/')
 		? posthogAssetsHost
 		: posthogApiHost
+
 	const upstreamUrl = new URL(path, `${upstreamHost}/`)
 	upstreamUrl.search = requestUrl.search
 
@@ -40,9 +43,11 @@ async function proxyPosthogRequest({
 				: request.body,
 		duplex: 'half',
 	}
+
 	const response = await fetch(upstreamUrl, requestInit)
 
 	const responseHeaders = new Headers(response.headers)
+
 	for (const header of hopByHopHeaders) responseHeaders.delete(header)
 
 	return new Response(response.body, {

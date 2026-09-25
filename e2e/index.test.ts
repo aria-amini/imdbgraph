@@ -25,9 +25,11 @@ test('Search bar click navigation works', async ({ page }) => {
 	await searchBar.click()
 	await searchBar.fill('Avatar')
 	await expect(searchBar).toHaveValue('Avatar')
+
 	const option = page.getByRole('option', {
 		name: /Avatar: The Last Airbender/,
 	})
+
 	await expect(option).toBeVisible()
 	await option.click()
 	await expect(page).toHaveURL(/\/ratings\/tt0417299$/)

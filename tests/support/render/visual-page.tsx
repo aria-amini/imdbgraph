@@ -28,6 +28,7 @@ declare module 'vitest/browser' {
 function currentViewport() {
 	const width = window.innerWidth
 	const height = window.innerHeight
+
 	return { width, height, suffix: width < 768 ? '-mobile' : '' }
 }
 
@@ -41,11 +42,13 @@ interface VisualPageOptions {
 
 function createMockRouter(path: string, component: ComponentType) {
 	const rootRoute = createRootRoute()
+
 	const testRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path,
 		component: () => {
 			const Component = component
+
 			return <Component />
 		},
 	})
@@ -138,6 +141,7 @@ export async function renderVisualPage({
 			if (fullHeight) {
 				// Viewport-relative content can keep growing after each resize.
 				let height = 0
+
 				for (let i = 0; i < 5; i++) {
 					await resizeScreenshotViewport(
 						viewport.width,
@@ -145,10 +149,12 @@ export async function renderVisualPage({
 					)
 					await waitForPageIdle()
 					const next = Math.ceil(container.scrollHeight)
+
 					if (next === height) break
 					height = next
 				}
 			}
+
 			await expect
 				.poll(() =>
 					Array.from(container.querySelectorAll('img')).every(

@@ -29,11 +29,13 @@ type ChartDataPoint = {
 	episodeIndex: number
 } & Record<`season${number}` | `episode${number}`, number | Episode | null>
 
-/** Converts grouped episode ratings into chart points and season labels. */
-export function transformRatingsData(ratings: Ratings): {
+interface RatingsChartSeries {
 	data: ChartDataPoint[]
 	seasons: number[]
-} {
+}
+
+/** Converts grouped episode ratings into chart points and season labels. */
+export function transformRatingsData(ratings: Ratings): RatingsChartSeries {
 	let episodeIndex = 1
 	const data: ChartDataPoint[] = []
 	const seasons: number[] = []
@@ -41,6 +43,7 @@ export function transformRatingsData(ratings: Ratings): {
 	for (const [seasonNumber] of Object.entries(ratings.allEpisodeRatings)) {
 		const seasonNum = Number.parseInt(seasonNumber, 10)
 		seasons.push(seasonNum)
+
 		for (const episode of votedEpisodes(ratings, seasonNum)) {
 			data.push({
 				episodeIndex,
@@ -64,6 +67,7 @@ export function Graph({
 }) {
 	const { data: chartData, seasons } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
+
 	const chartColors = [
 		'var(--chart-1)',
 		'var(--chart-2)',
@@ -144,17 +148,23 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps) => {
 	if (!active || !payload || payload.length == 0) {
 		return null
 	}
+
 	const activeData = payload.find((item) => item.value !== null)
+
 	if (!activeData) {
 		return null
 	}
+
 	const seasonNum = activeData.dataKey?.toString()?.replace('season', '')
+
 	const episode = episodeSchema.safeParse(
 		activeData.payload[`episode${seasonNum}`],
 	)
+
 	if (!episode.success) {
 		return null
 	}
+
 	const episodeData = episode.data
 
 	return (

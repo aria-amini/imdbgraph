@@ -1,7 +1,7 @@
 import { ImageSquare, Star } from '@phosphor-icons/react/dist/ssr'
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, useHydrated } from '@tanstack/react-router'
 import { cn } from 'cn'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Block } from '@/components/block'
 import { Graph } from '@/components/graph'
@@ -44,6 +44,7 @@ export const Route = createFileRoute('/ratings/$id')({
 	pendingComponent: RatingsSkeleton,
 	loader: async ({ params, context: { queryClient } }) => {
 		const showId = imdbIdSchema.safeParse(params.id)
+
 		if (!showId.success) {
 			throw notFound()
 		}
@@ -51,6 +52,7 @@ export const Route = createFileRoute('/ratings/$id')({
 		const ratings = await queryClient.ensureQueryData(
 			ratingsQuery(scrapeVersion(queryClient), showId.data),
 		)
+
 		if (!ratings) {
 			throw notFound()
 		}
@@ -85,6 +87,7 @@ function PosterImage({
 				ref={(node) => {
 					// Cached images finish before hydration, so onLoad never fires.
 					if (!node?.complete) return
+
 					if (node.naturalWidth > 0) {
 						setLoaded(true)
 					} else {
@@ -227,11 +230,7 @@ function ViewToggle({
 
 function RatingsPage({ ratings }: { ratings: Ratings }) {
 	const [view, setView] = useState<View>('blocks')
-	const [isHydrated, setIsHydrated] = useState(false)
-
-	useEffect(() => {
-		setIsHydrated(true)
-	}, [])
+	const isHydrated = useHydrated()
 
 	const toolbar = (
 		<ViewToggle view={view} onViewChange={setView} disabled={!isHydrated} />

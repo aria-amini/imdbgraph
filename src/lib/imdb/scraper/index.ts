@@ -22,6 +22,7 @@ export async function update(
 	console.log('Connected to db. Starting database population...')
 	const startTime = Date.now()
 	let orphanedKeys: string[] = []
+
 	try {
 		await client.query('BEGIN')
 		orphanedKeys = await transfer(client)
@@ -43,6 +44,7 @@ export async function update(
 	} finally {
 		client.release()
 	}
+
 	// Only delete objects after commit; rollback must preserve existing posters.
 	for (const key of orphanedKeys) {
 		await deletePosterImage(key)
@@ -209,6 +211,7 @@ async function transfer(client: PoolClient) {
 	console.log('Updated episode table')
 
 	console.log('Database migration successfull')
+
 	return orphaned.rows.flatMap((row) =>
 		row.object_key ? [row.object_key] : [],
 	)
@@ -229,8 +232,10 @@ async function copyRatingsAndCollectRatedIds(
 			}
 
 			const { imdbId, numVotes } = parseRatingsLine(line)
+
 			if (imdbId && numVotes > 0) {
 				ratedIds.add(imdbId)
+
 				return line
 			}
 
@@ -257,8 +262,10 @@ async function copyEpisodesAndCollectShowIds(
 			}
 
 			const { episodeId, showId } = parseEpisodeLine(line)
+
 			if (episodeId && showId && ratedIds.has(episodeId)) {
 				validShowIds.add(showId)
+
 				return line
 			}
 
@@ -295,14 +302,17 @@ async function copyFromImdbStream(
 	mapLine: (line: string, isHeader: boolean) => string | undefined,
 ): Promise<void> {
 	const sourceStream = await downloadStream(file)
+
 	const reader = createInterface({
 		input: sourceStream,
 		crlfDelay: Number.POSITIVE_INFINITY,
 	})
+
 	const ingestStream = client.query(copyFrom(cmd))
 
 	try {
 		let isHeader = true
+
 		for await (const line of reader) {
 			if (!line && !isHeader) {
 				continue
@@ -310,6 +320,7 @@ async function copyFromImdbStream(
 
 			const mapped = mapLine(line, isHeader)
 			isHeader = false
+
 			if (!mapped) {
 				continue
 			}
