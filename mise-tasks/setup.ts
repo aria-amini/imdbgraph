@@ -1,78 +1,54 @@
 #!/usr/bin/env -S vp exec tsx
 //MISE description="Generate per-workspace ports and .env.development.local"
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { realpathSync, writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
 
-const MASK_64 = (1n << 64n) - 1n
+// ===== shared =====
 
-function rotateLeft(value: bigint, bits: bigint): bigint {
-	return ((value << bits) | (value >> (64n - bits))) & MASK_64
+function run(command: string, args: string[], timeout?: number): string {
+	return execFileSync(command, args, {
+		encoding: 'utf8',
+		stdio: ['ignore', 'pipe', 'ignore'],
+		timeout,
+	}).trim()
 }
 
-type SipState = [bigint, bigint, bigint, bigint]
+// ===== config =====
 
-function sipRound(state: SipState): void {
-	state[0] = (state[0] + state[1]) & MASK_64
-	state[1] = rotateLeft(state[1], 13n) ^ state[0]
-	state[0] = rotateLeft(state[0], 32n)
-	state[2] = (state[2] + state[3]) & MASK_64
-	state[3] = rotateLeft(state[3], 16n) ^ state[2]
-	state[0] = (state[0] + state[3]) & MASK_64
-	state[3] = rotateLeft(state[3], 21n) ^ state[0]
-	state[2] = (state[2] + state[1]) & MASK_64
-	state[1] = rotateLeft(state[1], 17n) ^ state[2]
-	state[2] = rotateLeft(state[2], 32n)
+const POSTGRES_USER = 'app_user'
+
+const POSTGRES_PASSWORD = 'app_dev'
+
+const AWS_ACCESS_KEY_ID = 'app_minio'
+
+const AWS_SECRET_ACCESS_KEY = 'app_minio_secret'
+
+// Varlock reads this header to treat generated values as non-sensitive.
+const VARLOCK_HEADER = ['# ---', '# @defaultSensitive=false', '# ---', '']
+
+// ===== derivations =====
+
+function hash64(value: string): bigint {
+	return BigInt(
+		'0x' + createHash('sha256').update(value).digest('hex').slice(0, 16),
+	)
 }
 
-// Worktrunk uses Rust's DefaultHasher (SipHash 1-3 with zero keys).
-function worktrunkHash(value: string): bigint {
-	const bytes = Buffer.concat([Buffer.from(value), Buffer.from([0xff])])
-
-	const state: SipState = [
-		0x736f6d6570736575n,
-		0x646f72616e646f6dn,
-		0x6c7967656e657261n,
-		0x7465646279746573n,
-	]
-
-	let offset = 0
-
-	while (offset + 8 <= bytes.length) {
-		const message = bytes.readBigUInt64LE(offset)
-		state[3] ^= message
-		sipRound(state)
-		state[0] ^= message
-		offset += 8
-	}
-
-	let tail = (BigInt(bytes.length) << 56n) & MASK_64
-
-	for (let index = offset; index < bytes.length; index++) {
-		tail |= BigInt(bytes.readUInt8(index)) << BigInt((index - offset) * 8)
-	}
-
-	state[3] ^= tail
-	sipRound(state)
-	state[0] ^= tail
-	state[2] ^= 0xffn
-
-	for (let round = 0; round < 3; round++) sipRound(state)
-
-	return state[0] ^ state[1] ^ state[2] ^ state[3]
+// One contiguous block per workspace: four independent draws collide across
+// the machine's workspaces roughly twice as often, surfacing as a compose
+// bind failure at bootstrap. The block stays below the ephemeral port range.
+function portBase(value: string): number {
+	return 10_000 + Number(hash64(value) % 22_760n)
 }
 
-function hashPort(value: string): number {
-	return 10_000 + Number(worktrunkHash(value) % 10_000n)
-}
+// 10/8 keeps explicit subnets clear of Docker's default pools (172.16/12,
+// 192.168/16), whose space is what runs out on workspace-heavy machines.
+function dockerSubnet(appPort: number): string {
+	const block = appPort - 10_000
 
-function shortHash(value: string): string {
-	const characters = '0123456789abcdefghijklmnopqrstuvwxyz'
-	const hash = worktrunkHash(value)
-
-	return [hash % 36n, (hash / 36n) % 36n, (hash / 1296n) % 36n]
-		.map((index) => characters[Number(index)])
-		.join('')
+	return `10.${block >> 8}.${block & 0xff}.0/24`
 }
 
 function sanitizeDatabaseName(value: string): string {
@@ -88,193 +64,7 @@ function sanitizeDatabaseName(value: string): string {
 
 	if (!result.endsWith('_')) result += '_'
 
-	return `${result}${shortHash(value)}`
-}
-
-function run(command: string, args: string[]): string {
-	return execFileSync(command, args, {
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'ignore'],
-	}).trim()
-}
-
-interface WorkspaceInfo {
-	branch: string
-	worktree: string
-}
-
-function detectWorkspace(): WorkspaceInfo {
-	try {
-		const root = realpathSync(run('jj', ['workspace', 'root']))
-
-		const names = run('jj', [
-			'workspace',
-			'list',
-			'-T',
-			'self.name() ++ "\\n"',
-		]).split('\n')
-
-		const branch = names.find((name) => {
-			try {
-				return (
-					realpathSync(run('jj', ['workspace', 'root', '--name', name])) ===
-					root
-				)
-			} catch {
-				return false
-			}
-		})
-
-		if (!branch) throw new Error('Could not identify the current jj workspace')
-
-		return { branch, worktree: basename(root) }
-	} catch (error) {
-		if (error instanceof Error && error.message.startsWith('Could not')) {
-			throw error
-		}
-	}
-
-	try {
-		const root = realpathSync(run('git', ['rev-parse', '--show-toplevel']))
-		const branch = run('git', ['branch', '--show-current']) || basename(root)
-
-		return { branch, worktree: basename(root) }
-	} catch {
-		throw new Error('Run setup from inside a jj workspace or Git worktree')
-	}
-}
-
-const POSTGRES_USER = 'app_user'
-
-const POSTGRES_PASSWORD = 'app_dev'
-
-const AWS_ACCESS_KEY_ID = 'app_minio'
-
-const AWS_SECRET_ACCESS_KEY = 'app_minio_secret'
-
-const ENV_SPEC_HEADER = ['# ---', '# @defaultSensitive=false', '# ---', '']
-
-function updateEnvFile(
-	path: string,
-	groups: Record<string, string>[],
-	replace = false,
-): void {
-	const updates: Record<string, string> = Object.assign({}, ...groups)
-
-	const lines =
-		!replace && existsSync(path)
-			? readFileSync(path, 'utf8').split(/\r?\n/)
-			: []
-
-	const specIndex = lines.findIndex((line) =>
-		line.includes('@defaultSensitive'),
-	)
-
-	if (specIndex === -1) {
-		lines.unshift(...ENV_SPEC_HEADER)
-	} else {
-		if (lines[specIndex + 1]?.trim() !== '# ---') {
-			lines.splice(specIndex + 1, 0, '# ---', '')
-		}
-
-		if (specIndex === 0 || lines[specIndex - 1]?.trim() !== '# ---') {
-			lines.splice(specIndex, 0, '# ---')
-		}
-	}
-
-	const remaining = new Set(Object.keys(updates))
-
-	for (let index = 0; index < lines.length; index++) {
-		const key = lines[index]?.match(/^\s*([^#=\s]+)\s*=/)?.[1]
-
-		if (!key || !(key in updates)) continue
-
-		lines[index] = `${key}="${updates[key]!}"`
-		remaining.delete(key)
-	}
-
-	while (lines.at(-1) === '') lines.pop()
-
-	for (const group of groups) {
-		const pending = Object.keys(group).filter((key) => remaining.has(key))
-
-		if (pending.length === 0) continue
-
-		if (lines.length > 0) lines.push('')
-
-		for (const key of pending) lines.push(`${key}="${updates[key]!}"`)
-	}
-
-	writeFileSync(path, `${lines.join('\n')}\n`)
-}
-
-// Pins the daemon port in pitchfork.local.toml (gitignored) so the pitchfork
-// proxy never has to guess which listening socket is the app (vite+/nitro
-// opens more than one). The port lives in the untracked file because it
-// differs per workspace — a tracked port line conflicts on every rebase.
-// pitchfork treats the local file as the project config, so it must carry
-// the full daemon definition, not just the override.
-function setDaemonPort(appPort: number): void {
-	const base = 'pitchfork.toml'
-
-	if (!existsSync(base)) return
-	const contents = readFileSync(base, 'utf8').replace(/^port = \d+\n/m, '')
-	writeFileSync(
-		'pitchfork.local.toml',
-		`${contents.trimEnd()}\nport = ${appPort}\n`,
-	)
-}
-
-function readEnvFile(path: string): Record<string, string> {
-	if (!existsSync(path)) return {}
-
-	return Object.fromEntries(
-		readFileSync(path, 'utf8')
-			.split(/\r?\n/)
-			.flatMap((line) => {
-				const match = line.match(/^\s*([^#=\s]+)\s*=\s*"?([^"]*)"?$/)
-
-				return match ? [[match[1]!, match[2]!]] : []
-			}),
-	)
-}
-
-function defaultWorkspaceRoot(): string {
-	try {
-		return realpathSync(run('jj', ['workspace', 'root', '--name', 'default']))
-	} catch {
-		// not a jj repo — the current directory is the root
-		return realpathSync('.')
-	}
-}
-
-function pitchfork(args: string[]): string {
-	return execFileSync('pitchfork', args, {
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'ignore'],
-		timeout: 10_000,
-	}).trim()
-}
-
-function pitchforkAvailable(): boolean {
-	try {
-		pitchfork(['list'])
-
-		return true
-	} catch {
-		return false
-	}
-}
-
-// The proxy TLD (settings proxy.tld) decides where slugs live. A custom TLD
-// with a public suffix (e.g. lvh.example.com) makes slug URLs registrable as
-// OAuth redirect URIs; the default 'localhost' TLD is not registrable.
-function proxyTld(): string {
-	try {
-		return pitchfork(['settings', 'get', 'proxy.tld']) || 'localhost'
-	} catch {
-		return 'localhost'
-	}
+	return `${result}${hash64(value).toString(36).padStart(3, '0').slice(0, 3)}`
 }
 
 function slugify(value: string): string {
@@ -288,127 +78,247 @@ function slugify(value: string): string {
 
 	if (slug.length <= 63) return slug
 
-	const suffix = worktrunkHash(value).toString(36).padStart(8, '0').slice(0, 8)
+	const suffix = hash64(value).toString(36).padStart(8, '0').slice(0, 8)
 
 	return `${slug.slice(0, 63 - suffix.length - 1).replace(/-+$/, '')}-${suffix}`
 }
 
-// Registers a stable https://<slug>.<tld> URL for the project. Only the
-// default workspace registers; other jj workspaces are reached via
-// https://<workspace>.<slug>.<tld> through `proxy.worktree` auto-discovery.
-// Best effort: pitchfork is a local convenience, never a bootstrap blocker.
-// `proxy trust` needs sudo, so it stays a one-time manual step.
-function registerProxySlug(mainRoot: string): string {
-	const slug = slugify(basename(mainRoot))
+// ===== workspace =====
 
-	if (realpathSync('.') === mainRoot) {
-		try {
-			pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
-			pitchfork(['proxy', 'add', slug, '--daemon', 'dev', '--dir', mainRoot])
-		} catch {
-			// pitchfork unavailable — skip registration
+interface WorkspaceInfo {
+	branch: string
+	worktree: string
+	// stable across branch switches: the jj workspace name, or the worktree
+	// directory name on plain Git
+	id: string
+}
+
+function detectWorkspace(): WorkspaceInfo {
+	try {
+		const root = realpathSync(run('jj', ['workspace', 'root']))
+
+		const rows = run('jj', [
+			'workspace',
+			'list',
+			'-T',
+			'name ++ "\\t" ++ try(root.absolute(), "") ++ "\\n"',
+		])
+
+		for (const row of rows.split('\n')) {
+			const [name, path] = row.split('\t')
+
+			try {
+				if (name && path && realpathSync(path) === root) {
+					return { branch: name, worktree: basename(root), id: name }
+				}
+			} catch {
+				// stale workspace whose directory is gone
+			}
 		}
+	} catch {
+		// not a jj repo
 	}
 
-	return slug
+	try {
+		const root = realpathSync(run('git', ['rev-parse', '--show-toplevel']))
+
+		return {
+			branch: run('git', ['branch', '--show-current']) || basename(root),
+			worktree: basename(root),
+			id: basename(root),
+		}
+	} catch {
+		throw new Error('Run setup from inside a jj workspace or Git worktree')
+	}
 }
 
-// Ports are stable once assigned: only regenerate when the env file is
-// absent or belongs to another worktree (wt copy-ignored clones the default
-// workspace's file into new workspaces, which must not keep its ports —
-// and re-running setup here must not move this workspace's existing
-// database or registered OAuth redirect URIs out from under it).
-// A foreign file is fully rewritten so the canonical key order is restored.
-function existingPorts(worktree: string): Record<string, string> {
-	const entries = readEnvFile('.env.development.local')
-
-	if (entries['WORKTREE_NAME'] !== worktree) return {}
-
-	return entries
+function defaultWorkspaceRoot(): string {
+	try {
+		return realpathSync(run('jj', ['workspace', 'root', '--name', 'default']))
+	} catch {
+		// not a jj repo — the current directory is the root
+		return realpathSync('.')
+	}
 }
+
+// ===== env file =====
+
+// A pure cache of workspace identity: never read back, deleted freely,
+// regenerated identically. wt's copy-ignored cloning of another workspace's
+// file is therefore harmless, and local hand edits do not survive a run.
+function writeEnvFile(path: string, groups: Record<string, string>[]): void {
+	const lines = [
+		...VARLOCK_HEADER,
+		'# Generated by mise run setup — do not edit.',
+	]
+
+	groups.forEach((group, index) => {
+		if (index > 0) lines.push('')
+
+		for (const [key, value] of Object.entries(group))
+			lines.push(`${key}="${value}"`)
+	})
+
+	writeFileSync(path, `${lines.join('\n')}\n`)
+}
+
+// ===== pitchfork =====
+
+// A stuck daemon socket would hang the run, so pitchfork calls get a timeout.
+function pitchfork(args: string[]): string {
+	return run('pitchfork', args, 10_000)
+}
+
+interface ProxyStatus {
+	tld: string
+	slugs: { slug: string; dir: string }[]
+}
+
+function proxyStatus(): ProxyStatus | null {
+	try {
+		const status: ProxyStatus = JSON.parse(
+			pitchfork(['proxy', 'status', '--json']),
+		)
+
+		return status
+	} catch {
+		return null
+	}
+}
+
+// A custom TLD with a public suffix (e.g. lvh.example.com) keeps slug URLs
+// registrable as OAuth redirect URIs; the default 'localhost' is not.
+// Two-level subdomains (`<ws>.<project>`) are not registered proxy routes:
+// they silently serve the default app, so each workspace claims one
+// single-label slug namespaced by project: `imdbgraph` for the default
+// workspace, `imdbgraph-<workspace>` otherwise. Bare worktree names are
+// taken (slug and pitchfork namespace are global registries), so the
+// project prefix also keeps different projects' same-named worktrees from
+// colliding. `proxy add` overwrites without asking, so a slug is claimed
+// only when no other directory owns it. Null when pitchfork is unavailable
+// or the slug is owned elsewhere. `proxy trust` needs sudo, so it stays a
+// one-time manual step.
+function proxySlugName(mainRoot: string, worktree: string): string {
+	const projectSlug = slugify(basename(mainRoot))
+
+	return realpathSync('.') === mainRoot
+		? projectSlug
+		: slugify(`${projectSlug}-${worktree}`)
+}
+
+function registerProxyUrl(namespace: string): string | null {
+	const status = proxyStatus()
+
+	if (!status) return null
+
+	const cwd = realpathSync('.')
+
+	try {
+		pitchfork(['settings', 'set', 'proxy.enable', 'true', '--global'])
+
+		const owner = status.slugs.find(({ slug }) => slug === namespace)?.dir
+
+		let claimable = true
+
+		if (owner !== undefined) {
+			try {
+				claimable = realpathSync(owner) === cwd
+			} catch {
+				// stale registration, the directory is gone
+			}
+		}
+
+		if (!claimable) return null
+
+		pitchfork(['proxy', 'add', namespace, '--daemon', 'dev', '--dir', cwd])
+
+		return `https://${namespace}.${status.tld ?? 'localhost'}`
+	} catch {
+		return null
+	}
+}
+
+// The daemon definition lives here, not in the tracked pitchfork.toml: any
+// daemon-bearing file without an explicit namespace is also read under the
+// directory basename, which would register a phantom daemon per workspace.
+// The proxy must not guess which listening socket is the app (vite+/nitro
+// opens several), so the port is pinned too. The namespace is pinned because
+// pitchfork's default is the directory basename, a global registry that
+// collides across projects.
+function writeDaemonConfig(appPort: number, namespace: string): void {
+	writeFileSync(
+		'pitchfork.local.toml',
+		`#:schema https://pitchfork.jdx.dev/schema.json
+
+# Generated by mise run setup — do not edit.
+namespace = "${namespace}"
+
+[daemons.dev]
+run = "exec vp dev"
+mise = true
+auto = ["start", "stop"]
+retry = 3
+ready_output = "Local:"
+port = ${appPort}
+`,
+	)
+}
+
+// ===== main =====
 
 function main(): void {
-	// Never honor WORKTREE_NAME/WORKTREE_BRANCH from the environment:
-	// nothing legitimate sets them (wt passes template vars, not env), and
-	// inherited stale values from another workspace must not steer setup.
-	const { branch, worktree } = detectWorkspace()
-	const compose = sanitizeDatabaseName(worktree)
-	const existing = existingPorts(worktree)
-
-	const isForeign =
-		existsSync('.env.development.local') &&
-		readEnvFile('.env.development.local')['WORKTREE_NAME'] !== worktree
-
-	const database = existing['POSTGRES_DB'] ?? sanitizeDatabaseName(branch)
-	const appPort = Number(existing['APP_PORT']) || hashPort(branch)
-
-	const postgresPort =
-		Number(existing['POSTGRES_PORT']) || hashPort(`db-${branch}`)
-
-	const minioPort =
-		Number(existing['MINIO_PORT']) || hashPort(`minio-${branch}`)
-
-	const minioConsolePort =
-		Number(existing['MINIO_CONSOLE_PORT']) ||
-		hashPort(`minio-console-${branch}`)
-
+	const { branch, worktree, id } = detectWorkspace()
 	const mainRoot = defaultWorkspaceRoot()
-	const tld = proxyTld()
-	const proxySlug = registerProxySlug(mainRoot)
-	const worktreeLabel = slugify(worktree)
 
-	const proxyHost =
-		worktreeLabel === proxySlug
-			? `${proxySlug}.${tld}`
-			: `${worktreeLabel}.${proxySlug}.${tld}`
+	// the workspace name is only unique within a repo, so the project's
+	// main-root basename joins the hash to keep port blocks project-local
+	const appPort = portBase(`${basename(mainRoot)}-${id}`)
+	const postgresPort = appPort + 1
+	const minioPort = appPort + 2
+	const minioConsolePort = appPort + 3
+	const database = sanitizeDatabaseName(id)
 
-	const proxyUp = pitchforkAvailable()
+	const namespace = proxySlugName(mainRoot, worktree)
+	const proxyUrl = registerProxyUrl(namespace)
 
-	updateEnvFile(
-		'.env.development.local',
-		[
-			{
-				APP_PORT: String(appPort),
-				BASE_URL: proxyUp
-					? `https://${proxyHost}`
-					: `http://localhost:${appPort}`,
-			},
-			{
-				POSTGRES_PORT: String(postgresPort),
-				POSTGRES_DB: database,
-				POSTGRES_USER,
-				POSTGRES_PASSWORD,
-				DATABASE_URL:
-					'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
-			},
-			{
-				MINIO_PORT: String(minioPort),
-				MINIO_CONSOLE_PORT: String(minioConsolePort),
-			},
-			{
-				AWS_ENDPOINT_URL: 'http://localhost:${MINIO_PORT}',
-				AWS_ACCESS_KEY_ID,
-				AWS_SECRET_ACCESS_KEY,
-				AWS_S3_BUCKET_NAME: 'app',
-			},
-			{
-				WORKTREE_NAME: worktree,
-				COMPOSE_PROJECT_NAME: compose,
-			},
-		],
-		isForeign,
-	)
+	writeEnvFile('.env.development.local', [
+		{
+			APP_PORT: String(appPort),
+			BASE_URL: proxyUrl ?? `http://localhost:${appPort}`,
+		},
+		{
+			POSTGRES_PORT: String(postgresPort),
+			POSTGRES_DB: database,
+			POSTGRES_USER,
+			POSTGRES_PASSWORD,
+			DATABASE_URL:
+				'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}',
+		},
+		{
+			MINIO_PORT: String(minioPort),
+			MINIO_CONSOLE_PORT: String(minioConsolePort),
+		},
+		{
+			AWS_ENDPOINT_URL: 'http://localhost:${MINIO_PORT}',
+			AWS_ACCESS_KEY_ID,
+			AWS_SECRET_ACCESS_KEY,
+			AWS_S3_BUCKET_NAME: 'app',
+		},
+		{
+			WORKTREE_NAME: worktree,
+			COMPOSE_PROJECT_NAME: sanitizeDatabaseName(worktree),
+			DOCKER_SUBNET: dockerSubnet(appPort),
+		},
+	])
 
-	setDaemonPort(appPort)
+	writeDaemonConfig(appPort, namespace)
 
 	console.log(`Generated .env.development.local for ${branch}:`)
 	console.log(`  app:      http://localhost:${appPort}`)
 	console.log(`  postgres: localhost:${postgresPort}/${database}`)
 	console.log(`  minio:    http://localhost:${minioPort}`)
 
-	if (proxyUp) {
-		console.log(`  proxy:    https://${proxyHost}`)
-	}
+	if (proxyUrl) console.log(`  proxy:    ${proxyUrl}`)
 }
 
 main()
