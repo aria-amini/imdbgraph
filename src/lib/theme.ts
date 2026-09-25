@@ -7,7 +7,7 @@ const THEME_COOKIE_NAME = 'theme'
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
 
-function parseTheme(value: unknown): Theme | null {
+function toTheme(value: string | undefined): Theme | null {
 	return value === 'light' || value === 'dark' ? value : null
 }
 
@@ -21,8 +21,8 @@ function readBrowserCookie() {
 
 /** null means no explicit preference; the browser resolves the OS setting. */
 export const getThemePreference = createIsomorphicFn()
-	.server(() => parseTheme(getCookie(THEME_COOKIE_NAME)))
-	.client(() => parseTheme(readBrowserCookie()))
+	.server(() => toTheme(getCookie(THEME_COOKIE_NAME)))
+	.client(() => toTheme(readBrowserCookie()))
 
 /** Synchronize the document with the provider state. */
 export function applyThemeToDocument(theme: Theme): void {

@@ -1,20 +1,24 @@
 const showTypes = new Set(['tvSeries', 'tvShort', 'tvSpecial', 'tvMiniSeries'])
 
-/** Parses an IMDb ratings TSV row. */
-export function parseRatingsLine(line: string): {
+interface ParsedRatingsLine {
 	imdbId: string | undefined
 	numVotes: number
-} {
+}
+
+interface ParsedEpisodeLine {
+	episodeId: string | undefined
+	showId: string | undefined
+}
+
+/** Parses an IMDb ratings TSV row. */
+export function parseRatingsLine(line: string): ParsedRatingsLine {
 	const [imdbId, , numVotesRaw] = line.split('\t')
 
 	return { imdbId, numVotes: Number(numVotesRaw) }
 }
 
 /** Parses an IMDb episode TSV row. */
-export function parseEpisodeLine(line: string): {
-	episodeId: string | undefined
-	showId: string | undefined
-} {
+export function parseEpisodeLine(line: string): ParsedEpisodeLine {
 	const [episodeId, showId] = line.split('\t')
 
 	return { episodeId, showId }

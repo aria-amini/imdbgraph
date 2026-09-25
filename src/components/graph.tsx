@@ -29,11 +29,13 @@ type ChartDataPoint = {
 	episodeIndex: number
 } & Record<`season${number}` | `episode${number}`, number | Episode | null>
 
-/** Converts grouped episode ratings into chart points and season labels. */
-export function transformRatingsData(ratings: Ratings): {
+interface RatingsChartSeries {
 	data: ChartDataPoint[]
 	seasons: number[]
-} {
+}
+
+/** Converts grouped episode ratings into chart points and season labels. */
+export function transformRatingsData(ratings: Ratings): RatingsChartSeries {
 	let episodeIndex = 1
 	const data: ChartDataPoint[] = []
 	const seasons: number[] = []
