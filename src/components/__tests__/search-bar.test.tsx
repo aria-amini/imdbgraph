@@ -319,8 +319,8 @@ describe('searchbar tests', () => {
 
 		await userEvent.keyboard('{Enter}')
 		expect(navigateSpy).toHaveBeenCalledWith({
-			params: { query: 'avatar' },
-			to: '/search/$query',
+			search: { q: 'avatar' },
+			to: '/search',
 		})
 	})
 

@@ -5,7 +5,7 @@ import { http, HttpResponse } from 'msw'
 import { expect, vi } from 'vite-plus/test'
 import { userEvent } from 'vite-plus/test/browser'
 
-import { Route as SearchRoute } from '@/routes/search/$query'
+import { Route as SearchRoute } from '@/routes/search'
 
 test('search results page matches screenshot', async () => {
 	vi.spyOn(SearchRoute, 'useLoaderData').mockReturnValue({
@@ -13,7 +13,7 @@ test('search results page matches screenshot', async () => {
 		results: searchResults,
 	})
 	const visualPage = await renderVisualPage({
-		path: '/search/$query',
+		path: '/search',
 		component: routeComponent(SearchRoute),
 		waitFor: (screen) =>
 			screen.getByRole('heading', { name: /search results/i }),
@@ -35,7 +35,7 @@ desktopTest(
 			results: searchResults,
 		})
 		const visualPage = await renderVisualPage({
-			path: '/search/$query',
+			path: '/search',
 			component: routeComponent(SearchRoute),
 			waitFor: (screen) =>
 				screen.getByRole('heading', { name: /search results/i }),

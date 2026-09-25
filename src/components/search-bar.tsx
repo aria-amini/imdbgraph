@@ -12,6 +12,7 @@ import { cn } from 'cn'
 import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
+import { SuggestionPoster } from '@/components/suggestion-poster'
 import { Button } from '@/components/ui/button'
 import {
 	InputGroup,
@@ -27,41 +28,11 @@ import {
 	type Suggestion,
 } from '@/lib/imdb/search'
 import { formatYears } from '@/lib/imdb/types'
-import { getPosterImageUrl } from '@/lib/thumbnail/client'
 import { useBrowserLayoutEffect } from '@/lib/use-browser-layout-effect'
 
 // Fast suggestion responses would flash the spinner on every keystroke.
 const SPINNER_DELAY_MS = 300
 const SEARCH_DEBOUNCE_MS = 200
-
-function SuggestionPoster({
-	imdbId,
-	title,
-}: {
-	imdbId: string
-	title: string
-}) {
-	const [failed, setFailed] = useState(false)
-	return (
-		<span
-			aria-hidden
-			className="border-border bg-muted relative block h-12 w-8 shrink-0 overflow-hidden border"
-		>
-			<span className="text-muted-foreground absolute inset-0 flex items-center justify-center font-mono text-sm font-black">
-				{title.charAt(0).toUpperCase()}
-			</span>
-			{!failed && (
-				<img
-					src={getPosterImageUrl(imdbId)}
-					alt=""
-					loading="lazy"
-					onError={() => setFailed(true)}
-					className="absolute inset-0 size-full object-cover"
-				/>
-			)}
-		</span>
-	)
-}
 
 /** Renders the title search input and its suggestion list.
  *
@@ -187,8 +158,8 @@ export function SearchBar({
 		if (!query) return
 
 		void router.navigate({
-			to: '/search/$query',
-			params: { query },
+			to: '/search',
+			search: { q: query },
 		})
 	}
 
@@ -460,8 +431,8 @@ export function SearchBar({
 										className="border-border w-full cursor-pointer border-t text-sm outline-none select-none"
 									>
 										<Link
-											to="/search/$query"
-											params={{ query: search.trim() }}
+											to="/search"
+											search={{ q: search.trim() }}
 											onClickCapture={captureLinkClick}
 											className="group hover:bg-muted focus-visible:bg-muted aria-selected:bg-muted block px-2 py-1.5 focus-visible:outline-none"
 										>

@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 
 import { Page } from '@/components/page'
+import { SuggestionPoster } from '@/components/suggestion-poster'
 import { usePreloadRatingsChunk } from '@/lib/imdb/ratings'
 import { scrapeVersion } from '@/lib/imdb/scraper/scrape-run'
 import { searchResultsQuery } from '@/lib/imdb/search'
@@ -32,11 +33,19 @@ function SearchSkeleton() {
 	)
 }
 
-export const Route = createFileRoute('/search/$query')({
+export const Route = createFileRoute('/search')({
+	// An empty or absent q must stay absent: emitting `q: ''` makes the
+	// router rewrite bare `/search` into `/search?q=` (normalizing search)
+	// before rendering. Only non-empty strings are kept.
+	validateSearch: (search: Record<string, unknown>): { q?: string } => {
+		const q = search.q
+		return typeof q === 'string' && q.trim() !== '' ? { q: q.trim() } : {}
+	},
 	component: SearchResults,
 	pendingComponent: SearchSkeleton,
-	loader: async ({ params, context: { queryClient } }) => {
-		const query = params.query.trim()
+	loaderDeps: ({ search: { q } }) => [q] as const,
+	loader: async ({ deps: [q], context: { queryClient } }) => {
+		const query = q ?? ''
 		if (query === '') {
 			return { query, results: [] }
 		}
@@ -86,6 +95,7 @@ function ShowResult({ show }: { show: Suggestion }) {
 				'flex items-center gap-4 border-b border-border px-2 py-4 transition-colors last:border-b-0 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
 			)}
 		>
+			<SuggestionPoster imdbId={show.imdbId} title={show.title} />
 			<div className={cn('min-w-0 flex-1')}>
 				<span className={cn('block truncate font-medium')}>{show.title}</span>
 				<span className={cn('text-muted-foreground mt-1 block text-xs')}>
