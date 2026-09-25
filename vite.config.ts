@@ -27,6 +27,7 @@ const fmt = {
 		'env.d.ts',
 		'**/routeTree.gen.ts',
 		'src/db/migrations/**',
+		'tools/oxlint/anti-slop/**',
 	],
 	overrides: [
 		{
@@ -53,6 +54,7 @@ const lint = {
 	jsPlugins: [
 		{ name: 'eslint-js', specifier: 'oxlint-plugin-eslint' },
 		'@shadcn/lint',
+		{ name: 'anti-slop', specifier: './tools/oxlint/anti-slop/index.ts' },
 	],
 	categories: {},
 	options: {
@@ -175,8 +177,9 @@ const lint = {
 	},
 	env: { builtin: true },
 	globals: {},
-	ignorePatterns: ['**/dist/**'],
+	ignorePatterns: ['**/dist/**', 'tools/oxlint/anti-slop/**'],
 } satisfies UserConfig['lint']
+
 const root = import.meta.dirname
 
 export default defineConfig({
