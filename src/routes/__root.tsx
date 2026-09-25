@@ -77,12 +77,7 @@ function DocumentShell({ children }: { children: ReactNode }) {
 	const { theme } = Route.useRouteContext()
 
 	return (
-		<html
-			lang="en"
-			suppressHydrationWarning
-			className={theme ?? undefined}
-			style={{ colorScheme: theme ?? 'light dark' }}
-		>
+		<html lang="en" suppressHydrationWarning className={theme ?? undefined}>
 			<head>
 				<HeadContent />
 			</head>

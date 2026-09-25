@@ -146,7 +146,7 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 			<ShowPoster key={show.imdbId} show={show} />
 
 			<div className="min-w-0 flex-1">
-				<h1 className="text-3xl leading-[1.05] font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
+				<h1 className="leading-display text-3xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
 					{show.title}
 				</h1>
 				<p className="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
@@ -166,10 +166,10 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 				>
 					<span className="flex items-center gap-x-1.5">
 						<span
-							className="inline-flex items-center gap-x-1 rounded-sm px-1.5 py-0.5"
+							className="inline-flex items-center gap-x-1 rounded-sm bg-(--rating-bg) px-1.5 py-0.5 text-(--rating-fg)"
 							style={{
-								backgroundColor: ratingColor(show.rating),
-								color: ratingTextColor(show.rating),
+								'--rating-bg': ratingColor(show.rating),
+								'--rating-fg': ratingTextColor(show.rating),
 							}}
 						>
 							<Star aria-hidden className="size-4 shrink-0" weight="fill" />
@@ -181,7 +181,7 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 							/ 10
 						</span>
 					</span>
-					<span className="text-[11px] tracking-widest uppercase">
+					<span className="text-2xs tracking-widest uppercase">
 						{votes} votes
 					</span>
 				</a>
@@ -212,7 +212,7 @@ function ViewToggle({
 					disabled={disabled}
 					onClick={() => onViewChange(option)}
 					className={cn(
-						'px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-50',
+						'px-3 py-1.5 font-mono text-2xs font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-50',
 						view === option
 							? 'bg-foreground text-background'
 							: 'text-muted-foreground hover:bg-muted hover:text-foreground',
