@@ -1,7 +1,12 @@
 import { cn } from 'cn'
 import * as React from 'react'
 import * as RechartsPrimitive from 'recharts'
-import type { TooltipValueType } from 'recharts'
+import type {
+	LegendPayload,
+	TooltipPayloadEntry,
+	TooltipValueType,
+} from 'recharts'
+import { z } from 'zod'
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const
@@ -159,10 +164,11 @@ function ChartTooltipContent({
 		const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
 		const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
-		const value =
-			!labelKey && typeof label === 'string'
-				? (config[label]?.label ?? label)
-				: itemConfig?.label
+		const parsedLabel = !labelKey ? z.string().safeParse(label) : null
+
+		const value = parsedLabel?.success
+			? (config[parsedLabel.data]?.label ?? parsedLabel.data)
+			: itemConfig?.label
 
 		if (labelFormatter) {
 			return (
@@ -260,9 +266,7 @@ function ChartTooltipContent({
 											</div>
 											{item.value != null && (
 												<span className="text-foreground font-mono font-medium tabular-nums">
-													{typeof item.value === 'number'
-														? item.value.toLocaleString()
-														: String(item.value)}
+													{item.value.toLocaleString()}
 												</span>
 											)}
 										</div>
@@ -334,36 +338,50 @@ function ChartLegendContent({
 	)
 }
 
-function readStringField(source: object, key: string): string | undefined {
-	const value: unknown = Reflect.get(source, key)
+type ChartPayloadEntry = TooltipPayloadEntry | LegendPayload
 
-	return typeof value === 'string' ? value : undefined
-}
-
-function getPayloadConfigFromPayload(
-	config: ChartConfig,
-	payload: unknown,
+function readStringField(
+	source: ChartPayloadEntry,
 	key: string,
-) {
-	if (typeof payload !== 'object' || payload === null) {
+): string | undefined {
+	const entry = Object.entries(source).find(([entryKey]) => entryKey === key)
+
+	if (entry === undefined) {
 		return undefined
 	}
 
-	const payloadPayload =
-		'payload' in payload &&
-		typeof payload.payload === 'object' &&
-		payload.payload !== null
-			? payload.payload
-			: undefined
+	const value = z.string().safeParse(entry[1])
 
-	let configLabelKey: string = key
+	return value.success ? value.data : undefined
+}
 
-	const direct = readStringField(payload, key)
+const payloadRecord = z.record(z.string(), z.unknown())
+
+function getPayloadConfigFromPayload(
+	config: ChartConfig,
+	item: ChartPayloadEntry | undefined,
+	key: string,
+) {
+	if (item === undefined) {
+		return undefined
+	}
+
+	let configLabelKey = key
+
+	const direct = readStringField(item, key)
 
 	if (direct !== undefined) {
 		configLabelKey = direct
-	} else if (payloadPayload) {
-		configLabelKey = readStringField(payloadPayload, key) ?? configLabelKey
+	} else {
+		const nested = payloadRecord.safeParse(item.payload)
+
+		if (nested.success) {
+			const nestedValue = z.string().safeParse(nested.data[key])
+
+			if (nestedValue.success) {
+				configLabelKey = nestedValue.data
+			}
+		}
 	}
 
 	return configLabelKey in config ? config[configLabelKey] : config[key]

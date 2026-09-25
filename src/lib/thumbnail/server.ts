@@ -139,11 +139,11 @@ async function showExists(
 
 // Drizzle wraps the driver error, so the postgres code can sit one or more
 // causes deep.
-function isForeignKeyViolation(error: unknown): boolean {
+function isForeignKeyViolation(error: unknown): error is { code: '23503' } {
 	let current: unknown = error
 
 	for (let depth = 0; depth < 5; depth++) {
-		if (typeof current !== 'object' || current === null) {
+		if (!(current instanceof Object)) {
 			return false
 		}
 
@@ -212,11 +212,11 @@ async function downloadImage(url: string): Promise<DownloadedImage> {
 		.trim()
 		.toLowerCase()
 
-	const extension = EXTENSIONS[contentType]
-
-	if (!extension) {
+	if (!isThumbnailContentType(contentType)) {
 		throw new Error(`unsupported thumbnail content type "${contentType}"`)
 	}
+
+	const extension = EXTENSIONS[contentType]
 
 	const chunks: Uint8Array[] = []
 	let total = 0
@@ -254,10 +254,18 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 const RETRY_DELAY_MS = 60_000
 
-const EXTENSIONS: Record<string, string> = {
+type ThumbnailContentType = 'image/jpeg' | 'image/png' | 'image/webp'
+
+const EXTENSIONS: Record<ThumbnailContentType, string> = {
 	'image/jpeg': 'jpg',
 	'image/png': 'png',
 	'image/webp': 'webp',
+}
+
+function isThumbnailContentType(value: string): value is ThumbnailContentType {
+	return (
+		value === 'image/jpeg' || value === 'image/png' || value === 'image/webp'
+	)
 }
 
 const cooldowns = new Map<string, number>()

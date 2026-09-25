@@ -98,7 +98,12 @@ function run(command: string, args: string[]): string {
 	}).trim()
 }
 
-function detectWorkspace(): { branch: string; worktree: string } {
+interface WorkspaceInfo {
+	branch: string
+	worktree: string
+}
+
+function detectWorkspace(): WorkspaceInfo {
 	try {
 		const root = realpathSync(run('jj', ['workspace', 'root']))
 
