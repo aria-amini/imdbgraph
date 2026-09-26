@@ -36,6 +36,12 @@ services:
       timeout: 3s
       retries: 15
 
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${DOCKER_SUBNET:?run mise run setup first}
+
 volumes:
   postgres_data:
   minio_data:
