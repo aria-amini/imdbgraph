@@ -1,4 +1,11 @@
 #:schema https://pitchfork.jdx.dev/schema.json
 
-# Daemons are generated per workspace into pitchfork.local.toml (gitignored)
-# by mise-tasks/setup.ts, which pins the namespace and port block.
+# The daemon namespace derives from the directory name, so each jj workspace
+# (wt switch) gets isolated daemons with its own ports from scripts/setup.ts.
+
+[daemons.dev]
+run = "exec vp dev"
+mise = true
+auto = ["start", "stop"]
+retry = 3
+ready_output = "Local:"

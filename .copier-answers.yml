@@ -1,6 +1,6 @@
 # Changes here will be overwritten by Copier; do not edit manually
-_commit: v0.0.20-56-g8d8d3b6
-_src_path: /home/aria-amini/dotfiles
+_commit: v0.0.33
+_src_path: https://github.com/aria-amini/tanstack-template
 app_name: imdbgraph
 google_auth: false
 posthog: true

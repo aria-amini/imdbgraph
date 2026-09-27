@@ -1,5 +1,6 @@
 .env*.local
 .mise.local.toml
+.jwlinks.local.toml
 src/vite-env.d.ts
 .output
 .nitro

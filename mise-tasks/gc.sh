@@ -45,15 +45,16 @@ for project in $projects; do
 	fi
 done
 
-# networks can outlive their containers, so apply the same ownership
-# check to compose networks instead of pruning every unused network
-# on the daemon
+# networks can outlive their containers, so remove networks whose compose
+# project has no containers left. docker 29 exposes network labels only as
+# a map (no .Label method) and never stamps working_dir on networks.
 for network in $(docker network ls --filter 'label=com.docker.compose.project' --format '{{.Name}}'); do
-	dir="$(docker network inspect "$network" --format '{{.Label "com.docker.compose.project.working_dir"}}')"
-	if [[ -z "$dir" || -d "$dir" ]]; then
+	project="$(docker network inspect "$network" --format '{{index .Labels "com.docker.compose.project"}}')"
+	[[ -n "$project" ]] || continue
+	if docker ps -a --filter "label=com.docker.compose.project=$project" --format '{{.ID}}' | grep -q .; then
 		continue
 	fi
-	echo "Removing orphaned network: $network ($dir)"
+	echo "Removing orphaned network: $network ($project)"
 	docker network rm "$network" || {
 		echo "Failed to remove: $network" >&2
 		failed=$((failed + 1))

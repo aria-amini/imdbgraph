@@ -1,6 +1,8 @@
 allowBuilds:
   core-js: true
-  cpu-features: true
+  # cpu-features is an optional pg dependency; its native build aborts the
+  # process on aarch64 (unfixable symbol error), and pg runs fine without it.
+  cpu-features: false
   esbuild: true
   msw: true
   protobufjs: true
