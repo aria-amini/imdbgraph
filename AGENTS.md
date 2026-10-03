@@ -19,10 +19,10 @@ the ratings data for all episodes of a TV show. More details in @PRODUCT.md
 
 - `mise run bootstrap` setup resources for a workspace including setting up the
   local database and s3/minio instance and a local dev server using Pitchfork.
-  `mise run setup` registers one proxy slug per workspace: `imdbgraph` for the
-  default workspace, `imdbgraph-<workspace>` otherwise (for example
-  `https://imdbgraph-setup-polish.lvh.ariaamini.com`). It writes the slug URL to
-  `BASE_URL` in `.env.development.local`.
+  Bootstrap runs `scripts/setup.ts`, which registers one proxy slug per
+  workspace: `imdbgraph` for the default workspace, `imdbgraph-<workspace>`
+  otherwise (for example `https://imdbgraph-setup-polish.lvh.ariaamini.com`).
+  Setup writes the slug URL to `BASE_URL` in `.env.workspace.local`.
 
 ## Commands
 
