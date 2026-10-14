@@ -5,6 +5,17 @@ import { render } from 'vitest-browser-react'
 import { Block } from '@/components/block'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
+test('shows one average tile per season outside the episode links', async () => {
+	const screen = await render(<Block ratings={gameOfThronesRatings} />)
+	const averages = screen.getByTestId('season-average')
+	const seasonCount = Object.keys(gameOfThronesRatings.allEpisodeRatings).length
+
+	expect(averages.first().element().textContent).toMatch(
+		/Season 1 average rating \d+\.\d out of 10/,
+	)
+	expect(averages.elements()).toHaveLength(seasonCount)
+})
+
 // The first/last tiles in a wrapped row must keep their episode titles readable.
 test('episode tooltips stay inside a narrow viewport', async () => {
 	const original = { width: window.innerWidth, height: window.innerHeight }
