@@ -63,7 +63,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@aamini/config": "https://pkg.pr.new/@aamini/config@4a6a0fd",
+		"@aamini/config": "https://pkg.pr.new/@aamini/config@5eb315c",
 		"@playwright/test": "^1.61.0",
 		"@shadcn/lint": "^0.2.0",
 		"@tailwindcss/vite": "^4.3.1",

@@ -271,8 +271,8 @@ importers:
         version: 4.6.5
     devDependencies:
       '@aamini/config':
-        specifier: https://pkg.pr.new/@aamini/config@4a6a0fd
-        version: https://pkg.pr.new/@aamini/config@4a6a0fd(746c75fce212fe20b93e0cdb22fb3c74)
+        specifier: https://pkg.pr.new/@aamini/config@5eb315c
+        version: https://pkg.pr.new/@aamini/config@5eb315c(746c75fce212fe20b93e0cdb22fb3c74)
       '@playwright/test':
         specifier: ^1.61.0
         version: 1.63.0
@@ -360,8 +360,8 @@ importers:
 
 packages:
 
-  '@aamini/config@https://pkg.pr.new/@aamini/config@4a6a0fd':
-    resolution: {integrity: sha512-FgFiNAB/yMTmNCwA9mcEKgePJ3opiA0SP4+78iPmi1KtVgLAXNtmrSMzoIKwss1BuhxcDe0hXQuN7fKooCi4DA==, tarball: https://pkg.pr.new/@aamini/config@4a6a0fd}
+  '@aamini/config@https://pkg.pr.new/@aamini/config@5eb315c':
+    resolution: {integrity: sha512-JG7wvo9TA4L01p1AVE7LYXQIsWHewWaJdf5E6YXtV2QKUWqR4dZ+ZUjOsj2KueGtHcv7dHr/fwK7doMjK4LkbQ==, tarball: https://pkg.pr.new/@aamini/config@5eb315c}
     version: 0.1.0
     peerDependencies:
       '@playwright/test': ^1.61.0
@@ -5879,7 +5879,7 @@ packages:
 
 snapshots:
 
-  '@aamini/config@https://pkg.pr.new/@aamini/config@4a6a0fd(746c75fce212fe20b93e0cdb22fb3c74)':
+  '@aamini/config@https://pkg.pr.new/@aamini/config@5eb315c(746c75fce212fe20b93e0cdb22fb3c74)':
     dependencies:
       vite-plus: 1.1.0(@types/node@26.6.3)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.15.0(@types/node@26.6.3)(typescript@6.0.3))(playwright@1.63.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
     optionalDependencies:
