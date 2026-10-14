@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: '24'
       - name: Install Playwright Browsers
-        run: vpx playwright install --with-deps --only-shell
+        run: vp exec playwright install chromium --with-deps --no-shell
       # sleepApplication is enabled on Railway, so the first request has to
       # wake the app; retry until it responds.
       - name: Wait for deployment to be reachable

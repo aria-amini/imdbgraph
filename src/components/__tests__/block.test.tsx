@@ -1,4 +1,4 @@
-import { expect, test } from '@config/test/browser'
+import { expect, test } from '@tests/support/browser'
 import { page, userEvent } from 'vite-plus/test/browser'
 import { render } from 'vitest-browser-react'
 
