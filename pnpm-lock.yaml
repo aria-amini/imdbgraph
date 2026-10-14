@@ -270,6 +270,9 @@ importers:
         specifier: ^4.4.3
         version: 4.6.5
     devDependencies:
+      '@aamini/config':
+        specifier: https://pkg.pr.new/@aamini/config@5bfe706
+        version: https://pkg.pr.new/@aamini/config@5bfe706(746c75fce212fe20b93e0cdb22fb3c74)
       '@playwright/test':
         specifier: ^1.61.0
         version: 1.63.0
@@ -356,6 +359,67 @@ importers:
         version: 2.3.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.3)
 
 packages:
+
+  '@aamini/config@https://pkg.pr.new/@aamini/config@5bfe706':
+    resolution: {integrity: sha512-t5lW4akmecY4ODE4K6vNLW7MG7ZSFR6uuDisgeU5C1Ju3ZHp2P5wSH/HSZbXqcL3oWWJ5hvikiWXxLsxDBwlnQ==, tarball: https://pkg.pr.new/@aamini/config@5bfe706}
+    version: 0.0.20
+    peerDependencies:
+      '@playwright/test': ^1.61.0
+      '@rolldown/plugin-babel': ^0.2.4
+      '@shadcn/lint': ^0.2.1
+      '@tailwindcss/vite': ^4.3.3
+      '@tanstack/devtools-vite': ^0.8.0
+      '@tanstack/react-start': ^1.168.0
+      '@testcontainers/postgresql': ^12.0.3
+      '@varlock/vite-integration': ^1.5.3
+      '@vitejs/plugin-react': ^6.1.2
+      '@vitest/browser-playwright': ^5.0.3
+      babel-plugin-react-compiler: ^1.0.0
+      drizzle-orm: ^1.0.0-rc.4
+      msw: ^2.14.6
+      nitro: ^3.0.260610-beta
+      oxlint-plugin-eslint: ^1.73.0
+      pg: ^8.22.0
+      react: ^19.2.0
+      vite-plus: ^1.1.0
+      vitest-browser-react: ^2.2.0
+    peerDependenciesMeta:
+      '@playwright/test':
+        optional: true
+      '@rolldown/plugin-babel':
+        optional: true
+      '@shadcn/lint':
+        optional: true
+      '@tailwindcss/vite':
+        optional: true
+      '@tanstack/devtools-vite':
+        optional: true
+      '@tanstack/react-start':
+        optional: true
+      '@testcontainers/postgresql':
+        optional: true
+      '@varlock/vite-integration':
+        optional: true
+      '@vitejs/plugin-react':
+        optional: true
+      '@vitest/browser-playwright':
+        optional: true
+      babel-plugin-react-compiler:
+        optional: true
+      drizzle-orm:
+        optional: true
+      msw:
+        optional: true
+      nitro:
+        optional: true
+      oxlint-plugin-eslint:
+        optional: true
+      pg:
+        optional: true
+      react:
+        optional: true
+      vitest-browser-react:
+        optional: true
 
   '@aws-sdk/checksums@3.1001.1':
     resolution: {integrity: sha512-x12Q17KYlJAd3nKf8LV5LV0vt8sh8/6YfQLGPtrGnQf/tW4jqxPGq5GPpuVitpQYM3eUR4XB7CbxZf751NMbLw==}
@@ -5814,6 +5878,29 @@ packages:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
+
+  '@aamini/config@https://pkg.pr.new/@aamini/config@5bfe706(746c75fce212fe20b93e0cdb22fb3c74)':
+    dependencies:
+      vite-plus: 1.1.0(@types/node@26.6.3)(@vitest/browser-playwright@5.0.3)(@vitest/ui@5.0.3)(esbuild@0.28.2)(jiti@2.7.0)(msw@2.15.0(@types/node@26.6.3)(typescript@6.0.3))(playwright@1.63.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+    optionalDependencies:
+      '@playwright/test': 1.63.0
+      '@rolldown/plugin-babel': 0.2.4(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(rolldown@1.2.11)
+      '@shadcn/lint': 0.2.0
+      '@tailwindcss/vite': 4.3.3(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
+      '@tanstack/devtools-vite': 0.8.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
+      '@tanstack/react-start': 1.168.32(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(crossws@0.4.12(srvx@0.11.22))(esbuild@0.28.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.11)
+      '@testcontainers/postgresql': 12.2.0
+      '@varlock/vite-integration': 1.5.2(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(varlock@1.21.0)
+      '@vitejs/plugin-react': 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(rolldown@1.2.11))(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(babel-plugin-react-compiler@1.0.0)
+      '@vitest/browser-playwright': 5.0.3(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(msw@2.15.0(@types/node@26.6.3)(typescript@6.0.3))(playwright@1.63.0)(vitest@5.0.3)
+      babel-plugin-react-compiler: 1.0.0
+      drizzle-orm: 1.0.0-rc.4(@types/pg@8.23.1)(pg@8.23.0)(zod@4.6.5)
+      msw: 2.15.0(@types/node@26.6.3)(typescript@6.0.3)
+      nitro: 3.0.260610-beta(@voidzero-dev/vite-plus-core@1.1.0(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(chokidar@5.0.0)(dotenv@17.4.2)(drizzle-orm@1.0.0-rc.4(@types/pg@8.23.1)(pg@8.23.0)(zod@4.6.5))(jiti@2.7.0)
+      oxlint-plugin-eslint: 1.85.0
+      pg: 8.23.0
+      react: 19.3.0
+      vitest-browser-react: 2.3.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.3)
 
   '@aws-sdk/checksums@3.1001.1':
     dependencies:
