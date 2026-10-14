@@ -1,4 +1,4 @@
-import { describe, expect, mobileTest, test } from '@config/test/browser'
+import { describe, expect, mobileTest, test } from '@tests/support/browser'
 import { render } from 'vitest-browser-react'
 import { page } from 'vitest/browser'
 

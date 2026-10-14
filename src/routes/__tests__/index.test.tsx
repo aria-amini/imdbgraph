@@ -1,4 +1,4 @@
-import { mobileTest, test } from '@config/test/browser'
+import { mobileTest, test } from '@tests/support/browser'
 import { routeComponent, searchResults } from '@tests/support/render/route'
 import { renderVisualPage } from '@tests/support/render/visual-page'
 import { http, HttpResponse } from 'msw'

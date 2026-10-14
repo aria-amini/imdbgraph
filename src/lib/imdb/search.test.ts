@@ -1,4 +1,4 @@
-import { initDb } from '@config/test/db'
+import { initDb } from '@tests/support/db'
 import { describe, expect } from 'vite-plus/test'
 
 import { show } from '@/db/tables'

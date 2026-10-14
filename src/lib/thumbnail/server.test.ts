@@ -1,4 +1,4 @@
-import { initDb } from '@config/test/db'
+import { initDb } from '@tests/support/db'
 import { eq } from 'drizzle-orm'
 import {
 	GenericContainer,

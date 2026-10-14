@@ -1,4 +1,3 @@
-import { desktopTest, mobileTest, test } from '@config/test/browser'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createRootRoute,
@@ -7,6 +6,7 @@ import {
 	RouterContextProvider,
 	type AnyRouter,
 } from '@tanstack/react-router'
+import { desktopTest, mobileTest, test } from '@tests/support/browser'
 import { http, HttpResponse, delay } from 'msw'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'

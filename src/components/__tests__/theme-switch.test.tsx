@@ -1,4 +1,4 @@
-import { test } from '@config/test/browser'
+import { test } from '@tests/support/browser'
 import { afterEach, beforeEach, describe, expect, vi } from 'vite-plus/test'
 import { render } from 'vitest-browser-react'
 
