@@ -1,3 +1,0 @@
-[layout]
-agent = "opencode"
-setup = "mise run bootstrap"
