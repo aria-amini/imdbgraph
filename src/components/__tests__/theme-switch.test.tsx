@@ -1,5 +1,5 @@
 import { test } from '@config/test/browser'
-import { afterEach, beforeEach, describe, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, vi } from 'vite-plus/test'
 import { render } from 'vitest-browser-react'
 
 import { applyThemeToDocument, createThemeBootstrapScript } from '@/lib/theme'

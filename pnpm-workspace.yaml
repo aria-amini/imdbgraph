@@ -8,9 +8,18 @@ allowBuilds:
   protobufjs: true
   ssh2: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@0.3.3
-  vitest: 4.1.11
-  vite-plus: 0.3.3
+  '@vitest/browser-playwright': 5.0.3
+  '@vitest/ui': 5.0.3
+  vite: npm:@voidzero-dev/vite-plus-core@1.1.0
+  vite-plus: 1.1.0
+  vitest: 5.0.3
+# Matches the CI install policy, so local resolution never picks a release
+# that CI rejects.
+minimumReleaseAge: 1440
 overrides:
-  vite: 'catalog:'
-  vitest: 'catalog:'
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
+peerDependencyRules:
+  allowedVersions:
+    vite: '*'
+    vitest: '*'

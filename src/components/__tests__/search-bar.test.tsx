@@ -10,7 +10,7 @@ import {
 import { http, HttpResponse, delay } from 'msw'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
-import { beforeEach, describe, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, vi } from 'vite-plus/test'
 import { render } from 'vitest-browser-react'
 import { page, userEvent } from 'vitest/browser'
 
@@ -774,7 +774,8 @@ describe('searchbar tests', () => {
 		await expect.element(screen.getByText('Searching...')).toBeVisible()
 		await expect.element(searchBar).toHaveAttribute('aria-busy', 'true')
 		await expect.element(screen.getByText('Searching...')).toBeVisible()
-		await expect.element(emptyState).toBeVisible()
+		// The mocked request takes 600ms after the debounce, past the 1s default.
+		await expect.element(emptyState, { timeout: 3_000 }).toBeVisible()
 	})
 
 	test('keeps previous suggestions visible without a searching state', async ({
@@ -810,7 +811,10 @@ describe('searchbar tests', () => {
 		expect(document.body.textContent).not.toContain('Searching...')
 		await expect.element(suggestion).toBeVisible()
 
-		await expect.element(screen.getByText(/No TV Shows Found./i)).toBeVisible()
+		// The mocked request takes 800ms after the debounce, past the 1s default.
+		await expect
+			.element(screen.getByText(/No TV Shows Found./i), { timeout: 3_000 })
+			.toBeVisible()
 		expect(document.body.textContent).not.toContain(
 			'Avatar: The Last Airbender',
 		)

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vite-plus/test'
 
 import { transformRatingsData } from '@/components/graph'
 import { episodeSchema, votedEpisodes } from '@/lib/imdb/episodes'

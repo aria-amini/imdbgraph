@@ -2,7 +2,7 @@ import { createReadStream } from 'node:fs'
 import path from 'node:path'
 
 import { initDb } from '@config/test/db'
-import { afterAll, beforeAll, describe, expect, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, vi } from 'vite-plus/test'
 
 import { scrapeRun, show, showImage } from '@/db/tables'
 import { loadRatings } from '@/lib/imdb/ratings'

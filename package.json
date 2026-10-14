@@ -63,7 +63,6 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@oxlint/plugins": "1.83.0",
 		"@playwright/test": "^1.61.0",
 		"@shadcn/lint": "^0.2.0",
 		"@tailwindcss/vite": "^4.3.1",
@@ -75,8 +74,8 @@
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
 		"@varlock/vite-integration": "^1.4.0",
-		"@vitest/browser-playwright": "4.1.11",
-		"@vitest/ui": "4.1.11",
+		"@vitest/browser-playwright": "catalog:",
+		"@vitest/ui": "catalog:",
 		"babel-plugin-react-compiler": "^1.0.0",
 		"drizzle-kit": "1.0.0-rc.4",
 		"fallow": "^3.6.0",

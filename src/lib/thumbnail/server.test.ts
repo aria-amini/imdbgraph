@@ -13,7 +13,7 @@ import {
 	describe,
 	expect,
 	vi,
-} from 'vitest'
+} from 'vite-plus/test'
 
 import { show, showImage } from '@/db/tables'
 import { createStorage, getStorage, type Storage } from '@/lib/s3'
