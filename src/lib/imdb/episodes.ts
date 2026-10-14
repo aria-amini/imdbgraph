@@ -15,6 +15,15 @@ export const episodeSchema: z.ZodType<Episode> = z.object({
 	numVotes: z.number(),
 })
 
+/** Unweighted mean rating of the given episodes, or null when there are none. */
+export function seasonAverage(episodes: Episode[]): number | null {
+	if (episodes.length === 0) return null
+
+	return (
+		episodes.reduce((sum, episode) => sum + episode.rating, 0) / episodes.length
+	)
+}
+
 /** Episodes with recorded votes, ordered by episode number. */
 export function votedEpisodes(ratings: Ratings, seasonNum: number): Episode[] {
 	return Object.values(ratings.allEpisodeRatings[seasonNum] ?? {})
