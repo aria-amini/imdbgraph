@@ -301,14 +301,11 @@ export function SearchBar({
 					>
 						<div ref={inputRowRef} className="flex">
 							<InputGroup
-								className={cn(
-									'h-11 flex-1 border-input bg-input/10 shadow-none transition-opacity md:h-8',
-									{
-										'cursor-progress opacity-70': !isHydrated,
-									},
-								)}
+								variant="search"
+								pending={!isHydrated}
+								className="h-11 flex-1 md:h-8"
 							>
-								<InputGroupAddon className={cn({ 'opacity-60': !isHydrated })}>
+								<InputGroupAddon>
 									<MagnifyingGlass weight="bold" />
 								</InputGroupAddon>
 								<Command.Input
@@ -343,7 +340,7 @@ export function SearchBar({
 											size="icon-sm"
 											onClick={clearSearch}
 											aria-label="Clear search"
-											className="text-muted-foreground hover:text-foreground"
+											tone="muted"
 										>
 											<XCircle aria-hidden className="size-4" weight="bold" />
 										</InputGroupButton>
@@ -353,7 +350,7 @@ export function SearchBar({
 											size="icon-sm"
 											onClick={dismissSearch}
 											aria-label="Close search"
-											className="text-muted-foreground hover:text-foreground"
+											tone="muted"
 										>
 											<X aria-hidden className="size-4" weight="bold" />
 										</InputGroupButton>
@@ -375,7 +372,7 @@ export function SearchBar({
 									type="button"
 									variant="outline"
 									size="xs"
-									className="text-2xs font-mono tracking-widest uppercase"
+									typography="label"
 									onClick={() => void refetch()}
 								>
 									Retry

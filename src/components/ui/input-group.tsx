@@ -8,12 +8,34 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
-function InputGroup({ className, ...props }: React.ComponentProps<'fieldset'>) {
+const inputGroupVariants = cva(
+	'data-[pending=true]:cursor-progress data-[pending=true]:opacity-70',
+	{
+		variants: {
+			variant: {
+				default: '',
+				search: 'bg-input/10 shadow-none transition-opacity',
+			},
+		},
+		defaultVariants: { variant: 'default' },
+	},
+)
+
+function InputGroup({
+	className,
+	variant = 'default',
+	pending = false,
+	...props
+}: React.ComponentProps<'fieldset'> &
+	VariantProps<typeof inputGroupVariants> & { pending?: boolean }) {
 	return (
 		<fieldset
 			data-slot="input-group"
+			data-pending={pending}
+			data-variant={variant}
 			className={cn(
 				'group/input-group relative flex h-9 w-full min-w-0 items-center rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:bg-input/30 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5',
+				inputGroupVariants({ variant }),
 				className,
 			)}
 			{...props}
@@ -22,7 +44,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'fieldset'>) {
 }
 
 const inputGroupAddonVariants = cva(
-	"flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
+	"flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 group-data-[pending=true]/input-group:opacity-60 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
 	{
 		variants: {
 			align: {
@@ -78,9 +100,14 @@ const inputGroupButtonVariants = cva(
 					'size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0',
 				'icon-sm': 'size-8 p-0 has-[>svg]:p-0',
 			},
+			tone: {
+				default: '',
+				muted: 'text-muted-foreground hover:text-foreground',
+			},
 		},
 		defaultVariants: {
 			size: 'xs',
+			tone: 'default',
 		},
 	},
 )
@@ -90,6 +117,7 @@ function InputGroupButton({
 	type = 'button',
 	variant = 'ghost',
 	size = 'xs',
+	tone = 'default',
 	...props
 }: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'> &
 	VariantProps<typeof inputGroupButtonVariants> & {
@@ -100,7 +128,7 @@ function InputGroupButton({
 			type={type}
 			data-size={size}
 			variant={variant}
-			className={cn(inputGroupButtonVariants({ size }), className)}
+			className={cn(inputGroupButtonVariants({ size, tone }), className)}
 			{...props}
 		/>
 	)

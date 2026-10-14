@@ -21,6 +21,15 @@
 
 ## Known deliberate decisions
 
+- Theme tokens live in `src/styles.css`. Shared visual treatments belong in
+  `src/components/ui`, under the centralized shadcn lint policy.
+- Use `Card variant="chart"` for the chart surface and `variant="tooltip"`
+  for the compact tooltip. Card children inherit the surface treatment.
+- Use `CardDescription variant="numeric"` for mono, tabular values.
+- Use `InputGroup variant="search"` and `pending` for the search surface and
+  its hydration state. Use `InputGroupButton tone="muted"` for quiet actions.
+- Use `Button typography="label"` for mono, uppercase micro labels.
+
 - Seasons are rows; episodes flow left-to-right, wrap, left-aligned.
 - Corner `E<n>` badges on cells; each cell links to its IMDb episode page.
 - View toggle lives inside the content card, right-aligned, `border-b` row.
