@@ -41,6 +41,12 @@ mise run bootstrap
 vp dev
 ```
 
+`mise run bootstrap` installs dependencies, starts local services, applies
+migrations, and populates an empty database from IMDb datasets. The first import
+downloads large datasets and can take several minutes. Later runs skip the
+import if a successful scrape exists. Use `vp run db:populate` to refresh the
+data manually.
+
 ## Environment Variables
 
 Managed by [varlock](https://varlock.dev); `.env.schema` defines what is

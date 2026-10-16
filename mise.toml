@@ -5,3 +5,12 @@ vite-plus = "https://github.com/markmals/mise-vite-plus"
 vite-plus = "latest"
 jq = "latest"
 
+[tasks.bootstrap]
+description = "Bootstrap a workspace and populate its database"
+dir = "{{config_root}}"
+run = "bash scripts/bootstrap.sh"
+
+[tasks.gc]
+description = "Remove compose stacks whose workspace directory is gone (--volumes also deletes data)"
+dir = "{{config_root}}"
+run = "bash scripts/gc.sh"

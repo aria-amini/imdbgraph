@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#MISE description="Remove compose stacks whose workspace directory is gone (--volumes also deletes data)"
 
 set -euo pipefail
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#MISE description="Bootstrap a fresh clone"
 
 set -euo pipefail
 
@@ -73,6 +72,7 @@ step "Validate env with varlock" vp exec varlock load --agent --format pretty
 
 step "Start Docker services" vp run compose:up
 step "Apply database migrations" vp run db:migrate
+step "Populate database if empty (download IMDb datasets)" vp run db:populate --if-empty
 
 base_url="$(sed -n 's/^BASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' .env.workspace.local 2>/dev/null)"
 base_url="${base_url:-$(sed -n 's/^BASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' .env.development.local 2>/dev/null)}"
