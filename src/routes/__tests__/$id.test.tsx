@@ -108,12 +108,53 @@ for (const theme of ['light', 'dark'] as const) {
 			.element(visualPage.screen.getByTestId('ratings-block'))
 			.not.toBeInTheDocument()
 		await visualPage.expectScreenshot(`ratings-graph-${theme}`)
+
+		const averages = visualPage.screen.getByRole('button', {
+			name: 'Season averages',
+		})
+
+		const averageLines = () =>
+			document.querySelectorAll(
+				'[data-testid="ratings-graph"] .recharts-reference-line',
+			).length
+
+		await expect.element(averages).toHaveAttribute('aria-pressed', 'true')
+		await expect.poll(averageLines).toBe(8)
+		await userEvent.click(averages)
+		await expect.element(averages).toHaveAttribute('aria-pressed', 'false')
+		await expect.poll(averageLines).toBe(0)
 		await userEvent.click(blocks)
 		await expect
 			.element(visualPage.screen.getByTestId('ratings-block'))
 			.toBeVisible()
 	})
 }
+
+test('toggles season average lines in the graph view', async () => {
+	const visualPage = await renderRatings()
+
+	await userEvent.click(
+		visualPage.screen.getByRole('button', { name: 'graph', exact: true }),
+	)
+
+	const averages = visualPage.screen.getByRole('button', {
+		name: 'avg',
+		exact: true,
+	})
+
+	const averageLines = () =>
+		document.querySelectorAll(
+			'[data-testid="ratings-graph"] .recharts-reference-line',
+		).length
+
+	const seasonCount = Object.keys(gameOfThronesRatings.allEpisodeRatings).length
+
+	await expect.element(averages).toHaveAttribute('aria-pressed', 'true')
+	await expect.poll(averageLines).toBe(seasonCount)
+	await userEvent.click(averages)
+	await expect.element(averages).toHaveAttribute('aria-pressed', 'false')
+	await expect.poll(averageLines).toBe(0)
+})
 
 test('ratings search dropdown matches screenshot', async ({ worker }) => {
 	worker.use(
