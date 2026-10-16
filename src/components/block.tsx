@@ -2,7 +2,7 @@ import { Tooltip } from '@base-ui/react/tooltip'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
 
-import { votedEpisodes } from '@/lib/imdb/episodes'
+import { seasonAverage, votedEpisodes } from '@/lib/imdb/episodes'
 import {
 	ratingColor,
 	ratingTextColor,
@@ -22,11 +22,13 @@ export function Block({
 	toolbar?: ReactNode
 }) {
 	const seasons = Object.keys(ratings.allEpisodeRatings)
-		.map((seasonNum) => ({
-			seasonNum: Number(seasonNum),
-			episodes: votedEpisodes(ratings, Number(seasonNum)),
-		}))
-		.filter((season) => season.episodes.length > 0)
+		.flatMap((key) => {
+			const seasonNum = Number(key)
+			const episodes = votedEpisodes(ratings, seasonNum)
+			const average = seasonAverage(episodes)
+
+			return average === null ? [] : [{ seasonNum, episodes, average }]
+		})
 		.sort((a, b) => a.seasonNum - b.seasonNum)
 
 	return (
@@ -54,16 +56,49 @@ export function Block({
 						<div
 							key={season.seasonNum}
 							className={cn(
-								'grid grid-cols-[2.25rem_1fr] items-start gap-x-1.5 sm:grid-cols-[2.75rem_1fr] sm:gap-2',
+								'grid grid-cols-[3rem_1fr] items-start gap-x-1.5 sm:grid-cols-[3.5rem_1fr] sm:gap-2',
 							)}
 						>
-							<span
-								className={cn(
-									'flex h-9 items-center font-mono text-2xs font-bold tracking-widest text-muted-foreground uppercase sm:h-11',
-								)}
+							<div
+								className={cn('flex h-9 flex-col justify-center gap-1 sm:h-11')}
 							>
-								S{season.seasonNum}
-							</span>
+								<span
+									className={cn(
+										'font-mono text-2xs leading-none font-bold tracking-widest text-muted-foreground uppercase',
+									)}
+								>
+									S{season.seasonNum}
+								</span>
+								<div
+									data-testid="season-average"
+									className={cn(
+										'inline-flex items-baseline gap-1 self-start border-b-2 border-(--rating-bg) pb-0.5 font-mono text-foreground',
+									)}
+									style={{
+										'--rating-bg': ratingColor(season.average),
+									}}
+								>
+									<span className={cn('sr-only')}>
+										{`Season ${season.seasonNum} average rating ${season.average.toFixed(1)} out of 10`}
+									</span>
+									<span
+										aria-hidden
+										className={cn(
+											'text-5xs leading-none font-bold uppercase text-muted-foreground',
+										)}
+									>
+										avg
+									</span>
+									<span
+										aria-hidden
+										className={cn(
+											'text-2xs leading-none font-black tabular-nums sm:text-xs',
+										)}
+									>
+										{season.average.toFixed(1)}
+									</span>
+								</div>
+							</div>
 							<div
 								className={cn('flex flex-wrap justify-start gap-1.5 sm:gap-2')}
 							>

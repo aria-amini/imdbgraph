@@ -228,11 +228,44 @@ function ViewToggle({
 	)
 }
 
+function SeasonAverageToggle({
+	pressed,
+	onPressedChange,
+}: {
+	pressed: boolean
+	onPressedChange: (pressed: boolean) => void
+}) {
+	return (
+		<button
+			type="button"
+			aria-pressed={pressed}
+			title="Season average lines"
+			onClick={() => onPressedChange(!pressed)}
+			className={cn(
+				'border-border flex items-center gap-1.5 border px-3 py-2 font-mono text-2xs font-bold tracking-widest uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+				pressed
+					? 'text-foreground'
+					: 'text-muted-foreground hover:bg-muted hover:text-foreground',
+			)}
+		>
+			<span
+				aria-hidden
+				className={cn(
+					'w-3 border-t-2 border-dashed border-current',
+					!pressed && 'opacity-40',
+				)}
+			/>
+			avg
+		</button>
+	)
+}
+
 function RatingsPage({ ratings }: { ratings: Ratings }) {
 	const [view, setView] = useState<View>('blocks')
+	const [showSeasonAverages, setShowSeasonAverages] = useState(true)
 	const isHydrated = useHydrated()
 
-	const toolbar = (
+	const viewToggle = (
 		<ViewToggle view={view} onViewChange={setView} disabled={!isHydrated} />
 	)
 
@@ -240,9 +273,21 @@ function RatingsPage({ ratings }: { ratings: Ratings }) {
 		<div>
 			<ShowHeader ratings={ratings} />
 			{view === 'blocks' ? (
-				<Block ratings={ratings} toolbar={toolbar} />
+				<Block ratings={ratings} toolbar={viewToggle} />
 			) : (
-				<Graph ratings={ratings} toolbar={toolbar} />
+				<Graph
+					ratings={ratings}
+					showSeasonAverages={showSeasonAverages}
+					toolbar={
+						<>
+							<SeasonAverageToggle
+								pressed={showSeasonAverages}
+								onPressedChange={setShowSeasonAverages}
+							/>
+							{viewToggle}
+						</>
+					}
+				/>
 			)}
 		</div>
 	)

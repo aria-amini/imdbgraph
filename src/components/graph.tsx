@@ -5,6 +5,7 @@ import {
 	CartesianGrid,
 	Line,
 	LineChart,
+	ReferenceLine,
 	type TooltipContentProps,
 	XAxis,
 	YAxis,
@@ -22,29 +23,54 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from '@/components/ui/chart'
-import { episodeSchema, votedEpisodes } from '@/lib/imdb/episodes'
+import {
+	episodeSchema,
+	seasonAverage,
+	votedEpisodes,
+} from '@/lib/imdb/episodes'
 import { type Episode, type Ratings } from '@/lib/imdb/types'
 
 type ChartDataPoint = {
 	episodeIndex: number
 } & Record<`season${number}` | `episode${number}`, number | Episode | null>
 
+/** A season's mean rating, spanning its first to last charted episode. */
+export interface SeasonAverageSegment {
+	seasonNum: number
+	average: number
+	firstEpisodeIndex: number
+	lastEpisodeIndex: number
+}
+
 interface RatingsChartSeries {
 	data: ChartDataPoint[]
 	seasons: number[]
+	averages: SeasonAverageSegment[]
 }
 
-/** Converts grouped episode ratings into chart points and season labels. */
+/** Converts grouped episode ratings into chart points, season labels, and season averages. */
 export function transformRatingsData(ratings: Ratings): RatingsChartSeries {
 	let episodeIndex = 1
 	const data: ChartDataPoint[] = []
 	const seasons: number[] = []
+	const averages: SeasonAverageSegment[] = []
 
 	for (const [seasonNumber] of Object.entries(ratings.allEpisodeRatings)) {
 		const seasonNum = Number.parseInt(seasonNumber, 10)
+		const episodes = votedEpisodes(ratings, seasonNum)
+		const average = seasonAverage(episodes)
 		seasons.push(seasonNum)
 
-		for (const episode of votedEpisodes(ratings, seasonNum)) {
+		if (average !== null) {
+			averages.push({
+				seasonNum,
+				average,
+				firstEpisodeIndex: episodeIndex,
+				lastEpisodeIndex: episodeIndex + episodes.length - 1,
+			})
+		}
+
+		for (const episode of episodes) {
 			data.push({
 				episodeIndex,
 				[`season${seasonNum}`]: episode.rating,
@@ -54,18 +80,20 @@ export function transformRatingsData(ratings: Ratings): RatingsChartSeries {
 		}
 	}
 
-	return { data, seasons }
+	return { data, seasons, averages }
 }
 
 /** Renders episode ratings as a season-by-season line chart. */
 export function Graph({
 	ratings,
 	toolbar,
+	showSeasonAverages = false,
 }: {
 	ratings: Ratings
 	toolbar?: ReactNode
+	showSeasonAverages?: boolean
 }) {
-	const { data: chartData, seasons } = transformRatingsData(ratings)
+	const { data: chartData, seasons, averages } = transformRatingsData(ratings)
 	const chartConfig: ChartConfig = {}
 
 	const chartColors = [
@@ -119,7 +147,41 @@ export function Graph({
 							width={20} // Fixes bug where there's too much margin on left.
 							domain={[(dataMin: number) => Math.floor(dataMin), 10.0]}
 						/>
+						{showSeasonAverages &&
+							averages.map((season) => (
+								<ReferenceLine
+									key={season.seasonNum}
+									segment={[
+										{ x: season.firstEpisodeIndex, y: season.average },
+										{ x: season.lastEpisodeIndex, y: season.average },
+									]}
+									stroke={
+										chartConfig[`season${season.seasonNum}`]?.color ??
+										'var(--chart-1)'
+									}
+									strokeOpacity={0.45}
+									strokeWidth={1.5}
+									strokeDasharray="4 3"
+								/>
+							))}
 						<ChartTooltip content={CustomTooltip} />
+						{showSeasonAverages &&
+							averages.map((season) => (
+								<ReferenceLine
+									key={season.seasonNum}
+									segment={[
+										{ x: season.firstEpisodeIndex, y: season.average },
+										{ x: season.lastEpisodeIndex, y: season.average },
+									]}
+									stroke={
+										chartConfig[`season${season.seasonNum}`]?.color ??
+										'var(--chart-1)'
+									}
+									strokeWidth={1.5}
+									strokeOpacity={0.5}
+									strokeDasharray="4 4"
+								/>
+							))}
 						{seasons.map((seasonNum) => (
 							<Line
 								key={seasonNum}

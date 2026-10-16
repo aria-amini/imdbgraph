@@ -47,6 +47,21 @@ const ratings: Ratings = {
 }
 
 describe('graph tests', () => {
+	test('draws season average lines only when enabled', async () => {
+		const hidden = await render(<Graph ratings={ratings} />)
+		await expect.element(hidden.getByTestId('ratings-graph')).toBeVisible()
+		expect(document.querySelectorAll('.recharts-reference-line')).toHaveLength(
+			0,
+		)
+		await hidden.unmount()
+
+		const shown = await render(<Graph ratings={ratings} showSeasonAverages />)
+		await expect.element(shown.getByTestId('ratings-graph')).toBeVisible()
+		await expect
+			.poll(() => document.querySelectorAll('.recharts-reference-line').length)
+			.toBe(1)
+	}, 5_000)
+
 	test('chart stays responsive after mount', async () => {
 		const screen = await render(<Graph ratings={ratings} />)
 
@@ -87,6 +102,25 @@ describe('graph tests', () => {
 			await page.viewport(originalWidth, originalHeight)
 		}
 	}, 5_000)
+
+	test('draws one season average line per season only when enabled', async () => {
+		const screen = await render(<Graph ratings={ratings} />)
+		const chart = screen.getByTestId('ratings-graph')
+		await expect.element(chart).toBeVisible()
+
+		expect(
+			chart.element().querySelectorAll('.recharts-reference-line'),
+		).toHaveLength(0)
+
+		await screen.rerender(<Graph ratings={ratings} showSeasonAverages />)
+
+		await expect
+			.poll(
+				() =>
+					chart.element().querySelectorAll('.recharts-reference-line').length,
+			)
+			.toBe(1)
+	})
 })
 
 function waitForAnimationFrames() {

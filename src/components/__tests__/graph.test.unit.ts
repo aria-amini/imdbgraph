@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'vite-plus/test'
 
 import { transformRatingsData } from '@/components/graph'
-import { episodeSchema, votedEpisodes } from '@/lib/imdb/episodes'
+import {
+	episodeSchema,
+	seasonAverage,
+	votedEpisodes,
+} from '@/lib/imdb/episodes'
 import type { Episode } from '@/lib/imdb/types'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
@@ -43,6 +47,20 @@ describe('chart data', () => {
 			false,
 		)
 	})
+
+	test('spans each season average across its own episodes', () => {
+		const { averages } = transformRatingsData(gameOfThronesRatings)
+
+		expect(averages.map((season) => season.seasonNum)).toEqual([
+			1, 2, 3, 4, 5, 6, 7, 8,
+		])
+		expect(averages[0]).toMatchObject({
+			firstEpisodeIndex: 1,
+			lastEpisodeIndex: 10,
+		})
+		expect(averages[1]?.firstEpisodeIndex).toBe(11)
+		expect(averages.at(-1)?.lastEpisodeIndex).toBe(73)
+	})
 })
 
 test('orders voted episodes and excludes unknown episode numbers', () => {
@@ -69,9 +87,25 @@ test('orders voted episodes and excludes unknown episode numbers', () => {
 	expect(votedEpisodes(ratings, 3)).toEqual([])
 	expect(transformRatingsData(ratings)).toEqual({
 		seasons: [1, 2],
+		averages: [
+			{
+				seasonNum: 1,
+				average: first.rating,
+				firstEpisodeIndex: 1,
+				lastEpisodeIndex: 2,
+			},
+		],
 		data: [
 			{ episodeIndex: 1, season1: first.rating, episode1: first },
 			{ episodeIndex: 2, season1: third.rating, episode1: third },
+		],
+		averages: [
+			{
+				seasonNum: 1,
+				average: first.rating,
+				firstEpisodeIndex: 1,
+				lastEpisodeIndex: 2,
+			},
 		],
 	})
 })
