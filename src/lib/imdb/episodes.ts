@@ -1,19 +1,4 @@
-import { z } from 'zod'
-
-import { imdbIdSchema, type Episode, type Ratings } from '@/lib/imdb/types'
-
-const ratingSchema = z.number().min(1).max(10)
-
-// Validates episode-shaped data recovered from chart internals, which is
-// untyped.
-export const episodeSchema: z.ZodType<Episode> = z.object({
-	episodeId: imdbIdSchema,
-	title: z.string(),
-	seasonNum: z.number(),
-	episodeNum: z.number(),
-	rating: ratingSchema,
-	numVotes: z.number(),
-})
+import { type Episode, type Ratings } from '@/lib/imdb/types'
 
 /** Episodes with recorded votes, ordered by episode number. */
 export function votedEpisodes(ratings: Ratings, seasonNum: number): Episode[] {
