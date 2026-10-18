@@ -1,9 +1,10 @@
-import { Star } from '@phosphor-icons/react/dist/ssr'
-import { createFileRoute } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/solid-router'
+import { Link } from '@tanstack/solid-router'
 import { cn } from 'cn'
+import { For, Show } from 'solid-js'
 import { z } from 'zod'
 
+import { StarFill } from '@/components/icons'
 import { Page } from '@/components/page'
 import { SuggestionPoster } from '@/components/suggestion-poster'
 import { usePreloadRatingsChunk } from '@/lib/imdb/ratings'
@@ -15,20 +16,19 @@ import { formatYears } from '@/lib/imdb/types'
 function SearchSkeleton() {
 	return (
 		<Page width="narrow" busy>
-			<div className="bg-muted h-9 w-56 animate-pulse" />
-			<div className="border-border mt-8 border-y">
-				{Array.from({ length: 5 }, (_, row) => (
-					<div
-						key={row}
-						className="border-border flex items-center justify-between border-b px-2 py-4 last:border-b-0"
-					>
-						<div className="space-y-2">
-							<div className="bg-muted h-4 w-40 animate-pulse" />
-							<div className="bg-muted h-3 w-24 animate-pulse" />
+			<div class="bg-muted h-9 w-56 animate-pulse" />
+			<div class="border-border mt-8 border-y">
+				<For each={[0, 1, 2, 3, 4]}>
+					{() => (
+						<div class="border-border flex items-center justify-between border-b px-2 py-4 last:border-b-0">
+							<div class="space-y-2">
+								<div class="bg-muted h-4 w-40 animate-pulse" />
+								<div class="bg-muted h-3 w-24 animate-pulse" />
+							</div>
+							<div class="bg-muted h-4 w-10 animate-pulse" />
 						</div>
-						<div className="bg-muted h-4 w-10 animate-pulse" />
-					</div>
-				))}
+					)}
+				</For>
 			</div>
 		</Page>
 	)
@@ -71,55 +71,54 @@ export const Route = createFileRoute('/search')({
 
 function SearchResults() {
 	usePreloadRatingsChunk()
-	const { query, results } = Route.useLoaderData()
+	const data = Route.useLoaderData()
 
 	return (
 		<Page width="narrow">
-			<h1 className={cn('text-3xl font-black tracking-tight sm:text-4xl')}>
+			<h1 class={cn('text-3xl font-black tracking-tight sm:text-4xl')}>
 				Search results
 			</h1>
-			<p className={cn('text-muted-foreground mt-2 text-sm')}>
-				Matches for “{query}”
+			<p class={cn('text-muted-foreground mt-2 text-sm')}>
+				Matches for “{data().query}”
 			</p>
 
-			{results.length > 0 ? (
-				<div className={cn('mt-8 border-y border-border')}>
-					{results.map((show) => (
-						<ShowResult key={show.imdbId} show={show} />
-					))}
+			<Show
+				when={data().results.length > 0}
+				fallback={
+					<p class={cn('text-muted-foreground mt-12 text-center text-sm')}>
+						No TV shows found. Try a different search.
+					</p>
+				}
+			>
+				<div class={cn('mt-8 border-y border-border')}>
+					<For each={data().results}>
+						{(show) => <ShowResult show={show} />}
+					</For>
 				</div>
-			) : (
-				<p className={cn('text-muted-foreground mt-12 text-center text-sm')}>
-					No TV shows found. Try a different search.
-				</p>
-			)}
+			</Show>
 		</Page>
 	)
 }
 
-function ShowResult({ show }: { show: Suggestion }) {
+function ShowResult(props: { show: Suggestion }) {
 	return (
 		<Link
 			to="/ratings/$id"
-			params={{ id: show.imdbId }}
-			className={cn(
+			params={{ id: props.show.imdbId }}
+			class={cn(
 				'flex items-center gap-4 border-b border-border px-2 py-4 transition-colors last:border-b-0 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
 			)}
 		>
-			<SuggestionPoster imdbId={show.imdbId} title={show.title} />
-			<div className={cn('min-w-0 flex-1')}>
-				<span className={cn('block truncate font-medium')}>{show.title}</span>
-				<span className={cn('text-muted-foreground mt-1 block text-xs')}>
-					{formatYears(show)}
+			<SuggestionPoster imdbId={props.show.imdbId} title={props.show.title} />
+			<div class={cn('min-w-0 flex-1')}>
+				<span class={cn('block truncate font-medium')}>{props.show.title}</span>
+				<span class={cn('text-muted-foreground mt-1 block text-xs')}>
+					{formatYears(props.show)}
 				</span>
 			</div>
-			<div className={cn('flex shrink-0 items-center gap-1 text-sm')}>
-				<span>{show.rating.toFixed(1)}</span>
-				<Star
-					aria-hidden="true"
-					className={cn('text-primary size-4')}
-					weight="fill"
-				/>
+			<div class={cn('flex shrink-0 items-center gap-1 text-sm')}>
+				<span>{props.show.rating.toFixed(1)}</span>
+				<StarFill aria-hidden="true" class={cn('text-primary size-4')} />
 			</div>
 		</Link>
 	)

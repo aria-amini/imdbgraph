@@ -1,6 +1,6 @@
-import type { QueryClient } from '@tanstack/react-query'
-import { queryOptions } from '@tanstack/react-query'
-import { createServerFn } from '@tanstack/react-start'
+import type { QueryClient } from '@tanstack/solid-query'
+import { queryOptions } from '@tanstack/solid-query'
+import { createServerFn } from '@tanstack/solid-start'
 import { desc } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 

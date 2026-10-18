@@ -1,10 +1,10 @@
-import { ImageSquare, Star } from '@phosphor-icons/react/dist/ssr'
-import { createFileRoute, notFound, useHydrated } from '@tanstack/react-router'
+import { createFileRoute, notFound, useHydrated } from '@tanstack/solid-router'
 import { cn } from 'cn'
-import { useState } from 'react'
+import { createSignal, For, onMount, Show } from 'solid-js'
 
 import { Block } from '@/components/block'
 import { Graph } from '@/components/graph'
+import { ImageSquare, StarFill } from '@/components/icons'
 import { Page } from '@/components/page'
 import { votedEpisodes } from '@/lib/imdb/episodes'
 import { ratingsQuery } from '@/lib/imdb/ratings'
@@ -27,14 +27,14 @@ function hasRatings(ratings: Ratings): boolean {
 function RatingsSkeleton() {
 	return (
 		<Page width="wide" busy>
-			<header className="border-border mb-8 flex gap-5 border-b pb-6 lg:gap-8">
-				<div className="border-border bg-muted aspect-[2/3] w-24 shrink-0 animate-pulse border sm:w-36 lg:w-44" />
-				<div className="flex-1 space-y-4 pt-2">
-					<div className="bg-muted h-10 w-2/3 animate-pulse sm:h-14" />
-					<div className="bg-muted h-4 w-1/3 animate-pulse" />
+			<header class="border-border mb-8 flex gap-5 border-b pb-6 lg:gap-8">
+				<div class="border-border bg-muted aspect-[2/3] w-24 shrink-0 animate-pulse border sm:w-36 lg:w-44" />
+				<div class="flex-1 space-y-4 pt-2">
+					<div class="bg-muted h-10 w-2/3 animate-pulse sm:h-14" />
+					<div class="bg-muted h-4 w-1/3 animate-pulse" />
 				</div>
 			</header>
-			<div className="bg-muted h-96 w-full animate-pulse" />
+			<div class="bg-muted h-96 w-full animate-pulse" />
 		</Page>
 	)
 }
@@ -63,129 +63,125 @@ export const Route = createFileRoute('/ratings/$id')({
 
 function PosterUnavailable() {
 	return (
-		<div className="border-border bg-muted text-muted-foreground/60 flex aspect-[2/3] w-full items-center justify-center border">
-			<ImageSquare aria-hidden className="size-8" />
-			<span className="sr-only">Poster unavailable</span>
+		<div class="border-border bg-muted text-muted-foreground/60 flex aspect-[2/3] w-full items-center justify-center border">
+			<ImageSquare aria-hidden class="size-8" />
+			<span class="sr-only">Poster unavailable</span>
 		</div>
 	)
 }
 
-function PosterImage({
-	src,
-	alt,
-	onError,
-}: {
-	src: string
-	alt: string
-	onError: () => void
-}) {
-	const [loaded, setLoaded] = useState(false)
+function PosterImage(props: { src: string; alt: string; onError: () => void }) {
+	const [loaded, setLoaded] = createSignal(false)
+	let image: HTMLImageElement | undefined
+
+	// Cached images finish before hydration, so onLoad never fires.
+	onMount(() => {
+		if (!image?.complete) return
+
+		if (image.naturalWidth > 0) {
+			setLoaded(true)
+		} else {
+			props.onError()
+		}
+	})
 
 	return (
-		<div className="relative">
+		<div class="relative">
 			<img
-				ref={(node) => {
-					// Cached images finish before hydration, so onLoad never fires.
-					if (!node?.complete) return
-
-					if (node.naturalWidth > 0) {
-						setLoaded(true)
-					} else {
-						onError()
-					}
-				}}
-				src={src}
-				alt={alt}
+				ref={image}
+				src={props.src}
+				alt={props.alt}
 				onLoad={() => setLoaded(true)}
-				onError={onError}
-				className="border-border aspect-[2/3] w-full border object-cover shadow-md"
+				onError={() => props.onError()}
+				class="border-border aspect-[2/3] w-full border object-cover shadow-md"
 			/>
-			{!loaded && (
+			<Show when={!loaded()}>
 				<div
 					aria-hidden
-					className="border-border bg-muted absolute inset-0 animate-pulse border"
+					class="border-border bg-muted absolute inset-0 animate-pulse border"
 				/>
-			)}
+			</Show>
 		</div>
 	)
 }
 
-function ShowPoster({ show }: { show: Ratings['show'] }) {
-	const [failed, setFailed] = useState(false)
-	const src = getPosterImageUrl(show.imdbId)
+function ShowPoster(props: { show: Ratings['show'] }) {
+	const [failed, setFailed] = createSignal(false)
+	const src = () => getPosterImageUrl(props.show.imdbId)
 
 	// The route self-heals: a cache miss fetches and stores the poster, and a
 	// known-missing one 404s, so onError is the only signal the UI needs.
 	return (
-		<div className="w-24 shrink-0 sm:w-36 lg:w-44">
-			{failed ? (
-				<PosterUnavailable />
-			) : (
+		<div class="w-24 shrink-0 sm:w-36 lg:w-44">
+			<Show when={!failed()} fallback={<PosterUnavailable />}>
 				<a
-					href={src}
+					href={src()}
 					target="_blank"
 					rel="noreferrer"
-					className="focus-visible:ring-ring focus-visible:ring-offset-background block outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+					class="focus-visible:ring-ring focus-visible:ring-offset-background block outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 				>
 					<PosterImage
-						src={src}
-						alt={`${show.title} poster`}
+						src={src()}
+						alt={`${props.show.title} poster`}
 						onError={() => setFailed(true)}
 					/>
 				</a>
-			)}
+			</Show>
 		</div>
 	)
 }
 
 /** Page-leading title block: poster, title, year, genres, and the rating. */
-function ShowHeader({ ratings }: { ratings: Ratings }) {
-	const { show } = ratings
-	const votes = show.numVotes.toLocaleString('en-US')
-	const hasGenres = Boolean(show.genres && show.genres.length > 0)
+function ShowHeader(props: { ratings: Ratings }) {
+	const show = () => props.ratings.show
+	const votes = () => show().numVotes.toLocaleString('en-US')
+	const genres = () => show().genres ?? []
 
 	return (
-		<header className="border-border mb-8 flex gap-5 border-b pb-6 lg:gap-8">
-			<ShowPoster key={show.imdbId} show={show} />
+		<header class="border-border mb-8 flex gap-5 border-b pb-6 lg:gap-8">
+			{/* Keyed so each show gets a fresh poster failure state. */}
+			<Show when={show().imdbId} keyed>
+				<ShowPoster show={show()} />
+			</Show>
 
-			<div className="min-w-0 flex-1">
-				<h1 className="leading-display text-3xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
-					{show.title}
+			<div class="min-w-0 flex-1">
+				<h1 class="leading-display text-3xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl">
+					{show().title}
 				</h1>
-				<p className="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
-					{formatYears(show)}
+				<p class="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
+					{formatYears(show())}
 				</p>
-				{hasGenres && (
-					<p className="text-muted-foreground mt-1 font-mono text-xs tracking-widest uppercase">
-						{show.genres?.join(' · ')}
+				<Show when={genres().length > 0}>
+					<p class="text-muted-foreground mt-1 font-mono text-xs tracking-widest uppercase">
+						{genres().join(' · ')}
 					</p>
-				)}
+				</Show>
 				<a
-					href={`https://www.imdb.com/title/${show.imdbId}/`}
+					href={`https://www.imdb.com/title/${show().imdbId}/`}
 					target="_blank"
 					rel="noreferrer"
-					aria-label={`IMDb rating ${show.rating.toFixed(1)} out of 10 from ${votes} votes. Opens IMDb in a new tab.`}
-					className="text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-offset-background mt-5 inline-flex flex-col items-start gap-1.5 font-mono transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+					aria-label={`IMDb rating ${show().rating.toFixed(1)} out of 10 from ${votes()} votes. Opens IMDb in a new tab.`}
+					class="text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-offset-background mt-5 inline-flex flex-col items-start gap-1.5 font-mono transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
 				>
-					<span className="flex items-center gap-x-1.5">
+					<span class="flex items-center gap-x-1.5">
 						<span
-							className="inline-flex items-center gap-x-1 rounded-sm bg-(--rating-bg) px-1.5 py-0.5 text-(--rating-fg)"
+							class="inline-flex items-center gap-x-1 rounded-sm bg-(--rating-bg) px-1.5 py-0.5 text-(--rating-fg)"
 							style={{
-								'--rating-bg': ratingColor(show.rating),
-								'--rating-fg': ratingTextColor(show.rating),
+								'--rating-bg': ratingColor(show().rating),
+								'--rating-fg': ratingTextColor(show().rating),
 							}}
 						>
-							<Star aria-hidden className="size-4 shrink-0" weight="fill" />
-							<span className="text-base leading-none font-black tabular-nums">
-								{show.rating.toFixed(1)}
+							<StarFill aria-hidden class="size-4 shrink-0" />
+							<span class="text-base leading-none font-black tabular-nums">
+								{show().rating.toFixed(1)}
 							</span>
 						</span>
-						<span className="text-foreground text-base leading-none font-black">
+						<span class="text-foreground text-base leading-none font-black">
 							/ 10
 						</span>
 					</span>
-					<span className="text-2xs tracking-widest uppercase">
-						{votes} votes
+					<span class="text-2xs tracking-widest uppercase">
+						{votes()} votes
 					</span>
 				</a>
 			</div>
@@ -195,71 +191,74 @@ function ShowHeader({ ratings }: { ratings: Ratings }) {
 
 type View = 'blocks' | 'graph'
 
-function ViewToggle({
-	view,
-	onViewChange,
-	disabled,
-}: {
+const VIEWS: readonly View[] = ['blocks', 'graph']
+
+function ViewToggle(props: {
 	view: View
 	onViewChange: (view: View) => void
 	disabled: boolean
 }) {
 	return (
-		<fieldset className="border-border flex border p-0.5">
-			<legend className="sr-only">Ratings view</legend>
-			{(['blocks', 'graph'] as const).map((option) => (
-				<button
-					key={option}
-					type="button"
-					aria-pressed={view === option}
-					disabled={disabled}
-					onClick={() => onViewChange(option)}
-					className={cn(
-						'px-3 py-1.5 font-mono text-2xs font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-50',
-						view === option
-							? 'bg-foreground text-background'
-							: 'text-muted-foreground hover:bg-muted hover:text-foreground',
-					)}
-				>
-					{option}
-				</button>
-			))}
+		<fieldset class="border-border flex border p-0.5">
+			<legend class="sr-only">Ratings view</legend>
+			<For each={VIEWS}>
+				{(option) => (
+					<button
+						type="button"
+						aria-pressed={props.view === option}
+						disabled={props.disabled}
+						onClick={() => props.onViewChange(option)}
+						class={cn(
+							'px-3 py-1.5 font-mono text-2xs font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-wait disabled:opacity-50',
+							props.view === option
+								? 'bg-foreground text-background'
+								: 'text-muted-foreground hover:bg-muted hover:text-foreground',
+						)}
+					>
+						{option}
+					</button>
+				)}
+			</For>
 		</fieldset>
 	)
 }
 
-function RatingsPage({ ratings }: { ratings: Ratings }) {
-	const [view, setView] = useState<View>('blocks')
+function RatingsPage(props: { ratings: Ratings }) {
+	const [view, setView] = createSignal<View>('blocks')
 	const isHydrated = useHydrated()
 
-	const toolbar = (
-		<ViewToggle view={view} onViewChange={setView} disabled={!isHydrated} />
+	const toolbar = () => (
+		<ViewToggle view={view()} onViewChange={setView} disabled={!isHydrated()} />
 	)
 
 	return (
 		<div>
-			<ShowHeader ratings={ratings} />
-			{view === 'blocks' ? (
-				<Block ratings={ratings} toolbar={toolbar} />
-			) : (
-				<Graph ratings={ratings} toolbar={toolbar} />
-			)}
+			<ShowHeader ratings={props.ratings} />
+			<Show
+				when={view() === 'blocks'}
+				fallback={<Graph ratings={props.ratings} toolbar={toolbar()} />}
+			>
+				<Block ratings={props.ratings} toolbar={toolbar()} />
+			</Show>
 		</div>
 	)
 }
 
 function Ratings() {
-	const { ratings } = Route.useLoaderData()
+	const data = Route.useLoaderData()
 
 	return (
 		<Page width="wide">
-			{!hasRatings(ratings) ? (
-				<h1 className="py-24 text-center text-3xl font-black tracking-tight text-balance sm:py-32 sm:text-5xl">
-					No Ratings Found
-				</h1>
-			) : (
-				<RatingsPage ratings={ratings} />
-			)}
+			<Show
+				when={hasRatings(data().ratings)}
+				fallback={
+					<h1 class="py-24 text-center text-3xl font-black tracking-tight text-balance sm:py-32 sm:text-5xl">
+						No Ratings Found
+					</h1>
+				}
+			>
+				<RatingsPage ratings={data().ratings} />
+			</Show>
 		</Page>
 	)
 }

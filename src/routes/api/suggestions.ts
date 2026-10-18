@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/solid-router'
 
 import { createDb } from '@/db/connection'
 import { suggestionsFor } from '@/lib/imdb/search'

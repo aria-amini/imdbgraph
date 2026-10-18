@@ -1,5 +1,5 @@
-import { createIsomorphicFn } from '@tanstack/react-start'
-import { getCookie } from '@tanstack/react-start/server'
+import { createIsomorphicFn } from '@tanstack/solid-start'
+import { getCookie } from '@tanstack/solid-start/server'
 
 export type Theme = 'light' | 'dark'
 

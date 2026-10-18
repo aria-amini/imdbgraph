@@ -1,12 +1,12 @@
+import type { TsrSerializable } from '@tanstack/router-core'
 import {
 	type DehydratedState,
 	QueryClient,
 	QueryClientProvider,
 	dehydrate,
 	hydrate,
-} from '@tanstack/react-query'
-import { createRouter } from '@tanstack/react-router'
-import type { TsrSerializable } from '@tanstack/router-core'
+} from '@tanstack/solid-query'
+import { createRouter } from '@tanstack/solid-router'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -15,16 +15,16 @@ function PendingProgress() {
 	return (
 		<output
 			aria-label="Loading page"
-			className="bg-primary/25 fixed inset-x-0 top-0 z-50 block h-0.5 overflow-hidden"
+			class="bg-primary/25 fixed inset-x-0 top-0 z-50 block h-0.5 overflow-hidden"
 		>
-			<div className="bg-primary animate-pending-slide h-full w-1/4 motion-reduce:animate-none" />
+			<div class="bg-primary animate-pending-slide h-full w-1/4 motion-reduce:animate-none" />
 		</output>
 	)
 }
 
 /**
- * react-query types dehydrated query keys as `unknown`, which the router
- * cannot prove serializable. Dehydrate/hydrate round-trip inside react-query
+ * TanStack Query types dehydrated query keys as `unknown`, which the router
+ * cannot prove serializable. Dehydrate/hydrate round-trip inside the query client
  * alone, so brand the payload with the router's serializable marker instead
  * of failing validation.
  */
@@ -69,8 +69,10 @@ export const getRouter = () => {
 		context: {
 			queryClient,
 		},
-		Wrap: ({ children }) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		Wrap: (props) => (
+			<QueryClientProvider client={queryClient}>
+				{props.children}
+			</QueryClientProvider>
 		),
 		dehydrate: dehydratedQueryState,
 		hydrate: (dehydrated) => {

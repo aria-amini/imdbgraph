@@ -1,9 +1,9 @@
-import { queryOptions } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
+import { queryOptions } from '@tanstack/solid-query'
+import { useRouter } from '@tanstack/solid-router'
+import { createServerFn } from '@tanstack/solid-start'
 import { asc, eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { useEffect } from 'react'
+import { onMount } from 'solid-js'
 import { z } from 'zod'
 
 import { createDb } from '@/db/connection'
@@ -57,7 +57,7 @@ export const getRatings = createServerFn()
 export const ratingsQuery = (scrapeVersion: string, showId: string) =>
 	queryOptions({
 		queryKey: ['ratings', scrapeVersion, showId],
-		// react-query rejects undefined query data, which would turn the
+		// TanStack Query rejects undefined query data, which would turn the
 		// loader's notFound() path into a 500.
 		queryFn: async () => (await getRatings({ data: { showId } })) ?? null,
 		staleTime: Number.POSITIVE_INFINITY,
@@ -66,9 +66,10 @@ export const ratingsQuery = (scrapeVersion: string, showId: string) =>
 /** Warms the ratings route chunk so the first show click skips its fetch. */
 export function usePreloadRatingsChunk() {
 	const router = useRouter()
-	useEffect(() => {
-		const route = router.looseRoutesById['/ratings/$id']
+
+	onMount(() => {
+		const route = router.routesById['/ratings/$id']
 
 		if (route) void router.loadRouteChunk(route)
-	}, [router])
+	})
 }

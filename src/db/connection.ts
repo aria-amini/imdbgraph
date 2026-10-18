@@ -1,4 +1,3 @@
-import { createServerOnlyFn } from '@tanstack/react-start'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 
@@ -14,9 +13,15 @@ function getPool() {
 	return pool
 }
 
-/** Creates a Drizzle database client backed by the application pool. */
-export const createDb = createServerOnlyFn(() => {
+/**
+ * Creates a Drizzle database client backed by the application pool.
+ *
+ * Not wrapped in `createServerOnlyFn`: the populate script imports this module
+ * in plain Node, where `@tanstack/solid-start` cannot load. The `env.server`
+ * import keeps the module out of client bundles through import protection.
+ */
+export function createDb() {
 	return drizzle({
 		client: getPool(),
 	})
-})
+}

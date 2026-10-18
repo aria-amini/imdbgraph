@@ -1,5 +1,4 @@
-import { GithubLogo, LinkedinLogo } from '@phosphor-icons/react/dist/ssr'
-import { useQuery, type QueryClient } from '@tanstack/react-query'
+import { useQuery, type QueryClient } from '@tanstack/solid-query'
 import {
 	ClientOnly,
 	ErrorComponentProps,
@@ -8,10 +7,12 @@ import {
 	ScriptOnce,
 	Scripts,
 	createRootRouteWithContext,
-} from '@tanstack/react-router'
+} from '@tanstack/solid-router'
 import posthog from 'posthog-js'
-import { useEffect, type ReactNode } from 'react'
+import { onMount, Show, Suspense, type JSX } from 'solid-js'
+import { HydrationScript } from 'solid-js/web'
 
+import { GithubLogoBold, LinkedinLogoBold } from '@/components/icons'
 import { ThemeProvider, ThemeSwitch } from '@/components/theme-switch'
 import {
 	latestScrapeRunQuery,
@@ -24,7 +25,7 @@ import { createThemeBootstrapScript, getThemePreference } from '@/lib/theme'
 import '../styles.css'
 
 function Analytics() {
-	useEffect(() => {
+	onMount(() => {
 		const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY
 
 		if (import.meta.env.MODE === 'development' || !posthogKey) return
@@ -35,7 +36,7 @@ function Analytics() {
 			defaults: '2025-11-30',
 			person_profiles: 'always',
 		})
-	}, [])
+	})
 
 	return null
 }
@@ -75,30 +76,33 @@ export const Route = createRootRouteWithContext<{
 	notFoundComponent: RootNotFoundComponent,
 })
 
-function DocumentShell({ children }: { children: ReactNode }) {
-	const { theme } = Route.useRouteContext()
+function DocumentShell(props: { children: JSX.Element }) {
+	const theme = Route.useRouteContext({ select: (context) => context.theme })
 
 	return (
-		<html lang="en" suppressHydrationWarning className={theme ?? undefined}>
+		<html lang="en" class={theme() ?? undefined}>
 			<head>
-				<HeadContent />
+				<HydrationScript />
 			</head>
-			<body className="flex min-h-dvh min-w-80 flex-col font-sans">
-				<ScriptOnce>{createThemeBootstrapScript(theme)}</ScriptOnce>
-				<ThemeProvider preference={theme}>{children}</ThemeProvider>
+			<body class="flex min-h-dvh min-w-80 flex-col font-sans">
+				<HeadContent />
+				<ScriptOnce>{createThemeBootstrapScript(theme() ?? null)}</ScriptOnce>
+				<ThemeProvider preference={theme() ?? null}>
+					<Suspense>{props.children}</Suspense>
+				</ThemeProvider>
 				<Scripts />
 			</body>
 		</html>
 	)
 }
 
-function RootErrorComponent({ error }: ErrorComponentProps) {
+function RootErrorComponent(props: ErrorComponentProps) {
 	return (
-		<main className="text-destructive flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-			<h1 className="text-2xl font-bold">Something went wrong</h1>
-			<p className="text-muted-foreground text-sm">
-				{import.meta.env.DEV && error instanceof Error
-					? error.message
+		<main class="text-destructive flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+			<h1 class="text-2xl font-bold">Something went wrong</h1>
+			<p class="text-muted-foreground text-sm">
+				{import.meta.env.DEV && props.error instanceof Error
+					? props.error.message
 					: 'Unexpected error'}
 			</p>
 		</main>
@@ -107,9 +111,9 @@ function RootErrorComponent({ error }: ErrorComponentProps) {
 
 function RootNotFoundComponent() {
 	return (
-		<main className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-			<h1 className="text-2xl font-bold">Page not found</h1>
-			<p className="text-muted-foreground text-sm">
+		<main class="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+			<h1 class="text-2xl font-bold">Page not found</h1>
+			<p class="text-muted-foreground text-sm">
 				The page you are looking for does not exist.
 			</p>
 		</main>
@@ -117,19 +121,21 @@ function RootNotFoundComponent() {
 }
 
 function RootComponent() {
-	const { latestScrapeRun } = Route.useLoaderData()
+	const loaderData = Route.useLoaderData()
 
-	const { data: refreshedLatestScrapeRun = latestScrapeRun } = useQuery({
-		...latestScrapeRunQuery(scrapeRunStaleTime(latestScrapeRun)),
-		refetchInterval: ({ state: { data } }) => scrapeRunRefetchInterval(data),
-	})
+	const latestScrapeRun = useQuery(() => ({
+		...latestScrapeRunQuery(scrapeRunStaleTime(loaderData().latestScrapeRun)),
+		refetchInterval: (query) => scrapeRunRefetchInterval(query.state.data),
+	}))
 
 	return (
 		<>
-			<div className="flex-1">
+			<div class="flex-1">
 				<Outlet />
 			</div>
-			<SiteFooter completedAt={refreshedLatestScrapeRun} />
+			<SiteFooter
+				completedAt={latestScrapeRun.data ?? loaderData().latestScrapeRun}
+			/>
 			<ClientOnly fallback={null}>
 				<Analytics />
 			</ClientOnly>
@@ -137,35 +143,40 @@ function RootComponent() {
 	)
 }
 
-function SiteFooter({ completedAt }: { completedAt: string | null }) {
-	const label = completedAt
-		? `Data last updated on ${formatDataLastUpdated(completedAt)}`
-		: 'Data has not been updated yet'
-
+function SiteFooter(props: { completedAt: string | null }) {
 	return (
-		<footer className="text-muted-foreground border-t px-4 py-4 md:px-6">
-			<div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2">
-				<p className="text-xs">{label}</p>
-				<div className="flex flex-wrap items-center gap-4 sm:ml-auto">
+		<footer class="text-muted-foreground border-t px-4 py-4 md:px-6">
+			<div class="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2">
+				<p class="text-xs">
+					<Show
+						when={props.completedAt}
+						fallback="Data has not been updated yet"
+					>
+						{(completedAt) =>
+							`Data last updated on ${formatDataLastUpdated(completedAt())}`
+						}
+					</Show>
+				</p>
+				<div class="flex flex-wrap items-center gap-4 sm:ml-auto">
 					<a
 						href={SITE_LINKS.github}
 						target="_blank"
 						rel="noreferrer"
-						className="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
+						class="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
 					>
-						<GithubLogo aria-hidden className="size-3.5" weight="bold" />
+						<GithubLogoBold aria-hidden class="size-3.5" />
 						GitHub
 					</a>
 					<a
 						href={SITE_LINKS.linkedin}
 						target="_blank"
 						rel="noreferrer"
-						className="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
+						class="hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
 					>
-						<LinkedinLogo aria-hidden className="size-3.5" weight="bold" />
+						<LinkedinLogoBold aria-hidden class="size-3.5" />
 						LinkedIn
 					</a>
-					<ThemeSwitch className="ml-1" />
+					<ThemeSwitch class="ml-1" />
 				</div>
 			</div>
 		</footer>

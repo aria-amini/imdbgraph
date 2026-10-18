@@ -1,5 +1,5 @@
-import { queryOptions } from '@tanstack/react-query'
-import { createServerFn } from '@tanstack/react-start'
+import { queryOptions } from '@tanstack/solid-query'
+import { createServerFn } from '@tanstack/solid-start'
 import { desc, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { z } from 'zod'

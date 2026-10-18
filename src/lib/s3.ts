@@ -8,7 +8,6 @@ import {
 	S3Client,
 	type S3ClientConfig,
 } from '@aws-sdk/client-s3'
-import { createServerOnlyFn } from '@tanstack/react-start'
 
 import { serverEnv as env } from '@/env.server'
 
@@ -128,8 +127,11 @@ export function createStorage(config: StorageConfig = {}): Storage {
 
 let sharedStorage: Storage | undefined
 
-/** Lazily-created server-side storage for the running app. */
-export const getStorage = createServerOnlyFn(() => {
+/**
+ * Lazily-created server-side storage for the running app. Not wrapped in
+ * `createServerOnlyFn` for the reason given on `createDb`.
+ */
+export function getStorage() {
 	// A client per request would rebuild TLS connections on every thumbnail.
 	// Production buckets are pre-provisioned, so auto-create stays a dev
 	// convenience.
@@ -138,7 +140,7 @@ export const getStorage = createServerOnlyFn(() => {
 	})
 
 	return sharedStorage
-})
+}
 
 async function createBucketIfNeeded(
 	client: S3Client,
