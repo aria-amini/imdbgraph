@@ -2,6 +2,7 @@ import { test } from '@tests/support/browser'
 import { routeComponent, searchResults } from '@tests/support/render/route'
 import { renderVisualPage } from '@tests/support/render/visual-page'
 import { http, HttpResponse } from 'msw'
+import { createSignal } from 'solid-js'
 import { expect, vi } from 'vite-plus/test'
 import { userEvent } from 'vite-plus/test/browser'
 
@@ -15,9 +16,11 @@ vi.mock('@/lib/imdb/ratings', async (importOriginal) => ({
 }))
 
 async function renderRatings(theme: Theme = 'light') {
-	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue({
+	const [loaderData, setLoaderData] = createSignal({
 		ratings: gameOfThronesRatings,
 	})
+
+	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue(loaderData)
 
 	const visualPage = await renderVisualPage({
 		path: '/ratings/$id',
@@ -31,7 +34,7 @@ async function renderRatings(theme: Theme = 'light') {
 		.element(visualPage.screen.getByText('Poster unavailable'))
 		.toBeInTheDocument()
 
-	return visualPage
+	return { ...visualPage, setLoaderData }
 }
 
 test('self-heals the poster after a failure', async ({ worker }) => {
@@ -57,11 +60,7 @@ test('self-heals the poster after a failure', async ({ worker }) => {
 		}),
 	)
 	const visualPage = await renderRatings()
-	vi.spyOn(RatingsRoute, 'useLoaderData').mockReturnValue({
-		ratings: nextRatings,
-	})
-	const Component = routeComponent(RatingsRoute)
-	await visualPage.screen.rerender(<Component />)
+	visualPage.setLoaderData({ ratings: nextRatings })
 
 	const poster = visualPage.screen.getByRole('img', {
 		name: 'Next show poster',

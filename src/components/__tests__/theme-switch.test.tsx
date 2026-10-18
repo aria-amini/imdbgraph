@@ -1,6 +1,6 @@
 import { test } from '@tests/support/browser'
 import { afterEach, beforeEach, describe, expect, vi } from 'vite-plus/test'
-import { render } from 'vitest-browser-react'
+import { render } from 'vitest-browser-solid'
 
 import { applyThemeToDocument, createThemeBootstrapScript } from '@/lib/theme'
 
@@ -28,11 +28,11 @@ describe('theme switch', () => {
 	})
 
 	test('toggles dark: class, color-scheme, cookie, aria state', async () => {
-		const screen = await render(
+		const screen = render(() => (
 			<ThemeProvider preference={null}>
 				<ThemeSwitch />
-			</ThemeProvider>,
-		)
+			</ThemeProvider>
+		))
 
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 
@@ -62,11 +62,11 @@ describe('theme switch', () => {
 		document.head.append(script)
 		script.remove()
 
-		const screen = await render(
+		const screen = render(() => (
 			<ThemeProvider preference={null}>
 				<ThemeSwitch />
-			</ThemeProvider>,
-		)
+			</ThemeProvider>
+		))
 
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 		expect(control).toHaveAttribute('aria-checked', 'true')
@@ -84,12 +84,12 @@ describe('theme switch', () => {
 	test('keeps multiple consumers synchronized with the bootstrap theme', async () => {
 		applyThemeToDocument('dark')
 
-		const screen = await render(
+		const screen = render(() => (
 			<ThemeProvider preference={null}>
 				<ThemeSwitch />
 				<ThemeSwitch />
-			</ThemeProvider>,
-		)
+			</ThemeProvider>
+		))
 
 		const switches = screen.getByRole('switch', { name: 'Dark mode' })
 		await expect
@@ -111,11 +111,11 @@ describe('theme switch', () => {
 	})
 
 	test('renders both mode icons and a sliding knob', async () => {
-		const screen = await render(
+		const screen = render(() => (
 			<ThemeProvider preference={null}>
 				<ThemeSwitch />
-			</ThemeProvider>,
-		)
+			</ThemeProvider>
+		))
 
 		const control = screen.getByRole('switch', { name: 'Dark mode' })
 		await expect.element(control).toBeVisible()

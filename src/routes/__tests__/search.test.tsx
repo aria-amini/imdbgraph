@@ -8,10 +8,10 @@ import { userEvent } from 'vite-plus/test/browser'
 import { Route as SearchRoute } from '@/routes/search'
 
 test('search results page matches screenshot', async () => {
-	vi.spyOn(SearchRoute, 'useLoaderData').mockReturnValue({
+	vi.spyOn(SearchRoute, 'useLoaderData').mockReturnValue(() => ({
 		query: 'avatar',
 		results: searchResults,
-	})
+	}))
 
 	const visualPage = await renderVisualPage({
 		path: '/search',
@@ -32,10 +32,10 @@ desktopTest(
 		worker.use(
 			http.get('/api/suggestions', () => HttpResponse.json(searchResults)),
 		)
-		vi.spyOn(SearchRoute, 'useLoaderData').mockReturnValue({
+		vi.spyOn(SearchRoute, 'useLoaderData').mockReturnValue(() => ({
 			query: 'avatar',
 			results: searchResults,
-		})
+		}))
 
 		const visualPage = await renderVisualPage({
 			path: '/search',

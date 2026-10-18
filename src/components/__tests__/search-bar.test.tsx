@@ -1,23 +1,33 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import {
 	createRootRoute,
 	createRoute,
 	createRouter,
 	RouterContextProvider,
+	useHydrated,
 	type AnyRouter,
-} from '@tanstack/react-router'
+} from '@tanstack/solid-router'
 import { desktopTest, mobileTest, test } from '@tests/support/browser'
 import { http, HttpResponse, delay } from 'msw'
-import { hydrateRoot } from 'react-dom/client'
-import { renderToString } from 'react-dom/server'
+import { createSignal, type JSX } from 'solid-js'
 import { beforeEach, describe, expect, vi } from 'vite-plus/test'
-import { render } from 'vitest-browser-react'
+import { render } from 'vitest-browser-solid'
 import { page, userEvent } from 'vitest/browser'
 
 import { shows } from '@/lib/imdb/__fixtures__/shows'
 import suggestions from '@/mocks/data/suggestions.json' with { type: 'json' }
 
 import { SearchBar } from '../search-bar'
+
+// The browser project renders on the client only. The real useHydrated flips
+// after mount, so tests swap it for a signal they control; the Playwright
+// smoke tests cover server rendering and hydration.
+vi.mock('@tanstack/solid-router', async (importOriginal) => {
+	const original =
+		await importOriginal<typeof import('@tanstack/solid-router')>()
+
+	return { ...original, useHydrated: vi.fn(original.useHydrated) }
+})
 
 const testQueryClient = new QueryClient({
 	defaultOptions: {
@@ -44,16 +54,14 @@ function createMockRouter() {
 	return createRouter({ routeTree })
 }
 
-function MockRouter({
-	children,
-	router = createMockRouter(),
-}: {
-	children: React.ReactNode
-	router?: AnyRouter
-}) {
+function MockRouter(props: { children: JSX.Element; router?: AnyRouter }) {
+	const router = props.router ?? createMockRouter()
+
 	return (
 		<QueryClientProvider client={testQueryClient}>
-			<RouterContextProvider router={router}>{children}</RouterContextProvider>
+			<RouterContextProvider router={router}>
+				{() => props.children}
+			</RouterContextProvider>
 		</QueryClientProvider>
 	)
 }
@@ -62,14 +70,13 @@ describe('searchbar tests', () => {
 	mobileTest(
 		'keeps a 16px mobile input size to prevent Safari focus zoom',
 		async () => {
-			await render(
-				<div className="mx-auto max-w-md px-4 py-3">
-					<SearchBar />
-				</div>,
-				{
-					wrapper: MockRouter,
-				},
-			)
+			render(() => (
+				<MockRouter>
+					<div class="mx-auto max-w-md px-4 py-3">
+						<SearchBar />
+					</div>
+				</MockRouter>
+			))
 
 			const input = document.querySelector('input[role="combobox"]')
 
@@ -84,14 +91,13 @@ describe('searchbar tests', () => {
 	)
 
 	desktopTest('keeps a 14px input size at desktop widths', async () => {
-		await render(
-			<div className="mx-auto max-w-md px-4 py-3">
-				<SearchBar />
-			</div>,
-			{
-				wrapper: MockRouter,
-			},
-		)
+		render(() => (
+			<MockRouter>
+				<div class="mx-auto max-w-md px-4 py-3">
+					<SearchBar />
+				</div>
+			</MockRouter>
+		))
 
 		const input = document.querySelector('input[role="combobox"]')
 
@@ -117,9 +123,11 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(375, 667)
 
-			const screen = await render(<SearchBar variant="standalone" />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar variant="standalone" />
+				</MockRouter>
+			))
 
 			await userEvent.click(screen.getByRole('combobox'))
 			await expect
@@ -135,13 +143,13 @@ describe('searchbar tests', () => {
 			expect(
 				page.getByRole('button', { name: 'Clear search' }),
 			).toBeInTheDocument()
-			expect(document.querySelector('[cmdk-root]')?.className).toContain(
-				'max-md:fixed',
-			)
-			expect(document.querySelector('[cmdk-root]')?.className).toContain(
-				'max-md:animate-in',
-			)
-			const list = document.querySelector('[cmdk-list]')
+			expect(
+				document.querySelector('[data-slot="command"]')?.className,
+			).toContain('max-md:fixed')
+			expect(
+				document.querySelector('[data-slot="command"]')?.className,
+			).toContain('max-md:animate-in')
+			const list = document.querySelector('[data-slot="command-list"]')
 			expect(list?.className).toContain('max-md:static')
 			expect(list?.className).toContain('bg-popover')
 			expect(list?.className).toContain('border')
@@ -158,9 +166,11 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(375, 667)
 
-			const screen = await render(<SearchBar variant="standalone" />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar variant="standalone" />
+				</MockRouter>
+			))
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.click(searchBar)
@@ -186,9 +196,11 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(375, 667)
 
-			const screen = await render(<SearchBar variant="standalone" />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar variant="standalone" />
+				</MockRouter>
+			))
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.click(searchBar)
@@ -197,9 +209,9 @@ describe('searchbar tests', () => {
 				.element(screen.getByText(/Avatar: The Last Airbender/).first())
 				.toBeVisible()
 
-			const commandRoot = document.querySelector('[cmdk-root]')
+			const commandRoot = document.querySelector('[data-slot="command"]')
 
-			if (!commandRoot) throw new Error('cmdk root not found')
+			if (!commandRoot) throw new Error('command root not found')
 			commandRoot.dispatchEvent(
 				new PointerEvent('pointerdown', { bubbles: true }),
 			)
@@ -214,9 +226,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('basic search', async () => {
-		const screen = await render(<SearchBar variant="navbar" />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar variant="navbar" />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -226,44 +240,32 @@ describe('searchbar tests', () => {
 	})
 
 	test('is disabled until hydration completes', async () => {
-		const rootElement = document.createElement('div')
-		document.body.append(rootElement)
+		const [hydrated, setHydrated] = createSignal(false)
+		vi.mocked(useHydrated).mockReturnValue(hydrated)
 
-		const router = createMockRouter()
-		rootElement.innerHTML = renderToString(
-			<MockRouter router={router}>
+		render(() => (
+			<MockRouter>
 				<SearchBar />
-			</MockRouter>,
-		)
+			</MockRouter>
+		))
 
-		const input = rootElement.querySelector('input')
+		const input = page.getByRole('combobox')
 
-		if (!(input instanceof HTMLInputElement)) {
-			throw new Error('Search input not found')
-		}
-
-		expect(input.disabled).toBe(true)
-
-		const root = hydrateRoot(
-			rootElement,
-			<MockRouter router={router}>
-				<SearchBar />
-			</MockRouter>,
-		)
-
-		await expect.element(page.getByRole('combobox')).not.toBeDisabled()
-
-		root.unmount()
-		rootElement.remove()
+		await expect.element(input).toBeDisabled()
+		await expect.element(input).toHaveAttribute('aria-busy', 'true')
+		setHydrated(true)
+		await expect.element(input).not.toBeDisabled()
 	})
 
 	test('ArrowDown moves to next result on Enter', async () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
 
-		const screen = await render(<SearchBar />, {
-			wrapper: (props) => <MockRouter router={router} {...props} />,
-		})
+		const screen = render(() => (
+			<MockRouter router={router}>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -288,9 +290,11 @@ describe('searchbar tests', () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
 
-		const screen = await render(<SearchBar />, {
-			wrapper: (props) => <MockRouter router={router} {...props} />,
-		})
+		const screen = render(() => (
+			<MockRouter router={router}>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'sopranos')
@@ -313,9 +317,11 @@ describe('searchbar tests', () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
 
-		const screen = await render(<SearchBar />, {
-			wrapper: (props) => <MockRouter router={router} {...props} />,
-		})
+		const screen = render(() => (
+			<MockRouter router={router}>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -343,9 +349,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('auto-selects the first suggestion before any navigation', async () => {
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -412,9 +420,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avat')
@@ -448,7 +458,13 @@ describe('searchbar tests', () => {
 				return HttpResponse.json(shows.slice(0, refined ? 3 : 4))
 			}),
 		)
-		const screen = await render(<SearchBar />, { wrapper: MockRouter })
+
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
+
 		await userEvent.fill(screen.getByRole('combobox'), 'avat')
 		await expect.poll(() => page.getByRole('option').all().length).toBe(5)
 		await userEvent.keyboard('{ArrowDown}')
@@ -463,16 +479,18 @@ describe('searchbar tests', () => {
 	})
 
 	test('search menu matches the searchbar column on desktop', async () => {
-		const screen = await render(<SearchBar variant="navbar" />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar variant="navbar" />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
 		await expect
 			.element(screen.getByText(/Avatar: The Last Airbender/).first())
 			.toBeVisible()
-		const list = document.querySelector('[cmdk-list]')
+		const list = document.querySelector('[data-slot="command-list"]')
 		expect(list?.className).toContain('fixed')
 		expect(list?.className).toContain('md:inset-x-0')
 		expect(list?.className).toContain('md:mx-auto')
@@ -486,16 +504,18 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(375, 667)
 
-			const screen = await render(<SearchBar variant="navbar" />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar variant="navbar" />
+				</MockRouter>
+			))
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.fill(searchBar, 'avatar')
 			await expect
 				.element(screen.getByText(/Avatar: The Last Airbender/).first())
 				.toBeVisible()
-			const list = document.querySelector('[cmdk-list]')
+			const list = document.querySelector('[data-slot="command-list"]')
 			expect(list?.className).toContain('fixed')
 			expect(list?.className).toContain('inset-x-4')
 			expect(list?.className).toContain('md:inset-x-0')
@@ -506,9 +526,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('renders a blurred backdrop behind the open search with the navbar variant', async () => {
-		const screen = await render(<SearchBar variant="navbar" />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar variant="navbar" />
+			</MockRouter>
+		))
 
 		expect(document.querySelector('[data-slot="search-backdrop"]')).toBeNull()
 
@@ -525,9 +547,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('no backdrop behind the home page search', async () => {
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.click(searchBar)
@@ -539,9 +563,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('clear button empties the query and hides the results', async () => {
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -561,13 +587,17 @@ describe('searchbar tests', () => {
 	})
 
 	test('shows no dropdown when focused with an empty query', async () => {
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		await userEvent.click(screen.getByRole('combobox'))
 
-		expect(screen.container.querySelector('[cmdk-list]')).toBeNull()
+		expect(
+			screen.container.querySelector('[data-slot="command-list"]'),
+		).toBeNull()
 	})
 
 	test('clicking outside closes the dropdown and keeps the query', async () => {
@@ -579,9 +609,11 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(1280, 720)
 
-			const screen = await render(<SearchBar />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar />
+				</MockRouter>
+			))
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.fill(searchBar, 'avatar')
@@ -609,9 +641,11 @@ describe('searchbar tests', () => {
 		try {
 			await page.viewport(375, 667)
 
-			const screen = await render(<SearchBar variant="standalone" />, {
-				wrapper: MockRouter,
-			})
+			const screen = render(() => (
+				<MockRouter>
+					<SearchBar variant="standalone" />
+				</MockRouter>
+			))
 
 			const searchBar = screen.getByRole('combobox')
 			await userEvent.click(searchBar)
@@ -640,9 +674,11 @@ describe('searchbar tests', () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
 
-		const screen = await render(<SearchBar />, {
-			wrapper: (props) => <MockRouter router={router} {...props} />,
-		})
+		const screen = render(() => (
+			<MockRouter router={router}>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -667,9 +703,11 @@ describe('searchbar tests', () => {
 		const router = createMockRouter()
 		const navigateSpy = vi.spyOn(router, 'navigate')
 
-		const screen = await render(<SearchBar />, {
-			wrapper: (props) => <MockRouter router={router} {...props} />,
-		})
+		const screen = render(() => (
+			<MockRouter router={router}>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -695,9 +733,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'a')
@@ -715,9 +755,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'blah')
@@ -734,9 +776,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'ava')
@@ -761,9 +805,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		const emptyState = screen.getByText(/No TV Shows Found./i)
@@ -793,9 +839,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -827,9 +875,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'error')
@@ -851,9 +901,11 @@ describe('searchbar tests', () => {
 	})
 
 	test('skips the spinner when suggestions resolve quickly', async () => {
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')
@@ -875,9 +927,11 @@ describe('searchbar tests', () => {
 			}),
 		)
 
-		const screen = await render(<SearchBar />, {
-			wrapper: MockRouter,
-		})
+		const screen = render(() => (
+			<MockRouter>
+				<SearchBar />
+			</MockRouter>
+		))
 
 		const searchBar = screen.getByRole('combobox')
 		await userEvent.fill(searchBar, 'avatar')

@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import type { Component } from 'solid-js'
 
 import { shows } from '@/lib/imdb/__fixtures__/shows'
 
@@ -6,8 +6,8 @@ import { shows } from '@/lib/imdb/__fixtures__/shows'
 export function routeComponent({
 	options,
 }: {
-	options: { component?: ComponentType }
-}): ComponentType {
+	options: { component?: Component }
+}): Component {
 	if (!options.component) throw new Error('Route has no component')
 
 	return options.component

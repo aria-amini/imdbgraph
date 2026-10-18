@@ -1,38 +1,38 @@
 import {
-	renderPage,
-	type PageWrapperProps,
-	type RenderPageOptions,
-} from '@aamini/config/vitest/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+	expectScreenshot,
+	waitForPageIdle,
+	type ScreenshotOptions,
+} from '@aamini/config/vitest/browser'
+import { QueryClient, QueryClientProvider } from '@tanstack/solid-query'
 import {
 	RouterContextProvider,
 	createRootRoute,
 	createRoute,
 	createRouter,
-} from '@tanstack/react-router'
-import { useState, type ComponentType } from 'react'
+} from '@tanstack/solid-router'
+import type { Component } from 'solid-js'
+import { Dynamic } from 'solid-js/web'
+import { expect } from 'vite-plus/test'
+import { page, server, type Locator } from 'vite-plus/test/browser'
+import { render, type RenderResult } from 'vitest-browser-solid'
 
 import type { Theme } from '@/lib/theme'
 import { applyThemeToDocument } from '@/lib/theme'
 
 interface VisualPageOptions {
-	component: ComponentType
+	component: Component
 	path: string
 	theme?: Theme
-	waitFor: NonNullable<RenderPageOptions['waitFor']>
+	waitFor: (screen: RenderResult) => Locator
 }
 
-function createMockRouter(path: string, component: ComponentType) {
+function createMockRouter(path: string, component: Component) {
 	const rootRoute = createRootRoute()
 
 	const testRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path,
-		component: () => {
-			const Component = component
-
-			return <Component />
-		},
+		component,
 	})
 
 	return createRouter({
@@ -40,35 +40,60 @@ function createMockRouter(path: string, component: ComponentType) {
 	})
 }
 
-function AppWrapper({ children, path, component }: PageWrapperProps) {
-	const [queryClient] = useState(
-		() => new QueryClient({ defaultOptions: { queries: { retry: false } } }),
-	)
-
-	const [router] = useState(() => createMockRouter(path, component))
-
-	return (
-		<QueryClientProvider client={queryClient}>
-			<RouterContextProvider router={router}>
-				<div className="bg-background text-foreground min-h-screen w-screen antialiased">
-					{children}
-				</div>
-			</RouterContextProvider>
-		</QueryClientProvider>
-	)
-}
-
-/** Renders a route component inside the app providers at a theme. */
-export function renderVisualPage({
+/**
+ * Renders a route component full width in a clean document at the browser
+ * instance viewport, inside the app providers at a theme.
+ */
+export async function renderVisualPage({
 	component,
 	path,
 	theme = 'light',
 	waitFor,
 }: VisualPageOptions) {
-	return renderPage(component, {
-		path,
-		waitFor,
-		wrapper: AppWrapper,
-		setup: () => applyThemeToDocument(theme),
+	localStorage.clear()
+	document.body.replaceChildren()
+	applyThemeToDocument(theme)
+	await server.commands.resizeBrowserViewport(
+		window.innerWidth,
+		window.innerHeight,
+	)
+	await page.viewport(window.innerWidth, window.innerHeight)
+
+	const container = document.body.appendChild(document.createElement('div'))
+	container.style.width = '100vw'
+	container.style.minHeight = '100vh'
+
+	const queryClient = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
 	})
+
+	const router = createMockRouter(path, component)
+
+	const screen = render(
+		() => (
+			<QueryClientProvider client={queryClient}>
+				<RouterContextProvider router={router}>
+					{() => (
+						<div class="bg-background text-foreground min-h-screen w-screen antialiased">
+							<Dynamic component={component} />
+						</div>
+					)}
+				</RouterContextProvider>
+			</QueryClientProvider>
+		),
+		{ container },
+	)
+
+	await expect.element(waitFor(screen), { timeout: 3_000 }).toBeVisible()
+	await waitForPageIdle()
+
+	return {
+		screen,
+		expectScreenshot: (name: string, screenshotOptions?: ScreenshotOptions) =>
+			expectScreenshot(
+				page.elementLocator(screen.baseElement),
+				name,
+				screenshotOptions,
+			),
+	}
 }

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vite-plus/test'
 
 import { transformRatingsData } from '@/components/graph'
-import { episodeSchema, votedEpisodes } from '@/lib/imdb/episodes'
+import { votedEpisodes } from '@/lib/imdb/episodes'
 import type { Episode } from '@/lib/imdb/types'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
 
@@ -27,21 +27,22 @@ const ratingsWithUnratedEpisode = {
 
 describe('chart data', () => {
 	test('preserves seasons and skips unrated episodes', () => {
-		const result = transformRatingsData(ratingsWithUnratedEpisode)
+		const series = transformRatingsData(ratingsWithUnratedEpisode)
+		const points = series.flatMap((season) => season.points)
 
-		expect(result.seasons).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-		expect(result.data).toHaveLength(73)
-		expect(result.data[0]).toMatchObject({
+		expect(series.map((season) => season.seasonNum)).toEqual([
+			1, 2, 3, 4, 5, 6, 7, 8,
+		])
+		expect(points).toHaveLength(73)
+		expect(points[0]).toMatchObject({
 			episodeIndex: 1,
-			season1: 8.9,
+			episode: { seasonNum: 1, rating: 8.9 },
 		})
-		expect(result.data.at(-1)).toMatchObject({
+		expect(points.at(-1)).toMatchObject({
 			episodeIndex: 73,
-			season8: 4,
+			episode: { seasonNum: 8, rating: 4 },
 		})
-		expect(result.data.some((point) => point.episode1 === unratedEpisode)).toBe(
-			false,
-		)
+		expect(points.some((point) => point.episode === unratedEpisode)).toBe(false)
 	})
 })
 
@@ -67,13 +68,16 @@ test('orders voted episodes and excludes unknown episode numbers', () => {
 
 	expect(votedEpisodes(ratings, 1)).toEqual([first, third])
 	expect(votedEpisodes(ratings, 3)).toEqual([])
-	expect(transformRatingsData(ratings)).toEqual({
-		seasons: [1, 2],
-		data: [
-			{ episodeIndex: 1, season1: first.rating, episode1: first },
-			{ episodeIndex: 2, season1: third.rating, episode1: third },
-		],
-	})
+	expect(transformRatingsData(ratings)).toEqual([
+		{
+			seasonNum: 1,
+			points: [
+				{ episodeIndex: 1, episode: first },
+				{ episodeIndex: 2, episode: third },
+			],
+		},
+		{ seasonNum: 2, points: [] },
+	])
 })
 
 test('excludes episodes with out-of-range ratings', () => {
@@ -94,7 +98,4 @@ test('excludes episodes with out-of-range ratings', () => {
 	}
 
 	expect(votedEpisodes(ratings, 1)).toEqual([valid])
-	expect(episodeSchema.safeParse(valid).success).toBe(true)
-	expect(episodeSchema.safeParse(below).success).toBe(false)
-	expect(episodeSchema.safeParse(above).success).toBe(false)
 })

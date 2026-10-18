@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@tests/support/browser'
-import { render } from 'vitest-browser-react'
+import { render } from 'vitest-browser-solid'
 import { page } from 'vitest/browser'
 
 import type { Ratings } from '@/lib/imdb/types'
@@ -48,7 +48,7 @@ const ratings: Ratings = {
 
 describe('graph tests', () => {
 	test('chart stays responsive after mount', async () => {
-		const screen = await render(<Graph ratings={ratings} />)
+		const screen = render(() => <Graph ratings={ratings} />)
 
 		const chart = screen.getByTestId('ratings-graph')
 		await expect.element(chart).toBeVisible()
@@ -59,13 +59,13 @@ describe('graph tests', () => {
 	}, 5_000)
 
 	test('chart stays responsive after viewport resize', async () => {
-		const screen = await render(<Graph ratings={ratings} />)
+		const screen = render(() => <Graph ratings={ratings} />)
 
 		const chart = screen.getByTestId('ratings-graph')
 		await expect.element(chart).toBeVisible()
 
 		const chartSvg = document.querySelector(
-			'[data-testid="ratings-graph"] svg.recharts-surface',
+			'[data-testid="ratings-graph"] [data-slot="chart-surface"]',
 		)
 
 		if (!(chartSvg instanceof SVGSVGElement)) {

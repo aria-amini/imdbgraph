@@ -1,6 +1,6 @@
 import { expect, test } from '@tests/support/browser'
 import { page, userEvent } from 'vite-plus/test/browser'
-import { render } from 'vitest-browser-react'
+import { render } from 'vitest-browser-solid'
 
 import { Block } from '@/components/block'
 import { gameOfThronesRatings } from '@/mocks/data/game-of-thrones'
@@ -11,7 +11,7 @@ test('episode tooltips stay inside a narrow viewport', async () => {
 
 	try {
 		await page.viewport(320, 800)
-		const screen = await render(<Block ratings={gameOfThronesRatings} />)
+		const screen = render(() => <Block ratings={gameOfThronesRatings} />)
 		const links = screen.getByRole('link')
 
 		for (const index of [0, 4]) {
