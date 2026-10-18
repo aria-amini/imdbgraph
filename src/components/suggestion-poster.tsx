@@ -1,40 +1,36 @@
 import { cn } from 'cn'
-import { useState } from 'react'
+import { createSignal, Show } from 'solid-js'
 
 import { getPosterImageUrl } from '@/lib/thumbnail/client'
 
 /** Poster thumbnail with a lettered fallback while loading or on failure. */
-export function SuggestionPoster({
-	imdbId,
-	title,
-	className,
-}: {
+export function SuggestionPoster(props: {
 	imdbId: string
 	title: string
-	className?: string
+	class?: string
 }) {
-	const [failed, setFailed] = useState(false)
+	const [failed, setFailed] = createSignal(false)
 
 	return (
 		<span
 			aria-hidden
-			className={cn(
+			class={cn(
 				'border-border bg-muted relative block h-12 w-8 shrink-0 overflow-hidden border',
-				className,
+				props.class,
 			)}
 		>
-			<span className="text-muted-foreground absolute inset-0 flex items-center justify-center font-mono text-sm font-black">
-				{title.charAt(0).toUpperCase()}
+			<span class="text-muted-foreground absolute inset-0 flex items-center justify-center font-mono text-sm font-black">
+				{props.title.charAt(0).toUpperCase()}
 			</span>
-			{!failed && (
+			<Show when={!failed()}>
 				<img
-					src={getPosterImageUrl(imdbId)}
+					src={getPosterImageUrl(props.imdbId)}
 					alt=""
 					loading="lazy"
 					onError={() => setFailed(true)}
-					className="absolute inset-0 size-full object-cover"
+					class="absolute inset-0 size-full object-cover"
 				/>
-			)}
+			</Show>
 		</span>
 	)
 }

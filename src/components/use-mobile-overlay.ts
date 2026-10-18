@@ -1,6 +1,4 @@
-import { useRef, useState, type RefObject } from 'react'
-
-import { useBrowserLayoutEffect } from '@/lib/use-browser-layout-effect'
+import { createEffect, createSignal, onCleanup, type Accessor } from 'solid-js'
 
 // iOS Safari scrolls the visual viewport when the keyboard opens, which
 // pushes fixed top:0 content behind the browser chrome; the overlay tracks
@@ -15,17 +13,17 @@ interface OverlayViewport {
  * search row's page position as a slide into the dialog. Call `begin` right
  * before activating the overlay so `active` can FLIP from the captured rect.
  */
-export function useMobileOverlay(
-	active: boolean,
-	inputRowRef: RefObject<HTMLDivElement | null>,
+export function createMobileOverlay(
+	active: Accessor<boolean>,
+	inputRow: Accessor<HTMLDivElement | undefined>,
 ) {
-	const preOverlayRectRef = useRef<DOMRect | null>(null)
-	const [viewport, setViewport] = useState<OverlayViewport | null>(null)
+	let preOverlayRect: DOMRect | null = null
+	const [viewport, setViewport] = createSignal<OverlayViewport | null>(null)
 
-	// Layout timing keeps the first active frame positioned to the real
-	// visual viewport instead of flashing full-height geometry.
-	useBrowserLayoutEffect(() => {
-		if (!active) return
+	// Solid flushes effects before the browser paints, so the first active
+	// frame already matches the real visual viewport.
+	createEffect(() => {
+		if (!active()) return
 		const visualViewport = window.visualViewport
 
 		if (!visualViewport) return
@@ -42,20 +40,20 @@ export function useMobileOverlay(
 		visualViewport.addEventListener('resize', sync)
 		visualViewport.addEventListener('scroll', sync)
 
-		return () => {
+		onCleanup(() => {
 			timers.forEach(clearTimeout)
 			visualViewport.removeEventListener('resize', sync)
 			visualViewport.removeEventListener('scroll', sync)
-		}
-	}, [active])
+		})
+	})
 
 	// FLIP: the searchbar slides from its page position to the top of the
 	// mobile dialog so the input keeps visual continuity across the jump.
-	useBrowserLayoutEffect(() => {
-		if (!active) return
-		const row = inputRowRef.current
-		const before = preOverlayRectRef.current
-		preOverlayRectRef.current = null
+	createEffect(() => {
+		if (!active()) return
+		const row = inputRow()
+		const before = preOverlayRect
+		preOverlayRect = null
 
 		if (!row || !before) return
 
@@ -74,16 +72,16 @@ export function useMobileOverlay(
 			row.style.transition = ''
 		}, 400)
 
-		return () => {
+		onCleanup(() => {
 			cancelAnimationFrame(frame)
 			clearTimeout(settled)
 			row.style.transition = ''
 			row.style.transform = ''
-		}
-	}, [active, inputRowRef])
+		})
+	})
 
-	const begin = (row: HTMLDivElement | null) => {
-		preOverlayRectRef.current = row?.getBoundingClientRect() ?? null
+	const begin = (row: HTMLDivElement | undefined) => {
+		preOverlayRect = row?.getBoundingClientRect() ?? null
 	}
 
 	return { viewport, begin }
