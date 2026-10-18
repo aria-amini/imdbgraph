@@ -3,6 +3,8 @@
 	"include": ["**/*.ts", "**/*.tsx"],
 	"exclude": [".output"],
 	"compilerOptions": {
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
 		"paths": {
 			"@tests/*": ["./tests/*"],
 			"@/mocks/*": ["./__mocks__/*"],

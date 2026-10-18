@@ -6,7 +6,7 @@ the ratings data for all episodes of a TV show. More details in @PRODUCT.md
 ## Tech
 
 - TanStack Start
-- React 19
+- SolidJS
 - Vite+ (oxlint, oxfmt, typescript, pnpm)
 - Drizzle, Postgres
 - Tailwind v4, shadcn

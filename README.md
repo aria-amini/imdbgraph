@@ -2,9 +2,10 @@
 
 ## Tech
 
-- **TanStack Start** — full-stack meta-framework for React (competitor to
+- **TanStack Start** — full-stack meta-framework for Solid (competitor to
   Next.js)
-- **React, TailwindCSS, shadcn** — UI
+- **SolidJS, TailwindCSS** — UI, with shadcn-style components in
+  `src/components/ui`
 - **Vite+ (`vp`)** — unified toolchain bundling vitest, oxlint, oxfmt, and
   TypeScript; use `vp` instead of `npm`/`vite`
 - **Drizzle, Postgres** — database
